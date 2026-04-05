@@ -1,8 +1,9 @@
-# PyAgent - Python智能体框架 v0.8.0
+# PyAgent - Python智能体框架 v0.9.7
 
 [![Python Version](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-GPL%20v3-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.8.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.9.7-orange.svg)](CHANGELOG.md)
+[![GitHub](https://img.shields.io/badge/GitHub-happy--everyday--everyweek%2Fpyagent-black.svg)](https://github.com/happy-everyday-everyweek/pyagent)
 [![Tests](https://img.shields.io/badge/tests-28%20passed-brightgreen.svg)](docs/testing.md)
 
 PyAgent是一个功能强大的Python智能体框架，支持多平台即时通讯(IM)集成、多智能体协作、ReAct推理引擎、MCP协议支持、AI原生Todo管理、四级记忆系统、自我学习、**拟人化聊天**、**多智能体协作模式**、**原生文档编辑器**、**原生视频编辑器**、**域系统**、**智能体系统**、**人工任务系统**、**日历管理**、**邮件收发**、**语音交互**、**浏览器自动化**、**PDF处理**、**分布式存储**、**LLM模型网关**、**移动端支持**等高级特性。

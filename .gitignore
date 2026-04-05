@@ -101,6 +101,7 @@ litellm-*/
 opendataloader-pdf-*/
 project-nomad-*/
 twenty-*/
+openakita-*/
 
 # Test directories (temporary)
 test_device/

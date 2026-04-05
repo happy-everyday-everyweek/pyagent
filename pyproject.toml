@@ -18,13 +18,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Typing :: Typed",
 ]
-
-[project.urls]
-Homepage = "https://github.com/pyagent-ai/pyagent"
-Documentation = "https://docs.pyagent.ai"
-Repository = "https://github.com/pyagent-ai/pyagent"
-Issues = "https://github.com/pyagent-ai/pyagent/issues"
-
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn[standard]>=0.27.0",
@@ -44,6 +37,12 @@ dependencies = [
     "PyPDF2>=3.0.0",
     "pdfplumber>=0.10.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/happy-everyday-everyweek/pyagent"
+Documentation = "https://github.com/happy-everyday-everyweek/pyagent#readme"
+Repository = "https://github.com/happy-everyday-everyweek/pyagent"
+Issues = "https://github.com/happy-everyday-everyweek/pyagent/issues"
 
 [project.optional-dependencies]
 dev = [
