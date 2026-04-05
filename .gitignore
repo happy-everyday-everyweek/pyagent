@@ -64,6 +64,10 @@ desktop.ini
 *.apk
 *.aab
 
+# Android build cache
+android/.gradle/
+android/app/build/
+
 # Temporary files
 *.tmp
 *.temp
