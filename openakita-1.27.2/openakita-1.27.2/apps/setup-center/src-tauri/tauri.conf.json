@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "OpenAkita Desktop",
+  "version": "1.27.2",
+  "identifier": "com.openakita.setupcenter",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build:web && npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "bundle": {
+    "icon": [
+      "icons/icon.png",
+      "icons/icon.ico",
+      "icons/icon.icns"
+    ],
+    "resources": [
+      "resources/openakita-server/"
+    ],
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "signingIdentity": "-",
+      "minimumSystemVersion": "10.15"
+    },
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/logo.ico",
+        "installerHooks": "./windows/hooks.nsh",
+        "template": "./windows/installer.nsi",
+        "displayLanguageSelector": false,
+        "languages": [
+          "SimpChinese"
+        ]
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFBNkE0NDkxRERCMTNBMzQKUldRME9ySGRrVVJxR25HeDhLZTNmK3hEc2hySHhmaVZkeVVmOUZpTitibEVjaC9KUStMamJJSjYK",
+      "endpoints": [
+        "https://openakita.ai/api/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  },
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' http://127.0.0.1:* http://localhost:* https://*; img-src 'self' data: blob: http: https: asset: http://asset.localhost https://asset.localhost; media-src 'self' blob: http://127.0.0.1:* http://localhost:* asset: http://asset.localhost https://asset.localhost; style-src 'self' 'unsafe-inline' https://*.alicdn.com; font-src 'self' data: https://*.alicdn.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://o.alicdn.com https://g.alicdn.com; frame-src 'self' https://*.alibaba.com",
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "**"
+        ]
+      }
+    },
+    "windows": [
+      {
+        "title": "OpenAkita",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true
+      }
+    ]
+  }
+}

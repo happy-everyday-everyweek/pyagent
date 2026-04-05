@@ -1,0 +1,21 @@
+# PyAgent 地图配置
+# 配置离线地图服务
+
+map:
+  data_dir: "data/maps"
+  pmtiles_dir: "data/maps/pmtiles"
+  assets_dir: "data/maps/assets"
+  
+  search:
+    default_radius_km: 10
+    max_radius_km: 100
+    default_limit: 10
+    max_limit: 100
+    
+  collections:
+    enabled: true
+    url: "https://raw.githubusercontent.com/Crosstalk-Solutions/project-nomad/main/collections/maps.json"
+    
+  sample_pois:
+    enabled: true
+    file: "data/maps/sample_pois.json"

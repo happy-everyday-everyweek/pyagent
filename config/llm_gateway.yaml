@@ -1,0 +1,27 @@
+# PyAgent LLM模型网关配置
+
+gateway:
+  enable_fallback: true
+  fallback_order:
+    - "openai"
+    - "anthropic"
+    - "zhipu"
+  default_timeout: 60
+  max_retries: 3
+  retry_delay: 1.0
+
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  tokens_per_minute: 100000
+
+caching:
+  enabled: true
+  ttl_seconds: 3600
+  max_size: 1000
+
+logging:
+  enabled: true
+  level: "INFO"
+  log_requests: true
+  log_responses: false

@@ -1,0 +1,124 @@
+# PyAgent 浏览器自动化配置
+
+browser:
+  # 浏览器类型: chromium, firefox, webkit
+  type: chromium
+  
+  # 是否无头模式
+  headless: true
+  
+  # 启动超时（毫秒）
+  timeout: 30000
+  
+  # 视口大小
+  viewport:
+    width: 1920
+    height: 1080
+  
+  # 用户代理
+  user_agent: ""
+  
+  # 代理设置
+  proxy:
+    enabled: false
+    server: ""
+    username: ""
+    password: ""
+  
+  # 下载目录
+  downloads_path: "./data/downloads"
+  
+  # Cookie 持久化
+  cookies:
+    enabled: true
+    storage_path: "./data/browser/cookies"
+  
+  # 本地存储
+  local_storage:
+    enabled: true
+    storage_path: "./data/browser/storage"
+
+agent:
+  # AI 代理配置
+  max_steps: 100
+  use_vision: false
+  
+  # 循环检测
+  loop_detection:
+    enabled: true
+    max_action_repeat: 3
+    max_page_stagnant: 5
+    max_url_cycle: 3
+    similarity_threshold: 0.85
+  
+  # 任务规划
+  planning:
+    enabled: true
+    dynamic_replan: true
+
+dom:
+  # DOM 解析配置
+  use_cdp: true
+  include_ax_tree: true
+  include_hidden: false
+  max_depth: 15
+  
+  # 元素可见性检测
+  visibility_check: true
+  
+  # 分页检测
+  pagination_detection: true
+
+actions:
+  # 动作执行配置
+  default_timeout: 10000
+  retry_count: 3
+  retry_delay: 1.0
+  
+  # 导航动作
+  navigate:
+    wait_until: domcontentloaded
+    timeout: 30000
+  
+  # 点击动作
+  click:
+    timeout: 5000
+    delay: 100
+  
+  # 输入动作
+  input:
+    typing_delay: 50
+    clear_first: true
+
+output:
+  # 结构化输出配置
+  structured:
+    enabled: true
+    dedup_enabled: true
+    max_items: 1000
+  
+  # 敏感数据处理
+  sensitive:
+    enabled: true
+    log_redaction: true
+    fields:
+      - name: password
+        type: password
+      - name: api_key
+        type: api_key
+      - name: token
+        type: token
+
+vision:
+  # 视觉处理配置
+  enabled: false
+  screenshot_quality: 80
+  max_width: 1920
+  max_height: 1080
+
+logging:
+  # 日志配置
+  level: INFO
+  file: "./data/logs/browser.log"
+  max_size: 10485760
+  backup_count: 5

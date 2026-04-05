@@ -1,0 +1,234 @@
+# PyAgent Security Policy Configuration
+# Reference: OpenAkita Four-Zone Path Protection System
+# L1: Four-Zone Paths  L2: Confirmation Gate  L3: Command Interception  L4: File Snapshot  L5: Self-Protection  L6: Sandbox
+
+security:
+  enabled: true
+
+  # === L1: Four-Zone Path Protection ===
+  zones:
+    enabled: true
+    # Workspace Zone: Full read/write access
+    workspace:
+      - "${CWD}"
+      - "${CWD}/data"
+      - "${CWD}/projects"
+      - "${CWD}/workspace"
+    
+    # Controlled Zone: Requires confirmation for write operations
+    controlled:
+      - "${HOME}/Documents"
+      - "${HOME}/Downloads"
+      - "${HOME}/Desktop"
+    
+    # Protected Zone: Read-only access, write requires explicit confirmation
+    protected:
+      # Windows System Paths
+      - "C:/Program Files/**"
+      - "C:/Program Files (x86)/**"
+      - "C:/Windows/**"
+      - "C:/ProgramData/**"
+      # Linux System Paths
+      - "/usr/**"
+      - "/bin/**"
+      - "/sbin/**"
+      - "/lib/**"
+      - "/lib64/**"
+      - "/boot/**"
+      - "/etc/**"
+      - "/dev/**"
+      - "/proc/**"
+      - "/sys/**"
+      # macOS System Paths
+      - "/System/**"
+      - "/Library/**"
+    
+    # Forbidden Zone: No access allowed
+    forbidden:
+      - "~/.ssh/**"
+      - "~/.gnupg/**"
+      - "~/.password-store/**"
+      - "~/.config/**/credentials*"
+      - "C:/Windows/System32/config/**"
+      - "/etc/shadow"
+      - "/etc/gshadow"
+      - "/etc/sudoers"
+      - "**/.env"
+      - "**/secrets.yaml"
+      - "**/credentials.json"
+    
+    default_zone: protected
+
+  # === L2: Confirmation Gate ===
+  confirmation:
+    enabled: true
+    timeout_seconds: 60
+    default_on_timeout: deny
+    auto_confirm: false
+    auto_confirm_patterns:
+      - "read_file"
+      - "list_directory"
+      - "search_code"
+    require_confirmation_patterns:
+      - "delete_file"
+      - "write_file"
+      - "execute_command"
+      - "modify_system"
+    confirmation_message_template: |
+      PyAgent requests permission to perform the following action:
+      Action: {action}
+      Target: {target}
+      Risk Level: {risk_level}
+      
+      Do you want to allow this action? (yes/no)
+
+  # === L3: Command Pattern Interception ===
+  command_patterns:
+    enabled: true
+    
+    # Risk level definitions
+    risk_levels:
+      critical:
+        auto_deny: true
+        log: true
+        notify: true
+      high:
+        require_confirmation: true
+        log: true
+        notify: true
+      medium:
+        require_confirmation: true
+        log: true
+        notify: false
+      low:
+        auto_allow: true
+        log: false
+        notify: false
+    
+    # Critical commands - always blocked
+    blocked_commands:
+      - reg
+      - regedit
+      - netsh
+      - schtasks
+      - sc
+      - wmic
+      - bcdedit
+      - shutdown
+      - taskkill
+      - format
+      - diskpart
+      - fdisk
+      - dd
+      - rm -rf /
+      - chmod -R 777
+    
+    # High risk commands - require confirmation
+    high_risk_commands:
+      - git push
+      - git reset --hard
+      - npm publish
+      - pip install
+      - docker rm
+      - docker rmi
+      - kubectl delete
+    
+    # Medium risk commands
+    medium_risk_commands:
+      - git commit
+      - git checkout
+      - npm install
+      - pip uninstall
+    
+    # Custom patterns (extendable)
+    custom_critical: []
+    custom_high: []
+    custom_medium: []
+    excluded_patterns: []
+
+  # === L4: File Snapshot / Checkpoint ===
+  checkpoint:
+    enabled: true
+    max_snapshots: 50
+    snapshot_dir: "data/checkpoints"
+    auto_checkpoint_patterns:
+      - "write_file"
+      - "delete_file"
+      - "execute_command"
+    excluded_patterns:
+      - "*.log"
+      - "*.tmp"
+      - "__pycache__/**"
+      - "node_modules/**"
+      - ".git/**"
+    retention_days: 30
+
+  # === L5: Self-Protection ===
+  self_protection:
+    enabled: true
+    protected_dirs:
+      - "data/"
+      - "config/"
+      - "logs/"
+      - "src/"
+      - "identity/"
+    protected_files:
+      - "pyproject.toml"
+      - "requirements.txt"
+      - ".env"
+      - "config/models.yaml"
+      - "config/policies.yaml"
+    audit_to_file: true
+    audit_path: "data/audit/policy_decisions.jsonl"
+    death_switch_threshold: 3
+    protected_env_vars:
+      - "OPENAI_API_KEY"
+      - "ANTHROPIC_API_KEY"
+      - "ZHIPU_API_KEY"
+      - "DEEPSEEK_API_KEY"
+      - "SECRET_KEY"
+
+  # === L6: Sandbox ===
+  sandbox:
+    enabled: true
+    backend: auto
+    sandbox_risk_levels:
+      - HIGH
+      - CRITICAL
+    exempt_commands:
+      - python
+      - node
+      - git
+    network:
+      allow_in_sandbox: false
+      allowed_domains:
+        - "api.openai.com"
+        - "api.anthropic.com"
+        - "open.bigmodel.cn"
+        - "api.deepseek.com"
+    resource_limits:
+      max_memory_mb: 512
+      max_cpu_percent: 50
+      max_execution_time_seconds: 300
+
+# === Audit Configuration ===
+audit:
+  enabled: true
+  log_all_actions: true
+  log_file: "logs/audit.log"
+  log_format: json
+  retention_days: 90
+  sensitive_fields:
+    - "api_key"
+    - "password"
+    - "token"
+    - "secret"
+
+# === Rate Limiting ===
+rate_limiting:
+  enabled: true
+  requests_per_minute: 60
+  requests_per_hour: 1000
+  burst_size: 10
+  by_user: true
+  by_ip: true

@@ -1,0 +1,167 @@
+# PyAgent Model Configuration
+# 新版模型架构：基础模型 + 分级模型 + 垂类模型
+
+models:
+  # === 基础模型（必填）===
+  # 在没有配置分级模型时，所有模型调用使用基础模型
+  base:
+    provider: zhipu
+    name: glm-4-flash
+    max_tokens: 2048
+    temperature: 0.7
+    top_p: 0.9
+    timeout: 60
+    retry_count: 3
+    capabilities:
+      - text
+      - tools
+
+  # === 分级模型 ===
+  tiers:
+    # 强能力模型 - 负责规划任务
+    # 推荐：GLM-5, GPT-5, Claude-4-Opus
+    strong:
+      provider: zhipu
+      name: glm-4-plus
+      max_tokens: 4096
+      temperature: 0.7
+      top_p: 0.9
+      timeout: 120
+      retry_count: 3
+      capabilities:
+        - text
+        - tools
+        - planning
+        - complex_reasoning
+      fallback:
+        provider: openai
+        name: gpt-4-turbo
+
+    # 高性能模型 - 负责日常任务
+    # 推荐：Qwen3.5-35B-A3B, DeepSeek-Chat, GPT-3.5-Turbo
+    performance:
+      provider: zhipu
+      name: qwen3.5-35b-a3b
+      max_tokens: 2048
+      temperature: 0.7
+      top_p: 0.9
+      timeout: 60
+      retry_count: 3
+      capabilities:
+        - text
+        - tools
+        - general_chat
+        - tool_calling
+      fallback:
+        provider: deepseek
+        name: deepseek-chat
+
+    # 性价比模型 - 负责意图判断、记忆整理、浏览器操作等
+    # 推荐：Qwen3.5-4B/2B, 小型本地模型
+    cost-effective:
+      provider: zhipu
+      name: qwen3.5-4b
+      max_tokens: 1024
+      temperature: 0.5
+      top_p: 0.85
+      timeout: 30
+      retry_count: 2
+      capabilities:
+        - text
+        - intent_detection
+        - simple_classification
+        - memory_processing
+      fallback:
+        provider: local
+        name: default
+
+  # === 垂类模型 ===
+  vertical:
+    # 屏幕操作模型 - 强烈推荐 AutoGLM-Phone-9B
+    screen-operation:
+      provider: zhipu
+      name: autoglm-phone-9b
+      description: 手机屏幕操作专用模型，支持GUI理解和操作
+      max_tokens: 2048
+      temperature: 0.3
+      top_p: 0.9
+      timeout: 60
+      retry_count: 3
+      capabilities:
+        - screen_operation
+        - gui_understanding
+        - text
+
+    # 多模态模型 - 处理图片、视频、音频
+    multimodal:
+      provider: zhipu
+      name: glm-4v
+      description: 多模态模型，支持图片、视频、音频内容理解
+      max_tokens: 4096
+      temperature: 0.7
+      top_p: 0.9
+      timeout: 120
+      retry_count: 3
+      capabilities:
+        - text
+        - vision
+        - audio
+        - video
+
+providers:
+  openai:
+    base_url: ${OPENAI_BASE_URL}
+    api_key: ${OPENAI_API_KEY}
+    default_headers:
+      Content-Type: application/json
+
+  anthropic:
+    base_url: https://api.anthropic.com
+    api_key: ${ANTHROPIC_API_KEY}
+    default_headers:
+      Content-Type: application/json
+      anthropic-version: "2023-06-01"
+
+  zhipu:
+    base_url: ${ZHIPU_BASE_URL}
+    api_key: ${ZHIPU_API_KEY}
+    default_headers:
+      Content-Type: application/json
+
+  deepseek:
+    base_url: ${DEEPSEEK_BASE_URL}
+    api_key: ${DEEPSEEK_API_KEY}
+    default_headers:
+      Content-Type: application/json
+
+  local:
+    base_url: http://localhost:11434
+    api_key: ""
+    default_headers:
+      Content-Type: application/json
+
+routing:
+  rules:
+    - pattern: "plan|planning|strategy"
+      model: strong
+    - pattern: "code|implement|develop"
+      model: strong
+    - pattern: "remember|memory|recall"
+      model: cost-effective
+    - pattern: "classify|categorize|route|intent"
+      model: cost-effective
+    - pattern: "browser|web|page"
+      model: cost-effective
+    - pattern: "screen|gui|click|tap"
+      model: screen-operation
+    - pattern: "image|photo|picture|video|audio"
+      model: multimodal
+    - pattern: ".*"
+      model: performance
+
+  default_model: performance
+
+  intent_detection:
+    enabled: true
+    model: cost-effective
+    confidence_threshold: 0.7

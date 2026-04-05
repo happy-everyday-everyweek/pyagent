@@ -1,0 +1,35 @@
+voice:
+  asr:
+    language: "zh-CN"
+    model: "default"
+    enable_vad: true
+    vad_threshold: 0.5
+    sample_rate: 16000
+    engine: "auto"
+    whisper_model: "base"
+    whisper_device: "auto"
+    whisper_compute_type: "auto"
+    use_ffmpeg: true
+    ffmpeg_path: "ffmpeg"
+    ffprobe_path: "ffprobe"
+
+  tts:
+    voice_id: "default"
+    speed: 1.0
+    pitch: 1.0
+    volume: 1.0
+    sample_rate: 22050
+
+  processor:
+    buffer_size: 4096
+    silence_threshold: 0.01
+    silence_duration: 1.0
+
+  narration:
+    default_voice: "default"
+    max_chars_per_line: 40
+    subtitle_format: "srt"
+
+  storage:
+    cache_dir: "data/voice/cache"
+    temp_dir: "data/voice/temp"

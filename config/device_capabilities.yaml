@@ -1,0 +1,145 @@
+# PyAgent 设备能力配置
+# v0.8.0 多设备架构支持
+
+# PC设备默认能力配置
+pc:
+  available_tools:
+    - file_operations
+    - code_execution
+    - web_search
+    - browser_automation
+    - screen_operations
+    - document_processing
+  screen_operations: true
+  browser_automation: true
+  notification_access: false
+  sms_access: false
+  local_inference: true
+  supports_multimodal: true
+  supports_offline: true
+  min_memory_for_inference: 16
+
+# 移动设备默认能力配置
+mobile:
+  available_tools:
+    - file_operations
+    - notification_access
+    - sms_access
+    - camera
+    - location
+  screen_operations: false
+  browser_automation: false
+  notification_access: true
+  sms_access: true
+  local_inference: false
+  supports_multimodal: true
+  supports_offline: true
+  min_memory_for_inference: 0
+
+# 服务器设备默认能力配置
+server:
+  available_tools:
+    - file_operations
+    - code_execution
+    - web_search
+    - api_calls
+    - database_operations
+  screen_operations: false
+  browser_automation: true
+  notification_access: false
+  sms_access: false
+  local_inference: true
+  supports_multimodal: true
+  supports_offline: true
+  min_memory_for_inference: 32
+
+# 边缘设备默认能力配置
+edge:
+  available_tools:
+    - file_operations
+    - sensor_data
+    - local_processing
+  screen_operations: false
+  browser_automation: false
+  notification_access: false
+  sms_access: false
+  local_inference: true
+  supports_multimodal: false
+  supports_offline: true
+  min_memory_for_inference: 8
+
+# 工具类别说明
+tool_categories:
+  file_operations:
+    description: 文件读写、目录操作
+    examples:
+      - read_file
+      - write_file
+      - list_directory
+  code_execution:
+    description: 代码执行和脚本运行
+    examples:
+      - run_python
+      - execute_shell
+  web_search:
+    description: 网络搜索和信息检索
+    examples:
+      - search_web
+      - fetch_url
+  browser_automation:
+    description: 浏览器自动化操作
+    examples:
+      - open_browser
+      - click_element
+      - fill_form
+  screen_operations:
+    description: 屏幕操作和截图
+    examples:
+      - take_screenshot
+      - click_position
+      - type_text
+  document_processing:
+    description: 文档处理（Word/Excel/PPT）
+    examples:
+      - create_document
+      - edit_spreadsheet
+  notification_access:
+    description: 系统通知访问
+    examples:
+      - read_notifications
+      - send_notification
+  sms_access:
+    description: 短信读写权限
+    examples:
+      - read_sms
+      - send_sms
+  camera:
+    description: 摄像头访问
+    examples:
+      - take_photo
+      - record_video
+  location:
+    description: 位置服务
+    examples:
+      - get_location
+      - track_location
+  api_calls:
+    description: API调用能力
+    examples:
+      - http_request
+      - graphql_query
+  database_operations:
+    description: 数据库操作
+    examples:
+      - query_database
+      - insert_record
+  sensor_data:
+    description: 传感器数据访问
+    examples:
+      - read_temperature
+      - read_humidity
+  local_processing:
+    description: 本地数据处理
+    examples:
+      - data_transform
+      - local_analysis

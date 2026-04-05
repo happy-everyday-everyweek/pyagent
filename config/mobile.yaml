@@ -1,0 +1,444 @@
+# PyAgent Mobile Configuration
+# 移动端模块配置
+# v0.8.0: 新增移动端支持
+
+mobile:
+  # 后端模式
+  # standalone: 独立模式，在移动设备上独立运行
+  # embedded: 嵌入模式，作为嵌入式服务运行
+  # client: 客户端模式，连接到远程服务器
+  mode: standalone
+
+  # API服务配置
+  api:
+    host: 127.0.0.1
+    port: 8080
+    workers: 1
+    log_level: info
+
+  # 自动启动
+  auto_start: true
+
+  # 数据目录
+  data_dir: data/mobile
+
+  # 日志级别
+  log_level: info
+
+# 屏幕操作配置
+screen:
+  # 是否启用屏幕操作
+  enabled: true
+
+  # ADB路径
+  adb_path: adb
+
+  # 截图配置
+  screenshot:
+    # 截图保存目录
+    save_dir: data/mobile/screenshots
+
+    # 图片格式
+    format: png
+
+    # 图片质量 (1-100, 仅对jpg有效)
+    quality: 90
+
+    # 自动清理
+    auto_cleanup: true
+
+    # 最大保留时间（小时）
+    max_age_hours: 24
+
+  # 手势配置
+  gesture:
+    # 默认滑动持续时间（毫秒）
+    swipe_duration: 300
+
+    # 长按持续时间（毫秒）
+    long_press_duration: 1000
+
+    # 点击间隔（毫秒）
+    tap_interval: 50
+
+# 通知配置
+notification:
+  # 是否启用通知读取
+  enabled: true
+
+  # 监听配置
+  listener:
+    # 是否启用监听
+    enabled: true
+
+    # 检查间隔（秒）
+    interval: 5.0
+
+    # 最大回调数量
+    max_callbacks: 10
+
+  # 过滤配置
+  filter:
+    # 排除持续通知
+    exclude_ongoing: true
+
+    # 排除系统通知
+    exclude_system: false
+
+    # 包含的包名（空表示全部）
+    include_packages: []
+
+    # 排除的包名
+    exclude_packages:
+      - "android"
+      - "com.android.systemui"
+
+# 短信配置
+sms:
+  # 是否启用短信功能
+  enabled: true
+
+  # ADB路径
+  adb_path: adb
+
+  # 读取配置
+  read:
+    # 默认消息数量限制
+    default_limit: 100
+
+    # 最大消息数量
+    max_limit: 1000
+
+  # 发送配置
+  send:
+    # 发送超时（秒）
+    timeout: 30
+
+    # 重试次数
+    retry_count: 3
+
+    # 重试间隔（秒）
+    retry_interval: 2
+
+# Linux环境配置
+linux_env:
+  # 服务配置
+  service:
+    # 主入口脚本
+    main_script: src/main.py
+
+    # 自动重启
+    auto_restart: true
+
+    # 最大重启次数
+    max_restarts: 3
+
+  # 环境检测
+  detection:
+    # 自动检测环境
+    auto_detect: true
+
+    # 检测超时（秒）
+    timeout: 30
+
+# 能力配置
+capabilities:
+  # 屏幕能力
+  screen:
+    has_screen: true
+    default_width: 1080
+    default_height: 1920
+    default_dpi: 480
+
+  # 相机能力
+  camera:
+    has_camera: true
+
+  # GPS能力
+  gps:
+    has_gps: true
+
+  # 蓝牙能力
+  bluetooth:
+    has_bluetooth: true
+
+  # NFC能力
+  nfc:
+    has_nfc: false
+
+  # 电话能力
+  telephony:
+    has_telephony: true
+
+# 安全配置
+security:
+  # 权限检查
+  permission_check: true
+
+  # 敏感操作确认
+  confirm_sensitive: true
+
+  # 敏感操作列表
+  sensitive_actions:
+    - "send_message"
+    - "delete_message"
+    - "clear_all_notifications"
+
+# 调试配置
+debug:
+  # 调试模式
+  enabled: false
+
+  # 详细日志
+  verbose: false
+
+  # 保存原始数据
+  save_raw_data: false
+
+  # 原始数据目录
+  raw_data_dir: data/mobile/debug
+
+# ============================================================
+# v0.8.0 新增配置
+# ============================================================
+
+# MNN本地推理配置
+mnn:
+  # 是否启用MNN推理
+  enabled: true
+
+  # 后端类型
+  # cpu: CPU推理
+  # opencl: OpenCL加速
+  # metal: Metal加速 (iOS/macOS)
+  # vulkan: Vulkan加速
+  # opengl: OpenGL加速
+  backend: cpu
+
+  # 推理配置
+  inference:
+    # 线程数
+    thread_num: 4
+
+    # 精度模式
+    # low: 低精度，速度快
+    # normal: 正常精度
+    # high: 高精度，速度慢
+    precision: low
+
+    # 内存模式
+    # low: 低内存模式
+    # normal: 正常内存模式
+    # high: 高内存模式
+    memory: low
+
+    # 默认最大token数
+    max_tokens: 512
+
+    # 温度参数
+    temperature: 0.7
+
+    # Top-p采样
+    top_p: 0.9
+
+  # 模型配置
+  models:
+    # 模型目录
+    model_dir: data/mobile/models
+
+    # 缓存目录
+    cache_dir: data/mobile/mnn_cache
+
+    # 默认模型
+    default_model: qwen-1.8b-chat
+
+    # 支持的模型列表
+    supported:
+      - name: qwen-1.8b-chat
+        path: data/mobile/models/qwen-1.8b-chat
+        description: Qwen 1.8B Chat model for mobile devices
+        context_length: 8192
+        quantization: q4
+
+      - name: tiny-llama-1.1b
+        path: data/mobile/models/tiny-llama-1.1b
+        description: TinyLlama 1.1B model optimized for mobile
+        context_length: 2048
+        quantization: q4
+
+# 包管理配置
+package_manager:
+  # 是否启用包管理
+  enabled: true
+
+  # ADB路径
+  adb_path: adb
+
+  # 是否使用Shizuku
+  use_shizuku: false
+
+  # 是否使用Root
+  use_root: false
+
+  # 缓存配置
+  cache:
+    # 是否启用缓存
+    enabled: true
+
+    # 缓存过期时间（秒）
+    ttl_seconds: 60
+
+  # 超时配置
+  timeout_seconds: 30
+
+# 工作流自动化配置
+workflow:
+  # 是否启用工作流
+  enabled: true
+
+  # 数据目录
+  data_dir: data/mobile/workflows
+
+  # 执行配置
+  execution:
+    # 最大并发执行数
+    max_concurrent: 5
+
+    # 执行超时（秒）
+    timeout_seconds: 300
+
+    # 步骤超时（秒）
+    step_timeout_seconds: 60
+
+  # 调度配置
+  scheduler:
+    # 是否启用调度器
+    enabled: true
+
+    # 调度检查间隔（秒）
+    check_interval: 60.0
+
+  # 自动保存
+  auto_save: true
+
+# 工具注册表配置
+tool_registry:
+  # 是否启用工具注册
+  enabled: true
+
+  # 内置工具
+  builtin_tools:
+    - screen_capture
+    - screen_tap
+    - screen_swipe
+    - list_packages
+    - get_package_info
+    - launch_package
+    - stop_package
+    - get_running_packages
+    - get_notifications
+    - send_sms
+    - mnn_load_model
+    - mnn_inference
+    - workflow_create
+    - workflow_execute
+    - workflow_list
+    - phone_operation
+
+  # 工具状态管理
+  state_management:
+    # 自动激活工具
+    auto_activate: true
+
+    # 自动休眠超时（秒）
+    dormant_timeout: 300
+
+# ============================================================
+# v0.8.8 新增配置 - 手机操作工具
+# ============================================================
+
+# 手机操作工具配置
+phone_operation:
+  # 是否启用手机操作工具
+  enabled: true
+
+  # 最大执行步骤数
+  max_steps: 20
+
+  # 单步操作超时（秒）
+  step_timeout: 10
+
+  # 操作间隔时间（毫秒）
+  action_interval_ms: 500
+
+  # 使用的垂类模型
+  model: "screen-operation"
+
+  # 虚拟屏幕配置
+  virtual_display:
+    # 是否启用虚拟屏幕
+    enabled: true
+
+    # 虚拟屏幕宽度
+    width: 1080
+
+    # 虚拟屏幕高度
+    height: 1920
+
+    # 虚拟屏幕DPI
+    dpi: 480
+
+# AutoGLM 子代理配置
+subagent:
+  # 是否启用子代理
+  enabled: true
+
+  # 默认最大步骤数
+  default_max_steps: 20
+
+  # 单步超时（秒）
+  step_timeout: 10
+
+  # 截图分析配置
+  screen_analysis:
+    # 是否启用屏幕分析
+    enabled: true
+
+    # 分析超时（秒）
+    timeout: 30
+
+    # 是否提取可操作元素
+    extract_elements: true
+
+  # 操作验证配置
+  verification:
+    # 是否启用操作验证
+    enabled: true
+
+    # 验证超时（秒）
+    timeout: 5
+
+    # 验证重试次数
+    retry_count: 2
+
+  # 失败恢复配置
+  recovery:
+    # 是否启用失败恢复
+    enabled: true
+
+    # 最大重试次数
+    max_retries: 3
+
+    # 重试间隔（秒）
+    retry_interval: 1
+
+  # 操作历史配置
+  history:
+    # 是否记录操作历史
+    enabled: true
+
+    # 最大历史记录数
+    max_records: 100
+
+    # 历史记录保存路径
+    save_path: data/mobile/subagent_history

@@ -1,0 +1,50 @@
+{
+  "projects": [
+    {
+      "project_id": "cc2d0ded-7d1c-4e90-a7b7-ee5e571fb2ef",
+      "name": "Editor Test Project",
+      "canvas_width": 1920,
+      "canvas_height": 1080,
+      "fps": 30,
+      "duration": 0.0,
+      "tracks": [
+        {
+          "id": "f8b11431-62a4-4d62-84d7-60b268dcd748",
+          "type": "video",
+          "name": "Video Track 1",
+          "elements": [],
+          "transitions": [],
+          "is_main": false,
+          "muted": false,
+          "visible": true,
+          "locked": false,
+          "order": 0,
+          "created_at": 1774780768.583753,
+          "updated_at": 1774780768.583753
+        },
+        {
+          "id": "b4ce42ed-11fe-4738-a241-b935c3a8a90b",
+          "type": "audio",
+          "name": "Audio Track 1",
+          "elements": [],
+          "transitions": [],
+          "is_main": false,
+          "muted": false,
+          "visible": true,
+          "locked": false,
+          "order": 1,
+          "created_at": 1774780768.583753,
+          "updated_at": 1774780768.583753
+        }
+      ],
+      "media_files": [],
+      "created_at": "2026-03-29T18:39:28.583753",
+      "updated_at": "2026-03-29T18:39:28.583753",
+      "domain_id": null,
+      "description": "",
+      "tags": [],
+      "metadata": {}
+    }
+  ],
+  "updated_at": "2026-04-05T15:58:41.960177"
+}

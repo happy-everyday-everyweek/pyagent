@@ -1,0 +1,124 @@
+# PyAgent 意图分析配置
+# v0.8.1
+
+# 意图识别器配置
+recognizer:
+  # 置信度阈值
+  confidence_threshold: 0.6
+  # 是否使用缓存
+  use_cache: true
+  # 缓存过期时间（秒）
+  cache_ttl: 300
+
+# 快速匹配规则
+quick_match:
+  # 打开文件关键词
+  open_file_keywords:
+    - "打开文件"
+    - "打开文档"
+    - "查看文件"
+    - "open"
+  
+  # 打开应用关键词
+  open_app_keywords:
+    calendar:
+      - "日历"
+      - "calendar"
+      - "/calendar"
+    tasks:
+      - "任务"
+      - "待办"
+      - "tasks"
+      - "/tasks"
+    email:
+      - "邮件"
+      - "email"
+      - "/email"
+    notes:
+      - "笔记"
+      - "notes"
+      - "/notes"
+    browser:
+      - "浏览器"
+      - "browser"
+      - "/browser"
+    files:
+      - "文件"
+      - "files"
+      - "/files"
+    settings:
+      - "设置"
+      - "settings"
+      - "/settings"
+    word:
+      - "word"
+      - "文档"
+      - "/word"
+    ppt:
+      - "ppt"
+      - "幻灯片"
+      - "/ppt"
+    excel:
+      - "excel"
+      - "表格"
+      - "/excel"
+  
+  # 创建日程关键词
+  create_event_keywords:
+    - "创建日程"
+    - "添加日程"
+    - "新建日程"
+    - "开会"
+    - "会议"
+    - "约会"
+    - "安排"
+    - "/event"
+  
+  # 创建待办关键词
+  create_todo_keywords:
+    - "创建待办"
+    - "添加待办"
+    - "新建待办"
+    - "提醒我"
+    - "待办"
+    - "/todo"
+  
+  # 修改设置关键词
+  modify_settings_keywords:
+    - "修改设置"
+    - "更改设置"
+    - "把.*改成"
+    - "设置.*为"
+    - "/settings"
+
+# LLM 分析配置
+llm_analysis:
+  # 是否启用 LLM 分析
+  enabled: true
+  # 快速匹配置信度阈值（超过此值不使用 LLM）
+  quick_match_threshold: 0.9
+  # 分析超时时间（秒）
+  timeout: 10
+
+# 路由配置
+routing:
+  # 需要重定向的意图类型
+  redirect_intents:
+    - OPEN_FILE
+    - OPEN_APP
+    - CREATE_EVENT
+    - CREATE_TODO
+    - MODIFY_SETTINGS
+  
+  # 应用路由映射
+  app_routes:
+    calendar: "/calendar"
+    tasks: "/tasks"
+    email: "/email"
+    notes: "/notes"
+    browser: "/browser"
+    files: "/files"
+    settings: "/settings"
+    word: "/documents?type=word"
+    ppt: "/documents?type=ppt"
+    excel: "/documents?type=excel"

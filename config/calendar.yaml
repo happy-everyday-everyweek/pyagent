@@ -1,0 +1,47 @@
+calendar:
+  data_dir: "data/calendar"
+  
+  default_reminder:
+    enabled: true
+    minutes_before: 15
+    method: "push"
+  
+  work_hours:
+    start: 9
+    end: 18
+  
+  preferred_days:
+    - 0
+    - 1
+    - 2
+    - 3
+    - 4
+  
+  ai_scheduler:
+    enabled: true
+    default_duration_minutes: 60
+    max_suggestions: 10
+    auto_schedule_enabled: true
+  
+  reminder_service:
+    email:
+      enabled: false
+      smtp_server: ""
+      smtp_port: 587
+      smtp_username: ""
+      smtp_password: ""
+    
+    push:
+      enabled: true
+    
+    sms:
+      enabled: false
+      twilio_account_sid: ""
+      twilio_auth_token: ""
+      twilio_phone_number: ""
+  
+  storage:
+    type: "json"
+    auto_save: true
+    backup_enabled: true
+    backup_interval_hours: 24

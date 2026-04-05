@@ -1,0 +1,32 @@
+email:
+  smtp:
+    host: ""
+    port: 587
+    user: ""
+    password: ""
+    use_tls: true
+
+  imap:
+    host: ""
+    port: 993
+    user: ""
+    password: ""
+
+  defaults:
+    folder: "INBOX"
+    limit: 20
+    signature: ""
+
+  ai_assistant:
+    enabled: true
+    auto_categorize: true
+    auto_detect_urgency: true
+    auto_extract_actions: true
+
+  templates:
+    directory: "data/email_templates"
+    default_template: "default"
+
+  storage:
+    data_dir: "data/email"
+    cache_duration: 3600

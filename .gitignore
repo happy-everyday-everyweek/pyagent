@@ -87,3 +87,25 @@ data/todo/verifications/
 *.pyc
 test_output.txt
 opendataloader-pdf-temp/
+
+# Third-party libraries (not part of project)
+DocumentServer-*/
+MaiBot-*/
+Operit-*/
+VibeVoice-*/
+browser-use-*/
+cutia-*/
+deer-flow-*/
+dexter-*/
+litellm-*/
+opendataloader-pdf-*/
+project-nomad-*/
+twenty-*/
+
+# Test directories (temporary)
+test_device/
+test_domain/
+test_domain_device/
+test_sync/
+test_financial_agent.py
+test_yfinance.py

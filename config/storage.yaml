@@ -1,0 +1,81 @@
+# PyAgent Storage Configuration
+# v0.8.0 分布式存储系统配置
+
+storage:
+  data_dir: "data/storage"
+  local_storage_dir: "data/storage/files"
+  cache_dir: "data/storage/cache"
+  max_cache_size_mb: 1024
+  auto_cleanup: true
+  cleanup_interval: 3600
+
+tracker:
+  data_dir: "data/storage/tracker"
+  metadata_dir: "data/storage/tracker/metadata"
+  locations_dir: "data/storage/tracker/locations"
+  access_dir: "data/storage/tracker/access"
+  max_access_history: 10000
+  auto_track: true
+
+sync:
+  data_dir: "data/storage/sync"
+  messages_dir: "data/storage/sync/messages"
+  pending_dir: "data/storage/sync/pending"
+  broadcast_enabled: true
+  pull_timeout: 30
+  max_retries: 3
+  retry_interval: 5
+  heartbeat_interval: 60
+
+file:
+  max_file_size_mb: 100
+  allowed_extensions:
+    - ".txt"
+    - ".pdf"
+    - ".doc"
+    - ".docx"
+    - ".xls"
+    - ".xlsx"
+    - ".ppt"
+    - ".pptx"
+    - ".png"
+    - ".jpg"
+    - ".jpeg"
+    - ".gif"
+    - ".mp4"
+    - ".mp3"
+    - ".zip"
+    - ".json"
+    - ".yaml"
+    - ".md"
+  blocked_extensions:
+    - ".exe"
+    - ".bat"
+    - ".cmd"
+    - ".sh"
+  checksum_algorithm: "sha256"
+
+replication:
+  enabled: true
+  min_replicas: 1
+  max_replicas: 3
+  auto_replicate: true
+  replicate_on_upload: true
+
+conflict:
+  auto_resolve: true
+  default_strategy: "keep_latest"
+  max_conflicts: 1000
+  conflict_dir: "data/storage/conflicts"
+
+logging:
+  level: "INFO"
+  file_operations: true
+  sync_operations: true
+  access_logging: true
+
+performance:
+  concurrent_uploads: 5
+  concurrent_downloads: 5
+  chunk_size_kb: 1024
+  buffer_size_kb: 64

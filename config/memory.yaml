@@ -1,0 +1,31 @@
+# PyAgent 记忆系统配置
+
+chat_memory:
+  data_dir: "data/memory/chat"
+  max_entries_per_level:
+    daily: 100
+    weekly: 50
+    monthly: 30
+    quarterly: 20
+  consolidation:
+    enabled: true
+    interval_hours: 24
+
+work_memory:
+  data_dir: "data/memory/work"
+  max_project_domains: 50
+  max_preferences: 100
+  preference_categories:
+    - "general"
+    - "communication"
+    - "work"
+    - "personal"
+
+embedding:
+  provider: "openai"
+  model: "text-embedding-3-small"
+  dimension: 1536
+
+retrieval:
+  top_k: 10
+  similarity_threshold: 0.7

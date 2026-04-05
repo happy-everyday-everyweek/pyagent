@@ -1,0 +1,29 @@
+desktop:
+  screen:
+    capture_method: "auto"
+    save_screenshots: true
+    screenshot_dir: "data/desktop/screenshots"
+
+  mouse:
+    speed: 1.0
+    smooth_movement: true
+    click_delay: 0.1
+
+  keyboard:
+    typing_speed: 60
+    human_like_typing: true
+
+  automation:
+    verify_operations: true
+    max_retries: 3
+    operation_timeout: 30
+
+  session:
+    auto_initialize: true
+    save_history: true
+    history_file: "data/desktop/history.json"
+
+  safety:
+    fail_safe: true
+    pause_key: "esc"
+    emergency_stop_enabled: true

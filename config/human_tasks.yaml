@@ -1,0 +1,59 @@
+# PyAgent 人类任务管理系统配置
+
+# 数据存储配置
+storage:
+  data_dir: "data/human_tasks"
+  auto_save: true
+  save_interval: 30  # 自动保存间隔（秒）
+
+# 任务默认配置
+task:
+  default_priority: "medium"  # 默认优先级: low, medium, high, urgent
+  default_category: "default"  # 默认分类
+  max_subtasks: 50  # 每个任务最大子任务数
+  max_attachments: 20  # 每个任务最大附件数
+  max_tags: 10  # 每个任务最大标签数
+
+# 分类配置
+category:
+  enable_default_categories: true  # 是否启用默认分类
+  max_categories: 100  # 最大分类数量
+  allow_custom_colors: true  # 是否允许自定义颜色
+
+# 提醒配置
+reminder:
+  enabled: true  # 是否启用提醒功能
+  check_interval: 60  # 检查间隔（秒）
+  advance_reminders:
+    - 30  # 提前30分钟提醒
+    - 60  # 提前1小时提醒
+    - 1440  # 提前1天提醒
+  overdue_check_interval: 300  # 过期检查间隔（秒）
+
+# 通知配置
+notification:
+  enabled: true  # 是否启用通知
+  max_pending: 100  # 最大待发送通知数
+  retention_days: 30  # 已发送通知保留天数
+
+# UI配置
+ui:
+  show_completed_tasks: true  # 是否显示已完成任务
+  show_cancelled_tasks: true  # 是否显示已取消任务
+  default_view: "list"  # 默认视图: list, board, calendar
+  sort_by: "created_at"  # 默认排序字段
+  sort_order: "desc"  # 排序顺序: asc, desc
+
+# 导出配置
+export:
+  formats:
+    - json
+    - csv
+    - markdown
+  include_completed: true
+  include_cancelled: false
+
+# 统计配置
+statistics:
+  enable_auto_stats: true  # 是否启用自动统计
+  stats_interval: 3600  # 统计间隔（秒）

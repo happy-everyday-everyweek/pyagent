@@ -1,0 +1,250 @@
+[project]
+name = "openakita"
+version = "1.27.2"
+description = "全能自进化AI Agent - 基于Ralph Wiggum模式，永不放弃"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11"
+authors = [
+    { name = "OpenAkita", email = "zacon365@gmail.com" }
+]
+keywords = ["ai", "agent", "claude", "autonomous", "self-evolving"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    # Core LLM
+    "anthropic>=0.40.0",
+    "openai>=1.0.0",
+
+    # MCP (Model Context Protocol)
+    "mcp>=1.0.0",
+
+    # Web Search
+    "ddgs>=8.0.0",
+
+    # CLI and UI
+    "rich>=13.7.0",
+    "prompt-toolkit>=3.0.43",
+    "typer>=0.12.0",
+
+    # Async and HTTP
+    "httpx[socks]>=0.27.0",
+    "aiofiles>=24.1.0",
+    "nest-asyncio>=1.5.0",
+
+    # Database
+    "aiosqlite>=0.20.0",
+
+    # Data validation
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+
+    # Git operations
+    "gitpython>=3.1.40",
+
+    # YAML for config
+    "pyyaml>=6.0.1",
+
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.2.3",
+    "simplejson>=3.19.2",
+
+    # HTTP API (serve mode + Desktop Terminal)
+    "fastapi>=0.110.0",
+    "uvicorn>=0.27.0",
+
+    # IM Channels - Telegram (default)
+    "python-telegram-bot>=21.0",
+
+    # Browser automation (built-in)
+    "playwright>=1.40.0",
+    "browser-use>=0.11.8",
+    "langchain-openai>=1.0.0",
+
+    # Image processing
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+# 飞书 IM 通道
+feishu = [
+    "lark-oapi>=1.3.0",
+    "qrcode>=8.0",
+]
+
+# 钉钉 IM 通道 (Stream 模式)
+dingtalk = [
+    "dingtalk-stream>=0.24.0",
+]
+
+# 企业微信 IM 通道
+wework = [
+    "aiohttp>=3.9.0",
+    "pycryptodome>=3.19.0",
+]
+
+# 企业微信 WebSocket 长连接通道
+wework_ws = [
+    "websockets>=15.0.1",
+    "cryptography>=42.0.0",
+]
+
+# OneBot 协议通道 (NapCat/Lagrange 等)
+onebot = [
+    "websockets>=15.0.1",
+]
+
+# QQ 官方机器人
+qqbot = [
+    "qq-botpy>=1.1.5",
+    "pilk>=0.2.1",              # SILK 语音编解码（QQ 语音格式）
+]
+
+# Windows 桌面自动化
+windows = [
+    "mss>=9.0.0",
+    "pyautogui>=0.9.54",
+    "pywinauto>=0.6.8; platform_system == 'Windows'",
+    "pyperclip>=1.8.2",
+    "psutil>=5.9.0",
+]
+
+# 全部可选依赖（core + 所有 IM 通道 + 桌面自动化）
+all = [
+    # -- IM 通道 --
+    "lark-oapi>=1.3.0",
+    "dingtalk-stream>=0.24.0",
+    "aiohttp>=3.9.0",
+    "pycryptodome>=3.19.0",
+    "websockets>=15.0.1",
+    "cryptography>=42.0.0",
+    "qq-botpy>=1.1.5",
+    "pilk>=0.2.1",
+    # -- 桌面自动化 --
+    "mss>=9.0.0",
+    "pyautogui>=0.9.54",
+    "pywinauto>=0.6.8; platform_system == 'Windows'",
+    "pyperclip>=1.8.2",
+    "psutil>=5.9.0",
+]
+
+# 开发依赖
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.9",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+openakita = "openakita.main:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/openakita", "skills", "mcps", "identity", "VERSION", "pyproject.toml", "README.md", "LICENSE"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/openakita"]
+
+# 把仓库根目录的系统技能、外部技能、内置 MCP 配置一并打进 wheel，
+# 保证 `pip install openakita` 后可用。
+# skills/system → site-packages/openakita/builtin_skills/system/
+# skills/*      → site-packages/openakita/builtin_skills/external/  (不含 system/)
+# mcps          → site-packages/openakita/builtin_mcps/
+[tool.hatch.build.targets.wheel.force-include]
+# Web frontend (built with: cd apps/setup-center && VITE_BUILD_TARGET=web npm run build:web)
+"apps/setup-center/dist-web" = "openakita/web"
+# User docs (built with: python scripts/build_docs.py)
+"docs-site/.vitepress/dist" = "openakita/docs_dist"
+"skills/system" = "openakita/builtin_skills/system"
+"mcps" = "openakita/builtin_mcps"
+"skills/xiaohongshu-creator" = "openakita/builtin_skills/external/xiaohongshu-creator"
+"skills/wechat-article" = "openakita/builtin_skills/external/wechat-article"
+"skills/chinese-writing" = "openakita/builtin_skills/external/chinese-writing"
+"skills/chinese-novelist" = "openakita/builtin_skills/external/chinese-novelist"
+"skills/douyin-tool" = "openakita/builtin_skills/external/douyin-tool"
+"skills/youtube-summarizer" = "openakita/builtin_skills/external/youtube-summarizer"
+"skills/bilibili-watcher" = "openakita/builtin_skills/external/bilibili-watcher"
+"skills/summarizer" = "openakita/builtin_skills/external/summarizer"
+"skills/obsidian-skills" = "openakita/builtin_skills/external/obsidian-skills"
+"skills/knowledge-capture" = "openakita/builtin_skills/external/knowledge-capture"
+"skills/notebooklm" = "openakita/builtin_skills/external/notebooklm"
+"skills/pretty-mermaid" = "openakita/builtin_skills/external/pretty-mermaid"
+"skills/ppt-creator" = "openakita/builtin_skills/external/ppt-creator"
+"skills/baoyu-image-gen" = "openakita/builtin_skills/external/baoyu-image-gen"
+"skills/apify-scraper" = "openakita/builtin_skills/external/apify-scraper"
+"skills/translate-pdf" = "openakita/builtin_skills/external/translate-pdf"
+"skills/yuque-skills" = "openakita/builtin_skills/external/yuque-skills"
+"skills/todoist-task" = "openakita/builtin_skills/external/todoist-task"
+"skills/baoyu-infographic" = "openakita/builtin_skills/external/baoyu-infographic"
+"skills/baoyu-cover-image" = "openakita/builtin_skills/external/baoyu-cover-image"
+"skills/baoyu-comic" = "openakita/builtin_skills/external/baoyu-comic"
+"skills/baoyu-article-illustrator" = "openakita/builtin_skills/external/baoyu-article-illustrator"
+"skills/baoyu-slide-deck" = "openakita/builtin_skills/external/baoyu-slide-deck"
+"skills/baoyu-format-markdown" = "openakita/builtin_skills/external/baoyu-format-markdown"
+"skills/baoyu-url-to-markdown" = "openakita/builtin_skills/external/baoyu-url-to-markdown"
+"skills/superpowers-brainstorming" = "openakita/builtin_skills/external/superpowers-brainstorming"
+"skills/superpowers-tdd" = "openakita/builtin_skills/external/superpowers-tdd"
+"skills/superpowers-debugging" = "openakita/builtin_skills/external/superpowers-debugging"
+"skills/superpowers-verification" = "openakita/builtin_skills/external/superpowers-verification"
+"skills/superpowers-dispatching-agents" = "openakita/builtin_skills/external/superpowers-dispatching-agents"
+"skills/superpowers-executing-plans" = "openakita/builtin_skills/external/superpowers-executing-plans"
+"skills/superpowers-finishing-branch" = "openakita/builtin_skills/external/superpowers-finishing-branch"
+"skills/superpowers-receiving-review" = "openakita/builtin_skills/external/superpowers-receiving-review"
+"skills/superpowers-requesting-review" = "openakita/builtin_skills/external/superpowers-requesting-review"
+"skills/superpowers-subagent-dev" = "openakita/builtin_skills/external/superpowers-subagent-dev"
+"skills/superpowers-git-worktrees" = "openakita/builtin_skills/external/superpowers-git-worktrees"
+"skills/superpowers-workflow" = "openakita/builtin_skills/external/superpowers-workflow"
+"skills/superpowers-writing-plans" = "openakita/builtin_skills/external/superpowers-writing-plans"
+"skills/superpowers-writing-skills" = "openakita/builtin_skills/external/superpowers-writing-skills"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "C4", "SIM"]
+ignore = [
+    "E501",   # line length handled by formatter; keep ignored
+    "B904",   # require `raise ... from err` inside except (too noisy for now)
+    "N806",   # non-lowercase variable in function (constants in functions, third-party patterns)
+    "SIM102", # collapsible-if (style-only)
+    "SIM103", # needless-bool (style-only)
+    "SIM105", # prefer contextlib.suppress (style-only)
+]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+strict = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = false
+disallow_any_generics = false
+warn_return_any = false
+warn_unused_ignores = true
+no_implicit_optional = true
+ignore_errors = true
+disable_error_code = [
+    "attr-defined",
+    "call-arg",
+    "no-any-return",
+    "union-attr",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--ignore=tests/legacy/test_refactoring.py --ignore=tests/test_refactoring.py"

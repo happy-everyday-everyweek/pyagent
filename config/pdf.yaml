@@ -1,0 +1,20 @@
+pdf:
+  parser:
+    engine: "fitz"
+    extract_images: true
+    extract_tables: true
+    ocr_enabled: false
+
+  converter:
+    default_format: "markdown"
+    include_metadata: true
+    include_page_numbers: true
+
+  storage:
+    data_dir: "data/pdf"
+    cache_enabled: true
+    cache_duration: 3600
+
+  limits:
+    max_file_size_mb: 100
+    max_pages: 1000

@@ -1,0 +1,9 @@
+kimi:
+  enabled: false
+  bot_token: ""
+  api_base: "https://api.kimi.com"
+  timeout: 30
+  webhook:
+    enabled: false
+    port: 8080
+    path: "/kimi/webhook"

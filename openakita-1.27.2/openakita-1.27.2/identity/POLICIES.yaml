@@ -1,0 +1,92 @@
+# OpenAkita 安全策略配置 — 六层防护体系
+# L1: 四区路径  L2: 确认门  L3: 命令拦截  L4: 文件快照  L5: 自保护  L6: 沙箱
+
+security:
+  enabled: true
+
+  # === L1: 区域配置 ===
+  zones:
+    enabled: true
+    workspace:
+      - "${CWD}"
+    controlled: []
+    protected:
+      # Windows
+      - "C:/Program Files/**"
+      - "C:/Program Files (x86)/**"
+      - "C:/Windows/**"
+      - "C:/ProgramData/**"
+      # Linux
+      - "/usr/**"
+      - "/bin/**"
+      - "/sbin/**"
+      - "/lib/**"
+      - "/lib64/**"
+      - "/boot/**"
+      - "/etc/**"
+      - "/dev/**"
+      - "/proc/**"
+      - "/sys/**"
+      # macOS
+      - "/System/**"
+      - "/Library/**"
+    forbidden:
+      - "~/.ssh/**"
+      - "~/.gnupg/**"
+      - "C:/Windows/System32/config/**"
+      - "/etc/shadow"
+      - "/etc/gshadow"
+    default_zone: protected
+
+  # === L2: 确认门 ===
+  confirmation:
+    enabled: true
+    timeout_seconds: 60
+    default_on_timeout: deny
+    auto_confirm: false
+
+  # === L3: 命令模式拦截 ===
+  command_patterns:
+    enabled: true
+    custom_critical: []
+    custom_high: []
+    excluded_patterns: []
+    blocked_commands:
+      - reg
+      - regedit
+      - netsh
+      - schtasks
+      - sc
+      - wmic
+      - bcdedit
+      - shutdown
+      - taskkill
+
+  # === L4: 文件快照 ===
+  checkpoint:
+    enabled: true
+    max_snapshots: 50
+    snapshot_dir: "data/checkpoints"
+
+  # === L5: 自保护 ===
+  self_protection:
+    enabled: true
+    protected_dirs:
+      - "data/"
+      - "identity/"
+      - "logs/"
+      - "src/"
+    audit_to_file: true
+    audit_path: "data/audit/policy_decisions.jsonl"
+    death_switch_threshold: 3
+
+  # === L6: 沙箱 ===
+  sandbox:
+    enabled: true
+    backend: auto
+    sandbox_risk_levels:
+      - HIGH
+    exempt_commands: []
+    network:
+      allow_in_sandbox: false
+      allowed_domains: []

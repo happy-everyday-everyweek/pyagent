@@ -1,0 +1,48 @@
+# PyAgent Domain Configuration
+# v0.7.0 域系统与设备类型配置
+
+domain:
+  id: ""
+  name: "default"
+  auto_create: true
+  description: "Default domain for PyAgent devices"
+
+sync:
+  mode: "realtime"
+  interval: 5
+  auto_commit: true
+  commit_message_template: "Auto sync at {timestamp}"
+  max_pending_changes: 100
+
+devices:
+  max_devices: 10
+  auto_discover: true
+  heartbeat_interval: 30
+  offline_timeout: 120
+  capabilities_update_interval: 300
+
+conflict:
+  auto_resolve: true
+  default_strategy: "keep_remote"
+  max_conflicts: 1000
+  resolved_cleanup_days: 7
+
+storage:
+  data_dir: "data/domain"
+  sync_dir: "data/sync"
+  conflicts_dir: "data/conflicts"
+  backup_enabled: true
+  backup_interval: 3600
+  max_backups: 10
+
+branches:
+  default_branch: "main"
+  auto_branch_on_conflict: false
+  max_branches: 20
+  merge_strategy: "three_way"
+
+logging:
+  level: "INFO"
+  sync_events: true
+  conflict_events: true
+  device_events: true

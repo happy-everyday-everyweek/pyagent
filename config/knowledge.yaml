@@ -1,0 +1,19 @@
+# PyAgent 百科知识配置
+# 配置本地百科知识库
+
+knowledge:
+  data_dir: "data/knowledge"
+  zim_dir: "data/knowledge/zim"
+  
+  wikipedia:
+    enabled: true
+    default_option: "top-mini"
+    
+  kiwix:
+    enabled: true
+    library_url: "https://browse.library.kiwix.org/catalog/v2/entries"
+    
+  search:
+    default_limit: 10
+    max_limit: 100
+    min_query_length: 2

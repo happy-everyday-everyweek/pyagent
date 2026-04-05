@@ -1,0 +1,26 @@
+# PyAgent Todo系统配置
+
+todo:
+  data_dir: "data/todo"
+  auto_save: true
+  save_interval: 30
+
+phases:
+  max_phases: 20
+  auto_progress: true
+
+tasks:
+  max_tasks_per_phase: 50
+  auto_verification: true
+
+steps:
+  max_steps_per_task: 30
+
+verification:
+  enabled: true
+  output_dir: "data/todo/verifications"
+
+reflection:
+  enabled: true
+  min_rounds: 2
+  max_rounds: 5
