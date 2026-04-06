@@ -7,7 +7,59 @@
 
 ***
 
-## \[0.9.8] - 2026-04-05
+## [0.9.9] - 2026-04-06
+
+### 新增
+
+**编码类垂类智能体（移植自 Claw Code）**
+
+- 添加 `src/agents/coding.py` 编码智能体
+- 添加 `SystemPromptBuilder` 系统提示词构建器
+- 添加 `ProjectContext` 项目上下文发现
+- 支持多语言代码执行（Python、JavaScript、Shell）
+- 支持代码静态分析（语法检查、复杂度分析）
+- 支持代码审查（安全漏洞检测）
+- 支持 Git 操作（状态查询、提交、分支管理）
+- 支持 CLAW.md 指令文件发现和加载
+
+**手机端优化（移植自 OpenKiwi）**
+
+- 添加 `src/mobile/verification_code.py` 验证码提取器
+  - 支持多种验证码格式识别
+  - 支持有效期提取
+  - 支持来源识别
+- 添加 `src/mobile/notification_classifier.py` 通知分类器
+  - 支持通知重要性评估
+  - 支持子类别检测
+  - 支持关键词和实体提取
+- 添加 `src/mobile/auto_reply.py` 自动回复管理器
+  - 支持白名单管理
+  - 支持速率限制（8次/小时）
+  - 支持回复模板
+- 添加 `src/mobile/code_sandbox.py` 代码执行沙箱
+  - 支持危险命令检测
+  - 支持超时控制
+  - 支持输出截断
+- 添加 `src/mobile/gesture_executor.py` 手势执行器
+  - 支持低延迟手势执行（50-300ms）
+  - 支持节点缓存（TTL 500ms）
+  - 支持多种手势（点击、滑动、长按、缩放等）
+
+### 变更
+
+- 更新 `src/agents/__init__.py` 导出 CodingAgent
+- 更新 `src/mobile/__init__.py` 导出新模块
+- 更新 `AGENTS.md` 添加"发布前检查流程"章节
+  - 添加多端兼容性检查流程
+  - 添加自动测试运行规范
+  - 添加代码提交到develop分支的规范
+  - 添加构建测试流程
+  - 添加完整发布流程
+  - 添加快速检查脚本示例
+
+***
+
+## [0.9.8] - 2026-04-05
 
 ### 新增
 

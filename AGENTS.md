@@ -201,6 +201,11 @@ pyagent/
 2. `build.ps1` - 一键构建wheel/EXE/APK
 3. `.trae/memory/build-package.md` - 构建记忆文档
 
+**如果你需要进行发布**:
+1. 查看"发布前检查流程"章节 - 完整的发布检查清单
+2. `pre-release.ps1` - 快速发布前检查脚本
+3. 确保多端兼容性和测试通过
+
 **如果你想了解特定功能**:
 - Todo系统 → [docs/modules/todo-system.md](docs/modules/todo-system.md)
 - 记忆系统 → [docs/modules/memory-system.md](docs/modules/memory-system.md)
@@ -786,6 +791,234 @@ android/
    - 可将构建脚本集成到GitHub Actions
    - 配置自动版本号管理
    - 添加自动发布流程
+
+---
+
+## 发布前检查流程
+
+在每次发布新版本前，必须按照以下流程进行严格检查，确保代码质量和多端兼容性。
+
+### 1. 多端兼容性检查
+
+项目支持移动端、桌面端和Web端，使用统一的后端，但每个端有独立的前端实现。
+
+#### 平台架构
+
+| 平台 | 前端技术 | 后端 | 说明 |
+|------|----------|------|------|
+| **Web端** | Vue.js 3 | Python (FastAPI) | 浏览器访问，响应式设计 |
+| **桌面端** | Electron / Tauri | Python (FastAPI) | Windows/macOS/Linux客户端 |
+| **移动端** | Android原生 (Kotlin) | Python (FastAPI) | Android APK |
+
+#### 兼容性检查清单
+
+| 检查项 | 说明 | 验证方法 |
+|--------|------|----------|
+| **API兼容性** | 确保后端API变更不影响各端前端 | 运行API测试套件 |
+| **UI适配** | 检查各端UI是否正确显示 | 手动测试各端界面 |
+| **功能一致性** | 确保核心功能在各端表现一致 | 功能测试矩阵 |
+| **响应式设计** | Web端适配不同屏幕尺寸 | 浏览器响应式测试 |
+| **移动端适配** | 检查移动端特有功能（通知、权限等） | 真机测试 |
+
+#### 前端代码位置
+
+```
+frontend/           # Web端前端 (Vue.js)
+├── src/
+│   ├── views/      # 页面组件
+│   ├── components/ # 通用组件
+│   └── assets/     # 静态资源
+
+android/            # 移动端前端 (Android原生)
+├── app/src/main/
+│   ├── java/       # Kotlin代码
+│   └── res/        # 资源文件
+
+desktop/            # 桌面端前端 (可选)
+└── src/            # Electron/Tauri代码
+```
+
+### 2. 自动测试运行
+
+运行位于项目根目录下的自动测试脚本，确保所有测试通过。
+
+```powershell
+# 运行完整测试套件
+.\check.ps1
+
+# 或单独运行测试
+pytest
+
+# 生成覆盖率报告
+pytest --cov=src --cov-report=html
+```
+
+#### 测试失败处理
+
+- **无论问题是否由新增模块导致**，都需要进行修复
+- 修复后重新运行测试，确保全部通过
+- 记录修复过程，更新相关文档
+
+### 3. 代码提交规范
+
+#### 提交到develop分支
+
+所有开发工作必须提交到`develop`分支：
+
+```powershell
+# 确保在develop分支
+git checkout develop
+
+# 拉取最新代码
+git pull origin develop
+
+# 添加变更
+git add .
+
+# 提交（遵循Conventional Commits规范）
+git commit -m "feat(module): description of changes"
+
+# 推送到远程
+git push origin develop
+```
+
+#### 提交前检查
+
+- [ ] 代码通过所有测试
+- [ ] 代码通过代码风格检查（ruff）
+- [ ] 代码通过类型检查（mypy）
+- [ ] 代码通过安全检查（bandit）
+- [ ] 文档已更新（如有必要）
+- [ ] CHANGELOG.md已更新
+
+### 4. 构建测试
+
+运行构建脚本，确保各平台构建成功。
+
+```powershell
+# 完整构建
+.\build.ps1
+
+# 或分步构建
+.\build.ps1 -SkipExe -SkipApk    # 只构建wheel
+.\build.ps1 -SkipWheel -SkipApk  # 只构建EXE
+.\build.ps1 -SkipWheel -SkipExe  # 只构建APK
+```
+
+#### 构建验证清单
+
+| 构建产物 | 验证内容 | 状态 |
+|----------|----------|------|
+| **Wheel包** | 安装测试、导入测试 | [ ] |
+| **EXE** | 启动测试、功能测试 | [ ] |
+| **APK** | 安装测试、运行测试 | [ ] |
+
+### 5. 发布流程
+
+#### 发布前准备
+
+1. **版本号更新**
+   - 更新`pyproject.toml`中的版本号
+   - 更新`AGENTS.md`中的版本号
+   - 更新`CHANGELOG.md`添加新版本记录
+
+2. **文档更新**
+   - 更新README.md（如有必要）
+   - 更新API文档（如有变更）
+   - 更新模块文档（如有新功能）
+
+3. **创建发布分支**
+   ```powershell
+   git checkout -b release/v0.9.8 develop
+   ```
+
+#### 发布步骤
+
+```powershell
+# 1. 确保所有测试通过
+.\check.ps1
+
+# 2. 确保构建成功
+.\build.ps1
+
+# 3. 合并到main分支
+git checkout main
+git merge release/v0.9.8
+
+# 4. 创建标签
+git tag -a v0.9.8 -m "Release v0.9.8"
+
+# 5. 推送到远程
+git push origin main --tags
+
+# 6. 合并回develop分支
+git checkout develop
+git merge release/v0.9.8
+git push origin develop
+
+# 7. 删除发布分支
+git branch -d release/v0.9.8
+```
+
+#### 发布后验证
+
+- [ ] GitHub Release已创建
+- [ ] 构建产物已上传
+- [ ] 文档已更新
+- [ ] CHANGELOG已更新
+
+### 6. 快速检查脚本
+
+创建快速检查脚本 `pre-release.ps1`：
+
+```powershell
+# pre-release.ps1
+Write-Host "=== 发布前检查 ===" -ForegroundColor Cyan
+
+# 1. 运行测试
+Write-Host "`n[1/4] 运行测试..." -ForegroundColor Yellow
+.\check.ps1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "测试失败，请修复后再发布" -ForegroundColor Red
+    exit 1
+}
+
+# 2. 检查分支
+Write-Host "`n[2/4] 检查分支..." -ForegroundColor Yellow
+$branch = git branch --show-current
+if ($branch -ne "develop") {
+    Write-Host "警告: 当前不在develop分支，当前分支: $branch" -ForegroundColor Yellow
+}
+
+# 3. 检查未提交的更改
+Write-Host "`n[3/4] 检查未提交的更改..." -ForegroundColor Yellow
+$status = git status --porcelain
+if ($status) {
+    Write-Host "存在未提交的更改:" -ForegroundColor Yellow
+    Write-Host $status
+}
+
+# 4. 构建测试
+Write-Host "`n[4/4] 构建测试..." -ForegroundColor Yellow
+.\build.ps1 -SkipApk
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "构建失败，请修复后再发布" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "`n=== 检查完成 ===" -ForegroundColor Green
+Write-Host "可以进行发布流程" -ForegroundColor Green
+```
+
+### 7. 常见问题处理
+
+| 问题 | 解决方案 |
+|------|----------|
+| 测试失败 | 查看错误日志，修复相关代码 |
+| 构建失败 | 检查依赖、配置、环境变量 |
+| API不兼容 | 更新API版本，通知前端团队 |
+| 移动端适配问题 | 检查AndroidManifest.xml、权限配置 |
+| 文档缺失 | 补充相关文档，更新CHANGELOG |
 
 ---
 
