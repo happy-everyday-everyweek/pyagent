@@ -1,55 +1,28 @@
-# PyAgent v0.9.7
+# PyAgent v0.9.9 Release
 
 ## 新增功能
 
-### 知识库系统
-- 文档索引和倒排搜索
-- TF-IDF、BM25相关性计算
-- 多租户隔离支持
+### 编码智能体 (基于 Claw Code 架构)
+- SystemPromptBuilder - 系统提示词构建器
+- ProjectContext - 项目上下文发现
+- CodingAgent - 编码智能体
+- 支持文件操作、Git、代码分析
 
-### 工作流引擎
-- 触发器系统（定时、事件、Webhook、条件触发）
-- 动作系统（HTTP请求、脚本执行、通知发送）
-- 版本管理和执行监控
+### 手机端增强 (移植自 OpenKiwi)
+- VerificationCodeExtractor - 验证码提取器
+- NotificationClassifier - 通知分类器
+- AutoReplyManager - 自动回复管理器
+- CodeSandbox - 代码执行沙箱
+- GestureExecutor - 低延迟手势执行器
 
-### 本地模型支持
-- llama.cpp后端（GGUF格式模型）
-- MNN后端（移动端优化）
-- 资源监控
+## 构建产物
 
-### 角色卡系统
-- 角色定义和PNG元数据嵌入
-- QR码分享功能
+- Wheel: pyagent-0.9.7-py3-none-any.whl
+- EXE: PyAgent.exe
+- APK: app-debug.apk
 
-### 研究规划器
-- 任务分解和子任务验证
-- 结果聚合和迭代优化
+## 安装
 
-### 调试系统
-- 工具调用跟踪
-- 会话管理和日志分析
-
-### 成本追踪
-- 多租户统计
-- 预算限制和告警
-
-### 虚拟密钥管理
-- 速率限制和配额管理
-
-### 视图系统
-- 看板视图、表格视图
-- 过滤器和排序功能
-
-### 自我进化机制
-- 性能监控和优化建议
-- 学习反馈和持续改进
-
-## 下载
-
-- **Windows**: 下载 `PyAgent-v0.9.7-windows.zip`
-- **Android**: 下载 `PyAgent-v0.9.7-android.apk`
-- **Python包**: `pip install pyagent==0.9.7`
-
-## 更新日志
-
-详见 [CHANGELOG.md](CHANGELOG.md)
+```bash
+pip install pyagent-0.9.7-py3-none-any.whl
+```
