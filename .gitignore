@@ -106,6 +106,8 @@ opendataloader-pdf-*/
 project-nomad-*/
 twenty-*/
 openakita-*/
+OpenKiwi-*/
+claw-code-*/
 
 # Test directories (temporary)
 test_device/
