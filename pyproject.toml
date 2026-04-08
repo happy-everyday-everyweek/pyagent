@@ -1,6 +1,6 @@
 [project]
 name = "pyagent"
-version = "0.9.7"
+version = "0.9.10"
 description = "Python Agent - Intelligent Agent Framework"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -57,6 +57,12 @@ dev = [
     "pre-commit>=3.7.0",
     "twine>=5.0.0",
 ]
+desktop = [
+    "pyautogui>=0.9.54",
+    "pynput>=1.7.6",
+    "mss>=9.0.1",
+    "Pillow>=10.0.0",
+]
 browser = [
     "playwright>=1.40.0",
     "browser-use>=0.11.0",
@@ -81,7 +87,7 @@ knowledge = [
     "rank-bm25>=0.2.2",
 ]
 all = [
-    "pyagent[dev,browser,voice,pdf,local_model,knowledge]",
+    "pyagent[dev,desktop,browser,voice,pdf,local_model,knowledge]",
 ]
 
 [project.scripts]

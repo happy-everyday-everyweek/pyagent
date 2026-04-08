@@ -9,7 +9,7 @@
         </svg>
         <span class="logo-text">
           <span class="logo-name">PyAgent</span>
-          <span class="logo-version">v0.8.0</span>
+          <span class="logo-version">v0.9.9</span>
         </span>
       </div>
       <nav class="nav">
@@ -70,7 +70,7 @@
       <router-view />
     </main>
     <footer class="footer">
-      <span>PyAgent v0.8.0</span>
+      <span>PyAgent v0.9.9</span>
       <span class="divider">|</span>
       <span>AI原生智能体框架</span>
     </footer>

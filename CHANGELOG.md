@@ -7,6 +7,39 @@
 
 ***
 
+## [0.9.10] - 2026-04-08
+
+### 新增
+
+**桌面端功能完善**
+- 添加桌面端可选依赖组 `desktop` 到 [pyproject.toml](file:///workspace/pyproject.toml)
+- 包含 pyautogui、pynput、mss 和 Pillow 依赖
+- 支持完整的键盘、鼠标和屏幕操作功能
+
+**Android 应用完善**
+- 添加 [ProotManager.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/ProotManager.kt) - PRoot Linux 环境管理器
+- 添加 [PythonRuntime.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/PythonRuntime.kt) - Python 运行时管理
+- 添加 [WebViewManager.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/WebViewManager.kt) - WebView 管理
+- 添加 [BackendService.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/BackendService.kt) - 后台服务
+- 添加 [BootReceiver.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/BootReceiver.kt) - 开机启动接收器
+- 更新 [MainActivity.kt](file:///workspace/android/app/src/main/java/com/pyagent/app/MainActivity.kt) - 完整的 UI 和权限管理
+- 更新 [AndroidManifest.xml](file:///workspace/android/app/src/main/AndroidManifest.xml) - 添加必要权限和组件
+
+**构建系统**
+- 添加 [build.sh](file:///workspace/build.sh) - Linux 兼容的自动化构建脚本
+- 支持构建 wheel 包和 APK
+- 更新 GitHub Release 工作流 [release.yml](file:///workspace/.github/workflows/release.yml)
+- 新增 `build-wheel` 和 `build-apk` 并行任务
+
+**Web 端**
+- 更新前端版本号到 v0.9.9
+
+### 变更
+- 更新 `pyproject.toml` 的 optional-dependencies 配置
+- 更新 `all` 依赖组包含 desktop
+
+***
+
 ## [0.9.9] - 2026-04-06
 
 ### 新增
