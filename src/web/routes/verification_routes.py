@@ -11,7 +11,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from ..im import verification_manager
+from src.im.verification.manager import verification_manager
 
 logger = logging.getLogger(__name__)
 

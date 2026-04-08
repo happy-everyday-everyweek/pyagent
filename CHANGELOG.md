@@ -7,6 +7,38 @@
 
 ***
 
+## [1.0.0] - 2026-04-07
+
+### 新增
+
+**后端API完善**
+
+- 修复 `src/web/routes/verification_routes.py` 导入错误
+- 修复 `src/web/routes/slash_commands.py` 路由配置
+- 添加斜杠命令API端点（/api/slash/parse, /api/slash/execute, /api/slash/commands）
+- 完善FastAPI应用路由配置
+
+**前端应用测试**
+
+- 测试Vue前端应用正常加载
+- 验证前端页面内容正确
+
+**自动化测试**
+
+- 创建 `test_pyagent.py` 自动化测试脚本
+- 测试API健康检查
+- 测试任务管理API
+- 测试协作模式API
+- 测试前端页面加载
+- 尝试测试浏览器自动化功能
+
+### 变更
+
+- 更新测试脚本配置，适配正确的前端端口
+- 优化测试脚本错误处理
+
+***
+
 ## [0.9.9] - 2026-04-06
 
 ### 新增

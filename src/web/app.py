@@ -28,6 +28,9 @@ from src.web.routes.video_routes import router as video_router
 from src.web.routes.domain_routes import router as domain_router
 from src.web.routes.storage_routes import router as storage_router
 from src.web.routes.human_tasks_routes import router as human_tasks_router
+from src.web.routes.verification_routes import router as verification_router
+from src.web.routes.slash_commands import router as slash_commands_router
+from src.web.routes.settings_routes import router as settings_router
 
 logger = logging.getLogger(__name__)
 
@@ -274,6 +277,9 @@ app.include_router(video_router)
 app.include_router(domain_router)
 app.include_router(storage_router)
 app.include_router(human_tasks_router)
+app.include_router(verification_router)
+app.include_router(slash_commands_router)
+app.include_router(settings_router)
 
 from pathlib import Path
 init_hot_reload(Path(__file__).parent.parent.parent.parent)

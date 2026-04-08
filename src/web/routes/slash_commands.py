@@ -10,7 +10,17 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Optional
 
+from fastapi import APIRouter, Body
+from pydantic import BaseModel
+
 logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api/slash", tags=["slash"])
+
+
+class SlashCommandRequest(BaseModel):
+    """斜杠命令请求"""
+    input_text: str
 
 
 class SlashCommandType(Enum):
@@ -347,6 +357,60 @@ class SlashCommandProcessor:
             {"command": "/mate", "description": "切换Mate模式"},
             {"command": "/new-topic", "description": "新话题"},
         ]
+
+
+@router.post("/parse")
+async def parse_slash_command(request: SlashCommandRequest = Body(...)):
+    """
+    解析斜杠命令
+    
+    Args:
+        request: 包含输入文本的请求
+        
+    Returns:
+        dict: 解析结果
+    """
+    command = slash_command_processor.parse(request.input_text)
+    return {
+        "type": command.type.value,
+        "raw_input": command.raw_input,
+        "command": command.command,
+        "args": command.args,
+        "params": command.params
+    }
+
+
+@router.post("/execute")
+async def execute_slash_command(request: SlashCommandRequest = Body(...)):
+    """
+    执行斜杠命令
+    
+    Args:
+        request: 包含输入文本的请求
+        
+    Returns:
+        dict: 执行结果
+    """
+    command = slash_command_processor.parse(request.input_text)
+    result = slash_command_processor.execute(command)
+    return {
+        "success": result.success,
+        "message": result.message,
+        "action": result.action,
+        "data": result.data,
+        "redirect_url": result.redirect_url
+    }
+
+
+@router.get("/commands")
+async def get_supported_commands():
+    """
+    获取支持的命令列表
+    
+    Returns:
+        list: 命令列表
+    """
+    return slash_command_processor.get_supported_commands()
 
 
 slash_command_processor = SlashCommandProcessor()
