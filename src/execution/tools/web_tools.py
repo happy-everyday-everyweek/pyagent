@@ -73,7 +73,7 @@ class WebRequestTool(BaseTool):
                     method=method,
                     url=url,
                     headers=headers,
-                    json=body if body else None
+                    json=body or None
                 )
 
                 try:
@@ -94,7 +94,7 @@ class WebRequestTool(BaseTool):
         except httpx.TimeoutException:
             return ToolResult(success=False, error=f"请求超时（{timeout}秒）")
         except Exception as e:
-            return ToolResult(success=False, error=f"请求失败: {str(e)}")
+            return ToolResult(success=False, error=f"请求失败: {e!s}")
 
 
 class WebFetchTool(BaseTool):
@@ -158,4 +158,4 @@ class WebFetchTool(BaseTool):
                 )
 
         except Exception as e:
-            return ToolResult(success=False, error=f"抓取失败: {str(e)}")
+            return ToolResult(success=False, error=f"抓取失败: {e!s}")

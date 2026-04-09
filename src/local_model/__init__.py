@@ -5,9 +5,10 @@ import json
 import logging
 import subprocess
 from abc import ABC, abstractmethod
+from collections.abc import Generator
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any
 
 logger = logging.getLogger(__name__)
 

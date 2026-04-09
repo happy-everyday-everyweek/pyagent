@@ -79,12 +79,10 @@ class BaseIMAdapter(ABC):
     @abstractmethod
     async def connect(self) -> bool:
         """连接到IM平台"""
-        pass
 
     @abstractmethod
     async def disconnect(self) -> None:
         """断开连接"""
-        pass
 
     @abstractmethod
     async def send_message(
@@ -93,17 +91,14 @@ class BaseIMAdapter(ABC):
         reply: IMReply
     ) -> bool:
         """发送消息"""
-        pass
 
     @abstractmethod
     async def get_user_info(self, user_id: str) -> IMUser | None:
         """获取用户信息"""
-        pass
 
     @abstractmethod
     async def get_chat_info(self, chat_id: str) -> dict[str, Any] | None:
         """获取聊天信息"""
-        pass
 
     def register_message_handler(self, handler: Callable) -> None:
         """注册消息处理器"""

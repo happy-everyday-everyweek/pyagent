@@ -3,10 +3,11 @@ PyAgent 垂类智能体模块 - 基类
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 
 class AgentStatus(Enum):
@@ -122,13 +123,12 @@ class BaseVerticalAgent(ABC):
                     success=True,
                     data=result
                 )
-            else:
-                self._status = AgentStatus.IDLE
-                return AgentResponse(
-                    request_id=request.request_id,
-                    success=False,
-                    error=f"No handler for action: {request.action}"
-                )
+            self._status = AgentStatus.IDLE
+            return AgentResponse(
+                request_id=request.request_id,
+                success=False,
+                error=f"No handler for action: {request.action}"
+            )
         except Exception as e:
             self._status = AgentStatus.ERROR
             return AgentResponse(

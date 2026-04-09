@@ -3,9 +3,10 @@
 import asyncio
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, AsyncIterator
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -189,9 +190,7 @@ class MultilingualSupport:
         voices = self.LANGUAGE_VOICES.get(language, self.LANGUAGE_VOICES[VoiceLanguage.ENGLISH])
 
         for voice in voices:
-            if gender == "Female" and "Xiaoxiao" in voice or "Jenny" in voice or "Nanami" in voice or "SunHi" in voice:
-                return voice
-            elif gender == "Male" and ("Yunxi" in voice or "Guy" in voice or "Keita" in voice):
+            if (gender == "Female" and "Xiaoxiao" in voice) or "Jenny" in voice or "Nanami" in voice or "SunHi" in voice or (gender == "Male" and ("Yunxi" in voice or "Guy" in voice or "Keita" in voice)):
                 return voice
 
         return voices[0]

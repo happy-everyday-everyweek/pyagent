@@ -185,7 +185,7 @@ class WeChatAdapter(BaseIMAdapter):
                 receiver_id=chat_id,
                 msg_type=msg_type,
                 content=reply.content,
-                at_users=reply.at_users if reply.at_users else None,
+                at_users=reply.at_users or None,
             )
         else:
             media = reply.extra.get("media")

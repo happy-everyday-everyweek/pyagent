@@ -39,23 +39,22 @@ class CycleDetail:
             try:
                 if hasattr(obj, "to_dict"):
                     return obj.to_dict()
-                elif isinstance(obj, dict):
+                if isinstance(obj, dict):
                     return {
                         k: convert_to_serializable(v, depth + 1, seen)
                         for k, v in obj.items()
                         if isinstance(k, (str, int, float, bool))
                     }
-                elif isinstance(obj, (list, tuple)):
+                if isinstance(obj, (list, tuple)):
                     return [
                         convert_to_serializable(item, depth + 1, seen)
                         for item in obj
                         if not isinstance(item, (dict, list, tuple))
                         or isinstance(item, (str, int, float, bool, type(None)))
                     ]
-                elif isinstance(obj, (str, int, float, bool, type(None))):
+                if isinstance(obj, (str, int, float, bool, type(None))):
                     return obj
-                else:
-                    return str(obj)
+                return str(obj)
             finally:
                 seen.remove(obj_id)
 

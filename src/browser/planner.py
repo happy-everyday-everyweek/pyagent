@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -55,7 +55,7 @@ class PlanStep:
 
 class Plan(BaseModel):
     """执行计划"""
-    
+
     id: str = Field(default_factory=lambda: f"plan_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
     task: str
     goal: str | None = None
@@ -65,7 +65,7 @@ class Plan(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     metadata: dict[str, Any] = Field(default_factory=dict)
-    
+
     def add_step(
         self,
         description: str,
@@ -86,7 +86,7 @@ class Plan(BaseModel):
             步骤 ID
         """
         step_id = len(self.steps)
-        
+
         step = {
             "id": step_id,
             "description": description,
@@ -97,24 +97,24 @@ class Plan(BaseModel):
             "retry_count": 0,
             "max_retries": 3,
         }
-        
+
         self.steps.append(step)
         self.updated_at = datetime.now()
-        
+
         return step_id
-    
+
     def get_current_step(self) -> dict[str, Any] | None:
         """获取当前步骤"""
         if 0 <= self.current_step_index < len(self.steps):
             return self.steps[self.current_step_index]
         return None
-    
+
     def get_step(self, step_id: int) -> dict[str, Any] | None:
         """获取指定步骤"""
         if 0 <= step_id < len(self.steps):
             return self.steps[step_id]
         return None
-    
+
     def update_step_status(
         self,
         step_id: int,
@@ -137,29 +137,29 @@ class Plan(BaseModel):
         step = self.get_step(step_id)
         if step is None:
             return False
-        
+
         step["status"] = status.value
-        
+
         if outcome:
             step["actual_outcome"] = outcome
-        
+
         if error:
             step["error"] = error
-        
+
         if status == StepStatus.RUNNING:
             step["started_at"] = datetime.now().isoformat()
         elif status in [StepStatus.COMPLETED, StepStatus.FAILED, StepStatus.SKIPPED]:
             step["completed_at"] = datetime.now().isoformat()
-        
+
         self.updated_at = datetime.now()
-        
+
         return True
-    
+
     def advance_step(self) -> dict[str, Any] | None:
         """前进到下一步"""
         self.current_step_index += 1
         return self.get_current_step()
-    
+
     def get_progress(self) -> dict[str, Any]:
         """获取进度信息"""
         total = len(self.steps)
@@ -175,7 +175,7 @@ class Plan(BaseModel):
             1 for s in self.steps
             if s.get("status") == StepStatus.SKIPPED.value
         )
-        
+
         return {
             "total": total,
             "completed": completed,
@@ -185,7 +185,7 @@ class Plan(BaseModel):
             "current_step": self.current_step_index,
             "progress_percent": (completed / total * 100) if total > 0 else 0,
         }
-    
+
     def is_complete(self) -> bool:
         """检查计划是否完成"""
         return all(
@@ -195,32 +195,32 @@ class Plan(BaseModel):
             ]
             for s in self.steps
         )
-    
+
     def has_failed(self) -> bool:
         """检查是否有失败步骤"""
         return any(
             s.get("status") == StepStatus.FAILED.value
             for s in self.steps
         )
-    
+
     def get_next_executable_step(self) -> dict[str, Any] | None:
         """获取下一个可执行的步骤"""
         for step in self.steps:
             if step.get("status") != StepStatus.PENDING.value:
                 continue
-            
+
             dependencies = step.get("dependencies", [])
             all_deps_met = all(
                 self.steps[dep_id].get("status") == StepStatus.COMPLETED.value
                 for dep_id in dependencies
                 if 0 <= dep_id < len(self.steps)
             )
-            
+
             if all_deps_met:
                 return step
-        
+
         return None
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {
@@ -239,7 +239,7 @@ class Plan(BaseModel):
 
 class TaskPlanner:
     """任务规划器"""
-    
+
     def __init__(self, llm_client: Any | None = None):
         """
         初始化任务规划器
@@ -249,11 +249,11 @@ class TaskPlanner:
         """
         self._llm_client = llm_client
         self._plans: dict[str, Plan] = {}
-    
+
     def set_llm_client(self, client: Any) -> None:
         """设置 LLM 客户端"""
         self._llm_client = client
-    
+
     async def create_plan(
         self,
         task: str,
@@ -270,7 +270,7 @@ class TaskPlanner:
             Plan: 执行计划
         """
         plan = Plan(task=task)
-        
+
         if self._llm_client:
             try:
                 steps = await self._generate_steps_with_llm(task, context)
@@ -286,12 +286,12 @@ class TaskPlanner:
                 plan = self._create_default_plan(task)
         else:
             plan = self._create_default_plan(task)
-        
+
         self._plans[plan.id] = plan
         logger.info(f"Created plan {plan.id} with {len(plan.steps)} steps")
-        
+
         return plan
-    
+
     async def _generate_steps_with_llm(
         self,
         task: str,
@@ -322,44 +322,44 @@ Only return the JSON array, no other text."""
             model=self._llm_client.model,
             messages=[{"role": "user", "content": prompt}],
         )
-        
+
         content = response.choices[0].message.content or "[]"
-        
-        json_match = re.search(r'\[[\s\S]*\]', content)
+
+        json_match = re.search(r"\[[\s\S]*\]", content)
         if json_match:
             return json.loads(json_match.group())
-        
+
         return []
-    
+
     def _create_default_plan(self, task: str) -> Plan:
         """创建默认计划"""
         plan = Plan(task=task)
-        
+
         plan.add_step(
             description="Analyze the task and determine the first action",
             action="analyze",
             expected_outcome="Task understood, ready to proceed",
         )
-        
+
         plan.add_step(
             description="Execute the main task actions",
             expected_outcome="Task actions completed",
             dependencies=[0],
         )
-        
+
         plan.add_step(
             description="Verify and complete the task",
             action="done",
             expected_outcome="Task completed successfully",
             dependencies=[1],
         )
-        
+
         return plan
-    
+
     def get_plan(self, plan_id: str) -> Plan | None:
         """获取计划"""
         return self._plans.get(plan_id)
-    
+
     def update_plan(
         self,
         plan_id: str,
@@ -369,15 +369,15 @@ Only return the JSON array, no other text."""
         plan = self.get_plan(plan_id)
         if plan is None:
             return None
-        
+
         for key, value in updates.items():
             if hasattr(plan, key):
                 setattr(plan, key, value)
-        
+
         plan.updated_at = datetime.now()
-        
+
         return plan
-    
+
     async def replan(
         self,
         plan_id: str,
@@ -398,26 +398,26 @@ Only return the JSON array, no other text."""
         old_plan = self.get_plan(plan_id)
         if old_plan is None:
             return None
-        
+
         logger.info(f"Replanning {plan_id} due to: {reason}")
-        
+
         new_task = f"{old_plan.task} (Replanned: {reason})"
-        
+
         new_plan = await self.create_plan(new_task, context)
-        
+
         return new_plan
-    
+
     def list_plans(self) -> list[Plan]:
         """列出所有计划"""
         return list(self._plans.values())
-    
+
     def delete_plan(self, plan_id: str) -> bool:
         """删除计划"""
         if plan_id in self._plans:
             del self._plans[plan_id]
             return True
         return False
-    
+
     def clear_plans(self) -> None:
         """清除所有计划"""
         self._plans.clear()

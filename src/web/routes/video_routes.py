@@ -6,7 +6,7 @@ PyAgent Web服务 - 视频API路由
 
 import logging
 import uuid
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -47,7 +47,7 @@ class MediaFileResponse(BaseModel):
     project_id: str
     filename: str
     file_type: str
-    duration: Optional[float] = None
+    duration: float | None = None
 
 
 class AddTransitionRequest(BaseModel):
@@ -59,8 +59,8 @@ class AddTransitionRequest(BaseModel):
 
 
 class UpdateTransitionRequest(BaseModel):
-    transition_type: Optional[str] = None
-    duration: Optional[float] = None
+    transition_type: str | None = None
+    duration: float | None = None
 
 
 class DetachAudioRequest(BaseModel):
@@ -77,12 +77,12 @@ class SubtitleRequest(BaseModel):
     video_path: str
     language: str = "auto"
     auto_translate: bool = False
-    target_languages: Optional[list[str]] = None
+    target_languages: list[str] | None = None
 
 
 class EffectRecommendRequest(BaseModel):
     video_path: str
-    mood: Optional[str] = None
+    mood: str | None = None
 
 
 class RenderRequest(BaseModel):
@@ -97,10 +97,10 @@ class RenderRequest(BaseModel):
 @router.post("/create", response_model=ProjectResponse)
 async def create_project(request: CreateProjectRequest) -> ProjectResponse:
     from datetime import datetime
-    
+
     project_id = str(uuid.uuid4())
     now = datetime.now().isoformat()
-    
+
     project = {
         "id": project_id,
         "name": request.name,
@@ -112,11 +112,11 @@ async def create_project(request: CreateProjectRequest) -> ProjectResponse:
         "created_at": now,
         "updated_at": now
     }
-    
+
     _project_store[project_id] = project
-    
+
     logger.info(f"Created video project: {project_id} ({request.name})")
-    
+
     return ProjectResponse(**project)
 
 
@@ -124,7 +124,7 @@ async def create_project(request: CreateProjectRequest) -> ProjectResponse:
 async def get_project(project_id: str) -> ProjectResponse:
     if project_id not in _project_store:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     return ProjectResponse(**_project_store[project_id])
 
 
@@ -132,24 +132,24 @@ async def get_project(project_id: str) -> ProjectResponse:
 async def export_project(project_id: str, request: ExportRequest) -> dict[str, Any]:
     if project_id not in _project_store:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     if request.format not in ["mp4", "webm", "mov", "avi"]:
         raise HTTPException(status_code=400, detail="Invalid export format")
-    
+
     if request.quality not in ["low", "medium", "high", "ultra"]:
         raise HTTPException(status_code=400, detail="Invalid quality setting")
-    
+
     from datetime import datetime
-    
+
     project = _project_store[project_id]
     project["status"] = "exporting"
     project["updated_at"] = datetime.now().isoformat()
-    
+
     export_id = str(uuid.uuid4())
     output_path = f"/exports/{project_id}/{export_id}.{request.format}"
-    
+
     logger.info(f"Exporting project {project_id} to {request.format} ({request.quality})")
-    
+
     return {
         "success": True,
         "project_id": project_id,
@@ -165,11 +165,11 @@ async def export_project(project_id: str, request: ExportRequest) -> dict[str, A
 async def add_media(project_id: str) -> MediaFileResponse:
     if project_id not in _project_store:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     from datetime import datetime
-    
+
     media_id = str(uuid.uuid4())
-    
+
     media_file = {
         "id": media_id,
         "project_id": project_id,
@@ -177,13 +177,13 @@ async def add_media(project_id: str) -> MediaFileResponse:
         "file_type": "video",
         "duration": None
     }
-    
+
     project = _project_store[project_id]
     project["media_files"].append(media_file)
     project["updated_at"] = datetime.now().isoformat()
-    
+
     logger.info(f"Added media {media_id} to project {project_id}")
-    
+
     return MediaFileResponse(**media_file)
 
 
@@ -196,16 +196,16 @@ async def list_projects() -> list[ProjectResponse]:
 async def delete_project(project_id: str) -> dict[str, Any]:
     if project_id not in _project_store:
         raise HTTPException(status_code=404, detail="Project not found")
-    
+
     project = _project_store[project_id]
-    
+
     if project["status"] == "exporting":
         raise HTTPException(status_code=400, detail="Cannot delete project while exporting")
-    
+
     del _project_store[project_id]
-    
+
     logger.info(f"Deleted video project: {project_id}")
-    
+
     return {"success": True, "project_id": project_id}
 
 

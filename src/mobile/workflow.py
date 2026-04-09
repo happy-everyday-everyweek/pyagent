@@ -627,8 +627,7 @@ class WorkflowAutomation:
         if handler:
             if asyncio.iscoroutinefunction(handler):
                 return await handler(resolved_params, context)
-            else:
-                return handler(resolved_params, context)
+            return handler(resolved_params, context)
 
         logger.warning(f"No handler for action: {action}")
         return None
@@ -712,24 +711,23 @@ class WorkflowAutomation:
         timeout = params.get("timeout", 30)
 
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.request(
-                    method,
-                    url,
-                    headers=headers,
-                    json=body if isinstance(body, dict) else None,
-                    data=body if isinstance(body, str) else None,
-                    timeout=aiohttp.ClientTimeout(total=timeout),
-                ) as response:
-                    result = {
-                        "status": response.status,
-                        "headers": dict(response.headers),
-                    }
-                    try:
-                        result["body"] = await response.json()
-                    except Exception:
-                        result["body"] = await response.text()
-                    return result
+            async with aiohttp.ClientSession() as session, session.request(
+                method,
+                url,
+                headers=headers,
+                json=body if isinstance(body, dict) else None,
+                data=body if isinstance(body, str) else None,
+                timeout=aiohttp.ClientTimeout(total=timeout),
+            ) as response:
+                result = {
+                    "status": response.status,
+                    "headers": dict(response.headers),
+                }
+                try:
+                    result["body"] = await response.json()
+                except Exception:
+                    result["body"] = await response.text()
+                return result
 
         except Exception as e:
             logger.error(f"HTTP request failed: {e}")

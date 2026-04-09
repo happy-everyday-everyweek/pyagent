@@ -10,7 +10,7 @@ import io
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -32,7 +32,7 @@ class BoundingBox:
     y: float
     width: float
     height: float
-    
+
     def to_dict(self) -> dict[str, float]:
         return {
             "x": self.x,
@@ -40,10 +40,10 @@ class BoundingBox:
             "width": self.width,
             "height": self.height,
         }
-    
+
     def center(self) -> tuple[float, float]:
         return (self.x + self.width / 2, self.y + self.height / 2)
-    
+
     def contains(self, x: float, y: float) -> bool:
         return (
             self.x <= x <= self.x + self.width and
@@ -61,16 +61,16 @@ class ScreenshotResult(BaseModel):
     page_url: str | None = None
     page_title: str | None = None
     timestamp: float | None = None
-    
+
     def to_data_uri(self) -> str:
         """转换为 Data URI"""
         if self.base64:
             return f"data:image/{self.format};base64,{self.base64}"
-        elif self.data:
+        if self.data:
             b64 = base64.b64encode(self.data).decode("utf-8")
             return f"data:image/{self.format};base64,{b64}"
         return ""
-    
+
     def to_openai_format(self) -> dict[str, Any]:
         """转换为 OpenAI 格式"""
         return {
@@ -93,7 +93,7 @@ class VisionAnalysisResult(BaseModel):
 
 class VisionProcessor:
     """视觉处理器"""
-    
+
     def __init__(
         self,
         llm_client: Any | None = None,
@@ -114,11 +114,11 @@ class VisionProcessor:
         self._screenshot_quality = screenshot_quality
         self._max_width = max_width
         self._max_height = max_height
-    
+
     def set_llm_client(self, client: Any) -> None:
         """设置 LLM 客户端"""
         self._llm_client = client
-    
+
     async def capture_screenshot(
         self,
         page: Any,
@@ -141,14 +141,14 @@ class VisionProcessor:
             ScreenshotResult: 截图结果
         """
         import time
-        
+
         try:
             options = {
                 "type": "png",
                 "quality": self._screenshot_quality,
                 "full_page": full_page,
             }
-            
+
             if mode == VisionMode.ELEMENT and selector:
                 element = await page.query_selector(selector)
                 if element:
@@ -167,9 +167,9 @@ class VisionProcessor:
                 )
             else:
                 screenshot_bytes = await page.screenshot(**options)
-            
+
             viewport = page.viewport_size or {"width": 0, "height": 0}
-            
+
             return ScreenshotResult(
                 data=screenshot_bytes,
                 base64=base64.b64encode(screenshot_bytes).decode("utf-8"),
@@ -179,11 +179,11 @@ class VisionProcessor:
                 page_title=await page.title(),
                 timestamp=time.time(),
             )
-            
+
         except Exception as e:
             logger.error(f"Screenshot capture failed: {e}")
             return ScreenshotResult()
-    
+
     async def analyze_screenshot(
         self,
         screenshot: ScreenshotResult,
@@ -206,13 +206,13 @@ class VisionProcessor:
                 description="No LLM client configured",
                 confidence=0.0,
             )
-        
+
         if screenshot.base64 is None:
             return VisionAnalysisResult(
                 description="No screenshot data available",
                 confidence=0.0,
             )
-        
+
         default_prompt = """Analyze this web page screenshot and provide:
 1. A brief description of what you see
 2. List of interactive elements (buttons, links, inputs) with their approximate positions
@@ -222,10 +222,10 @@ class VisionProcessor:
 Format your response as JSON with keys: description, elements, text_content, suggested_actions"""
 
         analysis_prompt = prompt or default_prompt
-        
+
         if elements_of_interest:
             analysis_prompt += f"\n\nFocus on these element types: {', '.join(elements_of_interest)}"
-        
+
         try:
             response = await self._llm_client.chat.completions.create(
                 model=self._llm_client.model,
@@ -245,13 +245,13 @@ Format your response as JSON with keys: description, elements, text_content, sug
                 ],
                 max_tokens=1000,
             )
-            
+
             content = response.choices[0].message.content or ""
-            
+
             import json
             import re
-            
-            json_match = re.search(r'\{[\s\S]*\}', content)
+
+            json_match = re.search(r"\{[\s\S]*\}", content)
             if json_match:
                 try:
                     result_data = json.loads(json_match.group())
@@ -264,19 +264,19 @@ Format your response as JSON with keys: description, elements, text_content, sug
                     )
                 except json.JSONDecodeError:
                     pass
-            
+
             return VisionAnalysisResult(
                 description=content,
                 confidence=0.6,
             )
-            
+
         except Exception as e:
             logger.error(f"Screenshot analysis failed: {e}")
             return VisionAnalysisResult(
-                description=f"Analysis failed: {str(e)}",
+                description=f"Analysis failed: {e!s}",
                 confidence=0.0,
             )
-    
+
     async def find_element_coordinates(
         self,
         screenshot: ScreenshotResult,
@@ -300,10 +300,10 @@ Example: {{"x": 150, "y": 300}}
 If the element is not found, return {{"x": null, "y": null}}"""
 
         result = await self.analyze_screenshot(screenshot, prompt=prompt)
-        
+
         if result.click_coordinates:
             return result.click_coordinates
-        
+
         for element in result.elements:
             if element_description.lower() in element.get("description", "").lower():
                 bounds = element.get("bounds", {})
@@ -311,9 +311,9 @@ If the element is not found, return {{"x": null, "y": null}}"""
                     x = bounds.get("x", 0) + bounds.get("width", 0) / 2
                     y = bounds.get("y", 0) + bounds.get("height", 0) / 2
                     return (x, y)
-        
+
         return None
-    
+
     def resize_for_analysis(
         self,
         screenshot: ScreenshotResult,
@@ -333,21 +333,21 @@ If the element is not found, return {{"x": null, "y": null}}"""
         """
         if screenshot.data is None:
             return screenshot
-        
+
         try:
             from PIL import Image
-            
+
             image = Image.open(io.BytesIO(screenshot.data))
-            
+
             width = target_width or self._max_width
             height = target_height or self._max_height
-            
+
             image.thumbnail((width, height), Image.Resampling.LANCZOS)
-            
+
             output = io.BytesIO()
             image.save(output, format="PNG", quality=self._screenshot_quality)
             resized_data = output.getvalue()
-            
+
             return ScreenshotResult(
                 data=resized_data,
                 base64=base64.b64encode(resized_data).decode("utf-8"),
@@ -358,7 +358,7 @@ If the element is not found, return {{"x": null, "y": null}}"""
                 page_title=screenshot.page_title,
                 timestamp=screenshot.timestamp,
             )
-            
+
         except ImportError:
             logger.warning("PIL not available, returning original screenshot")
             return screenshot

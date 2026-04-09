@@ -105,7 +105,7 @@ class TitleMiddleware(BaseMiddleware):
             )
             response = client.chat(prompt, model=self._model_name)
             title = response.strip().strip('"\'')[: self._max_chars]
-            return title if title else self._fallback_title(user_msg)
+            return title or self._fallback_title(user_msg)
         except Exception as e:
             logger.warning("Failed to generate title: %s", e)
             return self._fallback_title(user_msg)
@@ -122,7 +122,7 @@ class TitleMiddleware(BaseMiddleware):
         max_chars = min(self._max_chars, 50)
         if len(user_msg) > max_chars:
             return user_msg[:max_chars].rstrip() + "..."
-        return user_msg if user_msg else "New Conversation"
+        return user_msg or "New Conversation"
 
     def process(
         self,

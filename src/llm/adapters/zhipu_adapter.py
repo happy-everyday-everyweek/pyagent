@@ -11,7 +11,6 @@ from src.llm.adapters.base import (
     LLMError,
     LLMRequest,
     LLMResponse,
-    Message,
     StopReason,
     StreamChunk,
     ToolCall,

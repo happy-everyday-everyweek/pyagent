@@ -50,12 +50,11 @@ class SearchSubAgent(BaseSubAgent):
                         data=result.results,
                         steps=steps
                     )
-                else:
-                    return SubAgentResult(
-                        success=False,
-                        error=result.error,
-                        steps=steps
-                    )
+                return SubAgentResult(
+                    success=False,
+                    error=result.error,
+                    steps=steps
+                )
             except Exception as e:
                 return SubAgentResult(
                     success=False,
@@ -95,9 +94,9 @@ class SearchSubAgent(BaseSubAgent):
         summary_parts = [f"关于 '{query}' 的搜索结果：\n"]
 
         for i, result in enumerate(results[:5], 1):
-            if hasattr(result, 'title'):
+            if hasattr(result, "title"):
                 summary_parts.append(f"{i}. {result.title}")
-                if hasattr(result, 'snippet'):
+                if hasattr(result, "snippet"):
                     summary_parts.append(f"   {result.snippet[:100]}...")
             else:
                 summary_parts.append(f"{i}. {str(result)[:100]}")

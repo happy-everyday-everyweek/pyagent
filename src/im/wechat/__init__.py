@@ -19,16 +19,16 @@ from .types import (
 )
 
 __all__ = [
-    "WeChatAdapter",
-    "WeChatAPI",
-    "WeChatAPIError",
-    "WeChatMessage",
-    "WeChatMessageType",
-    "WeChatMessageSource",
-    "WeChatAccount",
-    "WeChatContact",
-    "WeChatGroup",
     "CDNMedia",
     "SendResult",
     "UploadResult",
+    "WeChatAPI",
+    "WeChatAPIError",
+    "WeChatAccount",
+    "WeChatAdapter",
+    "WeChatContact",
+    "WeChatGroup",
+    "WeChatMessage",
+    "WeChatMessageSource",
+    "WeChatMessageType",
 ]

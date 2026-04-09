@@ -8,7 +8,7 @@ from typing import Any
 
 from src.execution import Task, TaskStatus
 
-from .intent_types import Intent, IntentType
+from .intent_types import Intent
 
 
 class TaskCreator:

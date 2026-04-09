@@ -6,14 +6,12 @@ PyAgent Web服务 - 人类任务管理API路由
 
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from src.human_tasks import (
-    Category,
-    HumanTask,
     NotificationType,
     Priority,
     TaskStatus,
@@ -32,8 +30,8 @@ class CreateTaskRequest(BaseModel):
     title: str
     description: str = ""
     priority: str = "medium"
-    due_date: Optional[str] = None
-    reminder: Optional[str] = None
+    due_date: str | None = None
+    reminder: str | None = None
     category: str = "default"
     tags: list[str] = []
     subtasks: list[str] = []
@@ -42,14 +40,14 @@ class CreateTaskRequest(BaseModel):
 
 class UpdateTaskRequest(BaseModel):
     """更新任务请求"""
-    title: Optional[str] = None
-    description: Optional[str] = None
-    priority: Optional[str] = None
-    due_date: Optional[str] = None
-    reminder: Optional[str] = None
-    category: Optional[str] = None
-    tags: Optional[list[str]] = None
-    attachments: Optional[list[str]] = None
+    title: str | None = None
+    description: str | None = None
+    priority: str | None = None
+    due_date: str | None = None
+    reminder: str | None = None
+    category: str | None = None
+    tags: list[str] | None = None
+    attachments: list[str] | None = None
 
 
 class CreateCategoryRequest(BaseModel):
@@ -62,10 +60,10 @@ class CreateCategoryRequest(BaseModel):
 
 class UpdateCategoryRequest(BaseModel):
     """更新分类请求"""
-    name: Optional[str] = None
-    color: Optional[str] = None
-    icon: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    color: str | None = None
+    icon: str | None = None
+    description: str | None = None
 
 
 class AddSubtaskRequest(BaseModel):
@@ -76,34 +74,34 @@ class AddSubtaskRequest(BaseModel):
 class ScheduleReminderRequest(BaseModel):
     """安排提醒请求"""
     remind_at: str
-    custom_message: Optional[str] = None
+    custom_message: str | None = None
 
 
 class SendNotificationRequest(BaseModel):
     """发送通知请求"""
     notification_type: str
-    custom_message: Optional[str] = None
+    custom_message: str | None = None
 
 
 @router.post("/tasks")
 async def create_task(request: CreateTaskRequest) -> dict[str, Any]:
     """创建任务"""
     priority = Priority(request.priority)
-    
+
     due_date = None
     if request.due_date:
         try:
             due_date = datetime.fromisoformat(request.due_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid due_date format")
-    
+
     reminder = None
     if request.reminder:
         try:
             reminder = datetime.fromisoformat(request.reminder)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid reminder format")
-    
+
     task = task_manager.create_task(
         title=request.title,
         description=request.description,
@@ -115,26 +113,26 @@ async def create_task(request: CreateTaskRequest) -> dict[str, Any]:
         subtasks=request.subtasks,
         attachments=request.attachments
     )
-    
+
     return task.to_dict()
 
 
 @router.get("/tasks")
 async def list_tasks(
-    status: Optional[str] = None,
-    category: Optional[str] = None,
-    priority: Optional[str] = None
+    status: str | None = None,
+    category: str | None = None,
+    priority: str | None = None
 ) -> list[dict[str, Any]]:
     """列出任务"""
     task_status = TaskStatus(status) if status else None
     task_priority = Priority(priority) if priority else None
-    
+
     tasks = task_manager.list_tasks(
         status=task_status,
         category=category,
         priority=task_priority
     )
-    
+
     return [t.to_dict() for t in tasks]
 
 
@@ -151,21 +149,21 @@ async def get_task(task_id: str) -> dict[str, Any]:
 async def update_task(task_id: str, request: UpdateTaskRequest) -> dict[str, Any]:
     """更新任务"""
     priority = Priority(request.priority) if request.priority else None
-    
+
     due_date = None
     if request.due_date:
         try:
             due_date = datetime.fromisoformat(request.due_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid due_date format")
-    
+
     reminder = None
     if request.reminder:
         try:
             reminder = datetime.fromisoformat(request.reminder)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid reminder format")
-    
+
     task = task_manager.update_task(
         task_id=task_id,
         title=request.title,
@@ -177,10 +175,10 @@ async def update_task(task_id: str, request: UpdateTaskRequest) -> dict[str, Any
         tags=request.tags,
         attachments=request.attachments
     )
-    
+
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     return task.to_dict()
 
 
@@ -199,9 +197,9 @@ async def complete_task(task_id: str) -> dict[str, Any]:
     task = task_manager.complete_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     notification_service.send_notification(task, NotificationType.COMPLETED)
-    
+
     return task.to_dict()
 
 
@@ -211,10 +209,10 @@ async def cancel_task(task_id: str) -> dict[str, Any]:
     task = task_manager.cancel_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     notification_service.cancel_reminder(task_id)
     notification_service.send_notification(task, NotificationType.CANCELLED)
-    
+
     return task.to_dict()
 
 
@@ -339,7 +337,7 @@ async def get_tasks_by_category(category_id: str) -> list[dict[str, Any]]:
     category = category_manager.get_category(category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
-    
+
     tasks = task_manager.get_tasks_by_category(category.name)
     return [t.to_dict() for t in tasks]
 
@@ -350,18 +348,18 @@ async def schedule_reminder(task_id: str, request: ScheduleReminderRequest) -> d
     task = task_manager.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     try:
         remind_at = datetime.fromisoformat(request.remind_at)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid remind_at format")
-    
+
     notification = notification_service.schedule_reminder(
         task=task,
         remind_at=remind_at,
         custom_message=request.custom_message
     )
-    
+
     return notification.to_dict()
 
 
@@ -378,18 +376,18 @@ async def send_notification(task_id: str, request: SendNotificationRequest) -> d
     task = task_manager.get_task(task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     try:
         notification_type = NotificationType(request.notification_type)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid notification_type")
-    
+
     notification = notification_service.send_notification(
         task=task,
         notification_type=notification_type,
         custom_message=request.custom_message
     )
-    
+
     return notification.to_dict()
 
 

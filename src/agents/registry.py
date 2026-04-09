@@ -5,7 +5,7 @@ PyAgent 垂类智能体模块 - 智能体注册中心
 from dataclasses import dataclass
 from typing import Any
 
-from .base import BaseVerticalAgent, AgentCapability
+from .base import BaseVerticalAgent
 
 
 @dataclass

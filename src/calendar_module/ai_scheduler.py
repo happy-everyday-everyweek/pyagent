@@ -2,8 +2,8 @@ import logging
 from collections import defaultdict
 from datetime import datetime, timedelta
 
-from src.calendar.event import Event, EventStatus
-from src.calendar.manager import CalendarManager
+from .event import Event, EventStatus
+from .manager import CalendarManager
 
 logger = logging.getLogger(__name__)
 

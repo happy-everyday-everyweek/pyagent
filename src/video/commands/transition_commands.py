@@ -1,10 +1,8 @@
 import uuid
-from typing import Optional
 
-from .base import Command
 from ..manager import video_manager
-from ..types import TrackTransition, TransitionType, MediaType
-
+from ..types import MediaType, TrackTransition, TransitionType
+from .base import Command
 
 ADJACENCY_EPSILON = 0.05
 
@@ -31,8 +29,8 @@ class AddTransitionCommand(Command):
         self._to_element_id = to_element_id
         self._transition_type = transition_type
         self._duration = duration
-        self._transition_id: Optional[str] = None
-        self._existing_transition: Optional[TrackTransition] = None
+        self._transition_id: str | None = None
+        self._existing_transition: TrackTransition | None = None
 
     def execute(self) -> None:
         project = video_manager.get_project(self._project_id)
@@ -121,11 +119,11 @@ class AddTransitionCommand(Command):
         project.update_timestamp()
         video_manager._save_projects()
 
-    def get_transition_id(self) -> Optional[str]:
+    def get_transition_id(self) -> str | None:
         return self._transition_id
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return f"Add {self._transition_type.value} transition"
 
 
@@ -139,7 +137,7 @@ class RemoveTransitionCommand(Command):
         self._project_id = project_id
         self._track_id = track_id
         self._transition_id = transition_id
-        self._removed_transition: Optional[TrackTransition] = None
+        self._removed_transition: TrackTransition | None = None
 
     def execute(self) -> None:
         project = video_manager.get_project(self._project_id)
@@ -177,7 +175,7 @@ class RemoveTransitionCommand(Command):
         video_manager._save_projects()
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return f"Remove transition {self._transition_id}"
 
 
@@ -269,5 +267,5 @@ class UpdateTransitionCommand(Command):
         video_manager._save_projects()
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return f"Update transition {self._transition_id}"

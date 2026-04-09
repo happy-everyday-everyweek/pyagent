@@ -5,10 +5,9 @@ PyAgent Web服务 - IM验证管理API
 """
 
 import logging
-from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from ..im import verification_manager
@@ -23,21 +22,21 @@ class VerifiedUserResponse(BaseModel):
     user_id: str
     platform: str
     verified_at: str
-    nickname: Optional[str] = None
+    nickname: str | None = None
 
 
 class VerificationStatusResponse(BaseModel):
     """验证状态响应"""
     user_id: str
     is_verified: bool
-    verified_at: Optional[str] = None
-    platform: Optional[str] = None
+    verified_at: str | None = None
+    platform: str | None = None
 
 
 class RevokeRequest(BaseModel):
     """撤销验证请求"""
     user_id: str
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class RevokeResponse(BaseModel):
@@ -64,7 +63,7 @@ async def get_verification_status(user_id: str) -> VerificationStatusResponse:
         VerificationStatusResponse: 验证状态
     """
     verified_user = verification_manager.get_verified_user(user_id)
-    
+
     if verified_user:
         return VerificationStatusResponse(
             user_id=user_id,
@@ -72,7 +71,7 @@ async def get_verification_status(user_id: str) -> VerificationStatusResponse:
             verified_at=verified_user.verified_at.isoformat(),
             platform=verified_user.platform
         )
-    
+
     return VerificationStatusResponse(
         user_id=user_id,
         is_verified=False
@@ -81,7 +80,7 @@ async def get_verification_status(user_id: str) -> VerificationStatusResponse:
 
 @router.get("/list", response_model=VerificationListResponse)
 async def list_verified_users(
-    platform: Optional[str] = Query(None, description="平台筛选")
+    platform: str | None = Query(None, description="平台筛选")
 ) -> VerificationListResponse:
     """
     获取已验证用户列表
@@ -96,7 +95,7 @@ async def list_verified_users(
         users = verification_manager.get_verified_users_by_platform(platform)
     else:
         users = verification_manager.get_all_verified_users()
-    
+
     user_list = [
         VerifiedUserResponse(
             user_id=user_id,
@@ -106,7 +105,7 @@ async def list_verified_users(
         )
         for user_id, user in users.items()
     ]
-    
+
     return VerificationListResponse(
         total=len(user_list),
         users=user_list
@@ -125,10 +124,10 @@ async def revoke_verification(request: RevokeRequest) -> RevokeResponse:
         RevokeResponse: 撤销结果
     """
     success, message = verification_manager.revoke_verification(request.user_id)
-    
+
     if success:
         logger.info(f"Verification revoked for user {request.user_id}: {request.reason}")
-    
+
     return RevokeResponse(
         success=success,
         message=message
@@ -144,7 +143,7 @@ async def cleanup_expired_sessions() -> dict[str, Any]:
         dict: 清理结果
     """
     count = verification_manager.cleanup_expired_sessions()
-    
+
     return {
         "success": True,
         "cleaned_count": count,
@@ -161,12 +160,12 @@ async def get_verification_stats() -> dict[str, Any]:
         dict: 统计信息
     """
     all_users = verification_manager.get_all_verified_users()
-    
+
     platform_stats: dict[str, int] = {}
     for user in all_users.values():
         platform = user.platform
         platform_stats[platform] = platform_stats.get(platform, 0) + 1
-    
+
     return {
         "total_verified_users": len(all_users),
         "by_platform": platform_stats,

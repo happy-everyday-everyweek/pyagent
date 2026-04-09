@@ -11,14 +11,14 @@ from .router import IntentRouter, RouteResult, router
 from .task_creator import TaskCreator
 
 __all__ = [
-    "IntentType",
-    "Intent",
     "EntityInfo",
+    "Intent",
     "IntentContext",
     "IntentRecognizer",
-    "TaskCreator",
-    "ResultHandler",
     "IntentRouter",
+    "IntentType",
+    "ResultHandler",
     "RouteResult",
+    "TaskCreator",
     "router",
 ]

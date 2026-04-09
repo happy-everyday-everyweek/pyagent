@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from .base import BaseVerticalAgent, AgentCapability, AgentResponse
+from .base import AgentCapability, BaseVerticalAgent
 
 try:
     import yfinance as yf
@@ -65,10 +65,10 @@ class RateLimiter:
         async with self._lock:
             now = time.time()
             self.calls = [call for call in self.calls if now - call < self.period]
-            
+
             if len(self.calls) >= self.max_calls:
                 return False
-            
+
             self.calls.append(now)
             return True
 
@@ -123,11 +123,11 @@ class FinancialAgent(BaseVerticalAgent):
 
         self._watchlist: list[str] = []
         self._news_callbacks: list[Any] = []
-        
+
         self._cache: dict[str, CacheEntry] = {}
         self._cache_ttl = 300.0
         self._rate_limiter = RateLimiter(max_calls=100, period=60.0)
-        
+
         self._api_timeout = 10.0
         self._max_retries = 3
         self._retry_delay = 1.0
@@ -145,8 +145,7 @@ class FinancialAgent(BaseVerticalAgent):
             entry = self._cache[key]
             if time.time() - entry.timestamp < entry.ttl:
                 return entry.data
-            else:
-                del self._cache[key]
+            del self._cache[key]
         return None
 
     def _set_cache(self, key: str, data: dict[str, Any], ttl: float | None = None) -> None:
@@ -186,11 +185,11 @@ class FinancialAgent(BaseVerticalAgent):
 
     async def _fetch_with_retry(self, fetch_func: Any, *args: Any, **kwargs: Any) -> Any:
         last_exception = None
-        
+
         for attempt in range(self._max_retries):
             try:
                 await self._rate_limiter.wait_and_acquire()
-                
+
                 loop = asyncio.get_event_loop()
                 result = await asyncio.wait_for(
                     loop.run_in_executor(None, fetch_func, *args, **kwargs),
@@ -205,12 +204,12 @@ class FinancialAgent(BaseVerticalAgent):
                 last_exception = e
                 if attempt < self._max_retries - 1:
                     await asyncio.sleep(self._retry_delay * (attempt + 1))
-        
-        raise last_exception if last_exception else Exception("Unknown error")
+
+        raise last_exception or Exception("Unknown error")
 
     async def _get_stock_info(self, params: dict[str, Any]) -> dict[str, Any]:
         symbol = params.get("symbol", "").upper()
-        
+
         if not symbol:
             return self._get_fallback_stock_info("")
 
@@ -226,9 +225,9 @@ class FinancialAgent(BaseVerticalAgent):
             def fetch_stock() -> Any:
                 ticker = yf.Ticker(symbol)
                 return ticker.info
-            
+
             info = await self._fetch_with_retry(fetch_stock)
-            
+
             if not info:
                 return self._get_fallback_stock_info(symbol)
 
@@ -236,7 +235,7 @@ class FinancialAgent(BaseVerticalAgent):
             previous_close = info.get("previousClose", current_price)
             change = current_price - previous_close if previous_close else 0.0
             change_percent = (change / previous_close * 100) if previous_close else 0.0
-            
+
             result = {
                 "symbol": symbol,
                 "name": info.get("longName") or info.get("shortName", symbol),
@@ -246,11 +245,11 @@ class FinancialAgent(BaseVerticalAgent):
                 "volume": int(info.get("volume", 0) or info.get("regularMarketVolume", 0)),
                 "market_cap": info.get("marketCap"),
             }
-            
+
             self._set_cache(cache_key, result, ttl=300.0)
             return result
-            
-        except Exception as e:
+
+        except Exception:
             return self._get_fallback_stock_info(symbol)
 
     async def _get_market_summary(self, params: dict[str, Any]) -> dict[str, Any]:
@@ -268,22 +267,22 @@ class FinancialAgent(BaseVerticalAgent):
                 "NASDAQ": "^IXIC",
                 "DOW": "^DJI",
             }
-            
+
             indices_data = {}
-            
+
             for name, symbol in indices_symbols.items():
                 try:
                     def fetch_index(sym: str = symbol) -> Any:
                         ticker = yf.Ticker(sym)
                         return ticker.info
-                    
+
                     info = await self._fetch_with_retry(fetch_index)
-                    
+
                     current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0.0)
                     previous_close = info.get("previousClose", current_price)
                     change = current_price - previous_close if previous_close else 0.0
                     change_percent = (change / previous_close * 100) if previous_close else 0.0
-                    
+
                     indices_data[name] = {
                         "value": float(current_price),
                         "change": float(change_percent),
@@ -302,44 +301,43 @@ class FinancialAgent(BaseVerticalAgent):
                 "market_sentiment": self._calculate_market_sentiment(indices_data),
                 "timestamp": datetime.now().isoformat(),
             }
-            
+
             self._set_cache(cache_key, result, ttl=300.0)
             return result
-            
-        except Exception as e:
+
+        except Exception:
             return self._get_fallback_market_summary()
 
     def _calculate_market_sentiment(self, indices_data: dict[str, Any]) -> str:
         if not indices_data:
             return "unknown"
-        
+
         total_change = 0.0
         count = 0
-        
+
         for data in indices_data.values():
             if "change" in data and isinstance(data["change"], (int, float)):
                 total_change += data["change"]
                 count += 1
-        
+
         if count == 0:
             return "unknown"
-        
+
         avg_change = total_change / count
-        
+
         if avg_change > 1.0:
             return "very_bullish"
-        elif avg_change > 0.3:
+        if avg_change > 0.3:
             return "bullish"
-        elif avg_change > -0.3:
+        if avg_change > -0.3:
             return "neutral"
-        elif avg_change > -1.0:
+        if avg_change > -1.0:
             return "bearish"
-        else:
-            return "very_bearish"
+        return "very_bearish"
 
     async def _analyze_portfolio(self, params: dict[str, Any]) -> dict[str, Any]:
         holdings = params.get("holdings", [])
-        
+
         if not holdings:
             return {
                 "total_value": 0.0,
@@ -354,21 +352,21 @@ class FinancialAgent(BaseVerticalAgent):
         total_value = 0.0
         total_cost = 0.0
         analyzed_holdings = []
-        
+
         for h in holdings:
             symbol = h.get("symbol", "")
             shares = h.get("shares", 0)
             avg_cost = h.get("avg_cost", 0)
-            
+
             stock_info = await self._get_stock_info({"symbol": symbol})
             current_price = stock_info.get("price", avg_cost)
-            
+
             market_value = shares * current_price
             cost_basis = shares * avg_cost
-            
+
             total_value += market_value
             total_cost += cost_basis
-            
+
             analyzed_holdings.append({
                 "symbol": symbol,
                 "shares": shares,
@@ -381,7 +379,7 @@ class FinancialAgent(BaseVerticalAgent):
             })
 
         diversification_score = min(1.0, len(holdings) / 10.0)
-        
+
         if total_cost > 0:
             gain_percent = ((total_value - total_cost) / total_cost) * 100
             if gain_percent > 20:

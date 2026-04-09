@@ -1,11 +1,11 @@
-from typing import List
+
 from .base import Command
 
 
 class CommandManager:
     def __init__(self, max_history: int = 100):
-        self._undo_stack: List[Command] = []
-        self._redo_stack: List[Command] = []
+        self._undo_stack: list[Command] = []
+        self._redo_stack: list[Command] = []
         self._max_history = max_history
 
     def execute(self, command: Command) -> None:
@@ -42,11 +42,11 @@ class CommandManager:
         self._redo_stack.clear()
 
     @property
-    def undo_stack(self) -> List[Command]:
+    def undo_stack(self) -> list[Command]:
         return self._undo_stack.copy()
 
     @property
-    def redo_stack(self) -> List[Command]:
+    def redo_stack(self) -> list[Command]:
         return self._redo_stack.copy()
 
     @property

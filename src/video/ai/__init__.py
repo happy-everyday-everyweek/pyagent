@@ -1,9 +1,9 @@
+from .effects import EffectRecommendationService
 from .smart_edit import SmartEditService
 from .subtitle import SubtitleService
-from .effects import EffectRecommendationService
 
 __all__ = [
+    "EffectRecommendationService",
     "SmartEditService",
     "SubtitleService",
-    "EffectRecommendationService",
 ]

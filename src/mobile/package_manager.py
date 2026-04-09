@@ -132,9 +132,7 @@ class PackageManager:
         system = platform.system().lower()
 
         if system == "linux":
-            if "android" in platform.platform().lower():
-                self._is_android = True
-            elif os.path.exists("/system/bin") or os.path.exists("/vendor/bin"):
+            if "android" in platform.platform().lower() or os.path.exists("/system/bin") or os.path.exists("/vendor/bin"):
                 self._is_android = True
 
         try:
@@ -241,7 +239,7 @@ class PackageManager:
             packages = list(self._package_cache.values())
             if package_type == PackageType.SYSTEM:
                 return [p for p in packages if p.is_system]
-            elif package_type == PackageType.THIRD_PARTY:
+            if package_type == PackageType.THIRD_PARTY:
                 return [p for p in packages if not p.is_system]
             return packages
 
@@ -368,13 +366,12 @@ class PackageManager:
 
         if self._is_android:
             return self._get_package_info_android(package_name)
-        elif self._has_adb:
+        if self._has_adb:
             return self._get_package_info_adb(package_name)
-        else:
-            for pkg in self._list_packages_simulation():
-                if pkg.package_name == package_name:
-                    return pkg
-            return None
+        for pkg in self._list_packages_simulation():
+            if pkg.package_name == package_name:
+                return pkg
+        return None
 
     def _get_package_info_android(self, package_name: str) -> PackageInfo | None:
         try:
@@ -449,11 +446,10 @@ class PackageManager:
 
         if self._is_android:
             return self._launch_package_android(package_name)
-        elif self._has_adb:
+        if self._has_adb:
             return self._launch_package_adb(package_name)
-        else:
-            logger.info(f"[Simulation] Launched package: {package_name}")
-            return True
+        logger.info(f"[Simulation] Launched package: {package_name}")
+        return True
 
     def _launch_package_android(self, package_name: str) -> bool:
         try:
@@ -489,11 +485,10 @@ class PackageManager:
 
         if self._is_android:
             return self._force_stop_android(package_name)
-        elif self._has_adb:
+        if self._has_adb:
             return self._force_stop_adb(package_name)
-        else:
-            logger.info(f"[Simulation] Force stopped package: {package_name}")
-            return True
+        logger.info(f"[Simulation] Force stopped package: {package_name}")
+        return True
 
     def _force_stop_android(self, package_name: str) -> bool:
         try:
@@ -620,11 +615,10 @@ class PackageManager:
 
         if self._is_android:
             return self._clear_cache_android(package_name)
-        elif self._has_adb:
+        if self._has_adb:
             return self._clear_cache_adb(package_name)
-        else:
-            logger.info(f"[Simulation] Cleared cache for: {package_name}")
-            return True
+        logger.info(f"[Simulation] Cleared cache for: {package_name}")
+        return True
 
     def _clear_cache_android(self, package_name: str) -> bool:
         try:

@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
-import json
 
 
 @dataclass
@@ -57,7 +55,7 @@ class SmartEditService:
         self,
         video_path: str,
         style: str = "default",
-        target_duration: Optional[float] = None
+        target_duration: float | None = None
     ) -> list[EditSuggestion]:
         suggestions = []
         highlights = self.analyze_highlights(video_path)

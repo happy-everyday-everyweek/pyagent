@@ -221,7 +221,7 @@ class SelfLearningSystem:
     ) -> list[dict[str, str]]:
         expressions = []
 
-        sentences = re.split(r'[。！？\n]+', content)
+        sentences = re.split(r"[。！？\n]+", content)
         for sentence in sentences:
             sentence = sentence.strip()
             if not (5 <= len(sentence) <= 50):
@@ -244,7 +244,7 @@ class SelfLearningSystem:
         if not text:
             return False
 
-        if re.match(r'^[\d\s\W]+$', text):
+        if re.match(r"^[\d\s\W]+$", text):
             return False
 
         if len(text) < 3:
@@ -257,20 +257,18 @@ class SelfLearningSystem:
 
         if any(w in text_lower for w in ["?", "？", "吗", "什么"]):
             return "询问信息时"
-        elif any(w in text_lower for w in ["!", "！", "好", "厉害"]):
+        if any(w in text_lower for w in ["!", "！", "好", "厉害"]):
             return "表示赞叹时"
-        elif any(w in text_lower for w in ["哈哈", "呵呵", "嘿嘿"]):
+        if any(w in text_lower for w in ["哈哈", "呵呵", "嘿嘿"]):
             return "轻松聊天时"
-        elif any(w in text_lower for w in ["谢谢", "感谢", "辛苦"]):
+        if any(w in text_lower for w in ["谢谢", "感谢", "辛苦"]):
             return "表示感谢时"
-        else:
-            return "日常交流时"
+        return "日常交流时"
 
     def _extract_style(self, text: str) -> str:
         if len(text) <= 20:
             return f"使用 {text[:10]}"
-        else:
-            return f"使用 {text[:10]}..."
+        return f"使用 {text[:10]}..."
 
     def _find_or_create_expression(self, expr_data: dict[str, str]) -> str | None:
         situation = expr_data["situation"]
@@ -305,15 +303,15 @@ class SelfLearningSystem:
     def _extract_jargons(self, content: str) -> list[str]:
         jargons = set()
 
-        abbreviations = re.findall(r'\b[A-Z]{2,}\b', content)
+        abbreviations = re.findall(r"\b[A-Z]{2,}\b", content)
         jargons.update(abbreviations)
 
-        lower_abbr = re.findall(r'\b[a-z]{2,}\b', content)
+        lower_abbr = re.findall(r"\b[a-z]{2,}\b", content)
         for abbr in lower_abbr:
             if len(abbr) <= 5 and abbr not in self._common_words:
                 jargons.add(abbr)
 
-        chinese_words = re.findall(r'[\u4e00-\u9fff]{2,4}', content)
+        chinese_words = re.findall(r"[\u4e00-\u9fff]{2,4}", content)
         for word in chinese_words:
             if word not in self._common_words:
                 if self._is_potential_jargon(word, content):
@@ -325,7 +323,7 @@ class SelfLearningSystem:
         if word in self._common_words:
             return False
 
-        if re.match(r'^[\u4e00-\u9fff]{2}$', word):
+        if re.match(r"^[\u4e00-\u9fff]{2}$", word):
             common_two_chars = {"什么", "怎么", "这样", "那样", "这个", "那个"}
             if word in common_two_chars:
                 return False

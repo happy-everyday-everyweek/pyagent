@@ -2,10 +2,11 @@
 
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -223,9 +224,7 @@ class SelfEvolution:
         if not threshold:
             return
 
-        if "max" in threshold and value > threshold["max"]:
-            self.record_event("metric_threshold_exceeded", {"metric": name, "value": value}, "warning", threshold["suggestion"])
-        elif "min" in threshold and value < threshold["min"]:
+        if ("max" in threshold and value > threshold["max"]) or ("min" in threshold and value < threshold["min"]):
             self.record_event("metric_threshold_exceeded", {"metric": name, "value": value}, "warning", threshold["suggestion"])
 
     def get_metrics(self, name: str | None = None, limit: int = 100) -> dict[str, list[dict[str, Any]]]:

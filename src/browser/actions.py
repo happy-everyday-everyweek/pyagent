@@ -965,9 +965,9 @@ class ActionExecutor:
 
         if element_id:
             return self.page.locator(f'[data-element-id="{element_id}"]')
-        elif selector:
+        if selector:
             return self.page.locator(selector)
-        elif xpath:
+        if xpath:
             return self.page.locator(f"xpath={xpath}")
 
         return None

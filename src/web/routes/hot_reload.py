@@ -4,22 +4,22 @@ PyAgent Web服务 - 热更新API路由
 提供热更新功能，支持通过上传zip文件进行无缝更新。
 """
 
-import zipfile
-import shutil
 import importlib
-import sys
 import logging
-from pathlib import Path
+import shutil
+import sys
+import zipfile
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/hot-reload", tags=["hot-reload"])
 
-_base_path: Optional[Path] = None
+_base_path: Path | None = None
 _manager: Optional["HotReloadManager"] = None
 
 
@@ -37,7 +37,7 @@ class HotReloadManager:
         self.base_path = base_path
         self.backup_path = base_path / ".backup"
         self.temp_path = base_path / ".temp"
-        self.current_version: Optional[str] = None
+        self.current_version: str | None = None
         self.update_status: dict[str, Any] = {
             "updating": False,
             "progress": 0,
@@ -66,16 +66,16 @@ class HotReloadManager:
             return False, "不是有效的zip文件"
 
         try:
-            with zipfile.ZipFile(zip_path, 'r') as zf:
+            with zipfile.ZipFile(zip_path, "r") as zf:
                 namelist = zf.namelist()
-                has_src = any(n.startswith('src/') for n in namelist)
+                has_src = any(n.startswith("src/") for n in namelist)
                 if not has_src:
                     return False, "更新包必须包含src目录"
             return True, "验证通过"
         except Exception as e:
-            return False, f"验证失败: {str(e)}"
+            return False, f"验证失败: {e!s}"
 
-    async def backup_current(self) -> Optional[Path]:
+    async def backup_current(self) -> Path | None:
         """备份当前版本"""
         if not self.backup_path.exists():
             self.backup_path.mkdir(parents=True, exist_ok=True)
@@ -85,19 +85,19 @@ class HotReloadManager:
 
         try:
             backup_dir.mkdir(parents=True, exist_ok=True)
-            
+
             src_path = self.base_path / "src"
             if src_path.exists():
                 shutil.copytree(src_path, backup_dir / "src", dirs_exist_ok=True)
-            
+
             pyproject = self.base_path / "pyproject.toml"
             if pyproject.exists():
                 shutil.copy2(pyproject, backup_dir / "pyproject.toml")
-            
+
             config_path = self.base_path / "config"
             if config_path.exists():
                 shutil.copytree(config_path, backup_dir / "config", dirs_exist_ok=True)
-            
+
             logger.info(f"备份完成: {backup_dir}")
             return backup_dir
         except Exception as e:
@@ -107,22 +107,22 @@ class HotReloadManager:
     async def apply_update(self, zip_path: Path) -> tuple[bool, list[str]]:
         """应用更新"""
         updated_files = []
-        
+
         try:
-            with zipfile.ZipFile(zip_path, 'r') as zf:
+            with zipfile.ZipFile(zip_path, "r") as zf:
                 for member in zf.namelist():
-                    if member.endswith('/'):
+                    if member.endswith("/"):
                         continue
-                    
+
                     target_path = self.base_path / member
                     target_path.parent.mkdir(parents=True, exist_ok=True)
-                    
+
                     with zf.open(member) as source:
                         content = source.read()
                         target_path.write_bytes(content)
-                    
+
                     updated_files.append(member)
-            
+
             return True, updated_files
         except Exception as e:
             logger.error(f"应用更新失败: {e}")
@@ -131,13 +131,13 @@ class HotReloadManager:
     def reload_modules(self, updated_files: list[str]) -> list[str]:
         """热更新模块"""
         reloaded = []
-        
+
         for file_path in updated_files:
-            if not file_path.endswith('.py') or not file_path.startswith('src/'):
+            if not file_path.endswith(".py") or not file_path.startswith("src/"):
                 continue
-            
-            module_name = file_path.replace('src/', '').replace('.py', '').replace('/', '.')
-            
+
+            module_name = file_path.replace("src/", "").replace(".py", "").replace("/", ".")
+
             if module_name in sys.modules:
                 try:
                     importlib.reload(sys.modules[module_name])
@@ -145,7 +145,7 @@ class HotReloadManager:
                     logger.info(f"已重载模块: {module_name}")
                 except Exception as e:
                     logger.warning(f"重载模块失败 {module_name}: {e}")
-        
+
         self._load_version()
         return reloaded
 
@@ -166,11 +166,11 @@ class HotReloadManager:
                 if src_current.exists():
                     shutil.rmtree(src_current)
                 shutil.copytree(src_backup, src_current)
-            
+
             pyproject_backup = latest_backup / "pyproject.toml"
             if pyproject_backup.exists():
                 shutil.copy2(pyproject_backup, self.base_path / "pyproject.toml")
-            
+
             self._load_version()
             logger.info(f"已回滚到: {latest_backup}")
             return True
@@ -178,7 +178,7 @@ class HotReloadManager:
             logger.error(f"回滚失败: {e}")
             return False
 
-    def get_latest_backup(self) -> Optional[dict[str, Any]]:
+    def get_latest_backup(self) -> dict[str, Any] | None:
         """获取最新备份信息"""
         if not self.backup_path.exists():
             return None
@@ -206,7 +206,7 @@ async def upload_update(file: UploadFile = File(...)) -> dict[str, Any]:
     if _manager.update_status["updating"]:
         raise HTTPException(status_code=409, detail="正在更新中，请稍候")
 
-    if not file.filename or not file.filename.endswith('.zip'):
+    if not file.filename or not file.filename.endswith(".zip"):
         raise HTTPException(status_code=400, detail="只支持zip文件")
 
     _manager.update_status = {
@@ -284,7 +284,7 @@ async def upload_update(file: UploadFile = File(...)) -> dict[str, Any]:
             "last_update": datetime.now().isoformat(),
             "error": str(e)
         }
-        raise HTTPException(status_code=500, detail=f"更新失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"更新失败: {e!s}")
 
 
 @router.get("/status")
@@ -292,7 +292,7 @@ async def get_update_status() -> dict[str, Any]:
     """获取更新状态"""
     if _manager is None:
         return {"initialized": False}
-    
+
     return {
         "initialized": True,
         **_manager.update_status,
@@ -313,8 +313,7 @@ async def rollback_update() -> dict[str, Any]:
             "message": "回滚成功",
             "current_version": _manager.current_version
         }
-    else:
-        raise HTTPException(status_code=500, detail="回滚失败")
+    raise HTTPException(status_code=500, detail="回滚失败")
 
 
 @router.get("/version")
@@ -322,7 +321,7 @@ async def get_version() -> dict[str, str]:
     """获取当前版本信息"""
     if _manager is None:
         return {"version": "unknown"}
-    
+
     return {
         "version": _manager.current_version or "unknown"
     }
@@ -333,7 +332,7 @@ async def get_backup_info() -> dict[str, Any]:
     """获取备份信息"""
     if _manager is None:
         return {"initialized": False}
-    
+
     backup = _manager.get_latest_backup()
     return {
         "initialized": True,

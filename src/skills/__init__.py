@@ -8,14 +8,14 @@ from .parser import ParsedSkill, SkillMetadata, SkillParser
 from .registry import SkillInfo, SkillRegistry, skill_registry
 
 __all__ = [
-    "SkillLoader",
-    "skill_loader",
-    "SkillParser",
     "ParsedSkill",
-    "SkillMetadata",
-    "SkillRegistry",
-    "SkillInfo",
-    "skill_registry",
     "SkillExecutor",
+    "SkillInfo",
+    "SkillLoader",
+    "SkillMetadata",
+    "SkillParser",
+    "SkillRegistry",
     "skill_executor",
+    "skill_loader",
+    "skill_registry",
 ]

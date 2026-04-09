@@ -3,12 +3,13 @@
 import base64
 import json
 import logging
-import qrcode
 from dataclasses import dataclass, field
 from datetime import datetime
 from io import BytesIO
 from pathlib import Path
 from typing import Any
+
+import qrcode
 
 logger = logging.getLogger(__name__)
 

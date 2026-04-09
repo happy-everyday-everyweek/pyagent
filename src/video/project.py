@@ -4,12 +4,12 @@ PyAgent 视频编辑器模块 - 视频项目
 定义视频项目的数据结构和管理方法。
 """
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
-import uuid
 
-from .types import Track, MediaFile, ExportFormat, ExportQuality
+from .types import MediaFile, Track
 
 
 @dataclass
@@ -82,8 +82,7 @@ class VideoProject:
         max_duration = 0.0
         for track in self.tracks:
             track_duration = track.get_duration()
-            if track_duration > max_duration:
-                max_duration = track_duration
+            max_duration = max(max_duration, track_duration)
         self.duration = max_duration
         return self.duration
 

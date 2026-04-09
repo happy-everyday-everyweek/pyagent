@@ -1,8 +1,8 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
 import time
 import uuid
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -58,8 +58,8 @@ class RenderJob:
 
 class BaseRenderer(ABC):
     def __init__(self):
-        self.current_job: Optional[RenderJob] = None
-        self._progress_callback: Optional[Callable] = None
+        self.current_job: RenderJob | None = None
+        self._progress_callback: Callable | None = None
         self._cancelled: bool = False
 
     @abstractmethod

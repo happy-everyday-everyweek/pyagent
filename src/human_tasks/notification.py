@@ -7,11 +7,12 @@ PyAgent 人类任务管理系统 - 通知服务
 import asyncio
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any
 
 from .task import HumanTask
 
@@ -47,8 +48,8 @@ class Notification:
     type: NotificationType = NotificationType.REMINDER
     title: str = ""
     message: str = ""
-    scheduled_at: Optional[datetime] = None
-    sent_at: Optional[datetime] = None
+    scheduled_at: datetime | None = None
+    sent_at: datetime | None = None
     sent: bool = False
 
     def to_dict(self) -> dict[str, Any]:
@@ -75,16 +76,16 @@ class NotificationService:
     - 发送通知
     - 检查到期提醒
     """
-    
+
     def __init__(self, data_dir: str = "data/human_tasks"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.notifications: dict[str, Notification] = {}
         self._handlers: list[Callable[[Notification], None]] = []
-        self._check_task: Optional[asyncio.Task] = None
+        self._check_task: asyncio.Task | None = None
         self._running = False
-        
+
         self._load_data()
 
     def _get_storage_file(self) -> Path:
@@ -150,7 +151,7 @@ class NotificationService:
         self,
         task: HumanTask,
         remind_at: datetime,
-        custom_message: Optional[str] = None
+        custom_message: str | None = None
     ) -> Notification:
         """
         安排提醒
@@ -170,12 +171,12 @@ class NotificationService:
             message=custom_message or f"任务 '{task.title}' 将在指定时间到期",
             scheduled_at=remind_at
         )
-        
+
         self.notifications[notification.id] = notification
         self._save_data()
-        
+
         logger.info(f"Scheduled reminder for task {task.task_id} at {remind_at}")
-        
+
         return notification
 
     def cancel_reminder(self, task_id: str) -> bool:
@@ -192,21 +193,21 @@ class NotificationService:
             nid for nid, notif in self.notifications.items()
             if notif.task_id == task_id and not notif.sent
         ]
-        
+
         for nid in to_remove:
             del self.notifications[nid]
-        
+
         if to_remove:
             self._save_data()
             logger.info(f"Cancelled {len(to_remove)} reminders for task {task_id}")
-        
+
         return len(to_remove) > 0
 
     def send_notification(
         self,
         task: HumanTask,
         notification_type: NotificationType,
-        custom_message: Optional[str] = None
+        custom_message: str | None = None
     ) -> Notification:
         """
         发送通知
@@ -226,7 +227,7 @@ class NotificationService:
             NotificationType.COMPLETED: f"任务已完成: {task.title}",
             NotificationType.CANCELLED: f"任务已取消: {task.title}",
         }
-        
+
         message_map = {
             NotificationType.REMINDER: f"任务 '{task.title}' 需要您的关注",
             NotificationType.DUE_SOON: f"任务 '{task.title}' 即将到期，请及时处理",
@@ -234,7 +235,7 @@ class NotificationService:
             NotificationType.COMPLETED: f"任务 '{task.title}' 已完成",
             NotificationType.CANCELLED: f"任务 '{task.title}' 已取消",
         }
-        
+
         notification = Notification(
             task_id=task.task_id,
             type=notification_type,
@@ -244,11 +245,11 @@ class NotificationService:
             sent_at=datetime.now(),
             sent=True
         )
-        
+
         self._deliver_notification(notification)
-        
+
         logger.info(f"Sent {notification_type.value} notification for task {task.task_id}")
-        
+
         return notification
 
     def _deliver_notification(self, notification: Notification) -> None:
@@ -273,23 +274,23 @@ class NotificationService:
         """
         now = datetime.now()
         due_notifications = []
-        
+
         for notification in list(self.notifications.values()):
             if notification.sent:
                 continue
-            
+
             if notification.scheduled_at and notification.scheduled_at <= now:
                 notification.sent = True
                 notification.sent_at = now
-                
+
                 self._deliver_notification(notification)
                 due_notifications.append(notification)
-                
+
                 logger.info(f"Sent due reminder for task {notification.task_id}")
-        
+
         if due_notifications:
             self._save_data()
-        
+
         return due_notifications
 
     async def start_background_check(self, interval: int = 60) -> None:
@@ -301,34 +302,34 @@ class NotificationService:
         """
         if self._running:
             return
-        
+
         self._running = True
-        
+
         async def check_loop():
             while self._running:
                 try:
                     await self.check_due_reminders()
                 except Exception as e:
                     logger.error(f"Error in reminder check: {e}")
-                
+
                 await asyncio.sleep(interval)
-        
+
         self._check_task = asyncio.create_task(check_loop())
         logger.info(f"Started background reminder check with interval {interval}s")
 
     async def stop_background_check(self) -> None:
         """停止后台检查任务"""
         self._running = False
-        
+
         if self._check_task:
             self._check_task.cancel()
             try:
                 await self._check_task
             except asyncio.CancelledError:
                 pass
-            
+
             self._check_task = None
-        
+
         logger.info("Stopped background reminder check")
 
     def get_pending_notifications(self) -> list[Notification]:
@@ -352,7 +353,7 @@ class NotificationService:
         """
         return [n for n in self.notifications.values() if n.task_id == task_id]
 
-    def clear_sent_notifications(self, older_than: Optional[timedelta] = None) -> int:
+    def clear_sent_notifications(self, older_than: timedelta | None = None) -> int:
         """
         清理已发送的通知
         
@@ -363,23 +364,23 @@ class NotificationService:
             清理的通知数量
         """
         to_remove = []
-        
+
         for nid, notification in self.notifications.items():
             if not notification.sent:
                 continue
-            
+
             if older_than and notification.sent_at:
                 if datetime.now() - notification.sent_at < older_than:
                     continue
-            
+
             to_remove.append(nid)
-        
+
         for nid in to_remove:
             del self.notifications[nid]
-        
+
         if to_remove:
             self._save_data()
-        
+
         return len(to_remove)
 
 

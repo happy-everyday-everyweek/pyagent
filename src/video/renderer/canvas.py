@@ -1,7 +1,6 @@
-import numpy as np
-from typing import Optional
-from pathlib import Path
 import time
+
+import numpy as np
 
 from .base import BaseRenderer, RenderConfig, RenderJob
 
@@ -11,7 +10,7 @@ class CanvasRenderer(BaseRenderer):
         super().__init__()
         self.width = width
         self.height = height
-        self._frame_buffer: Optional[np.ndarray] = None
+        self._frame_buffer: np.ndarray | None = None
 
     def render(self, project, config: RenderConfig) -> RenderJob:
         job = self._create_job(project.project_id if project else "preview", config)
@@ -41,7 +40,7 @@ class CanvasRenderer(BaseRenderer):
     def render_frame(self, project, time_seconds: float) -> np.ndarray:
         return self._render_frame(time_seconds)
 
-    def render_preview(self, project, time_seconds: float, size: Optional[tuple[int, int]] = None) -> np.ndarray:
+    def render_preview(self, project, time_seconds: float, size: tuple[int, int] | None = None) -> np.ndarray:
         frame = self._render_frame(time_seconds)
         if size:
             frame = self._resize_frame(frame, size)
@@ -78,7 +77,7 @@ class CanvasRenderer(BaseRenderer):
                 frame = frame * (1 - opacity) + element_frame * opacity
         return frame[:, :, :3].astype(np.uint8)
 
-    def _render_element(self, element, time_seconds: float) -> Optional[np.ndarray]:
+    def _render_element(self, element, time_seconds: float) -> np.ndarray | None:
         return None
 
     def _apply_transition(self, frame1: np.ndarray, frame2: np.ndarray, transition, progress: float) -> np.ndarray:

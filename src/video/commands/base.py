@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class Command(ABC):
@@ -14,5 +13,5 @@ class Command(ABC):
         self.execute()
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return None

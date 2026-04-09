@@ -1,6 +1,6 @@
 [project]
 name = "pyagent"
-version = "0.9.10"
+version = "0.9.11"
 description = "Python Agent - Intelligent Agent Framework"
 readme = "README.md"
 requires-python = ">=3.10"

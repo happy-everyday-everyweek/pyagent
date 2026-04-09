@@ -5,14 +5,13 @@ PyAgent 视频编辑器模块 - 视频管理器
 """
 
 import json
-import os
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-import uuid
 
 from .project import VideoProject
-from .types import Track, TrackType, TimelineElement, MediaType, ExportFormat, ExportQuality
+from .types import ExportFormat, ExportQuality, MediaType, TimelineElement, Track, TrackType
 
 
 class VideoManager:
@@ -39,7 +38,7 @@ class VideoManager:
         projects_file = self._data_dir / "projects.json"
         if projects_file.exists():
             try:
-                with open(projects_file, "r", encoding="utf-8") as f:
+                with open(projects_file, encoding="utf-8") as f:
                     data = json.load(f)
                     for project_data in data.get("projects", []):
                         project = VideoProject.from_dict(project_data)

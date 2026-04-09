@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 
-from src.calendar.event import Reminder
+from .event import Reminder
 
 logger = logging.getLogger(__name__)
 

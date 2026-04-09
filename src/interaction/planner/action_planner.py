@@ -255,7 +255,7 @@ target_message_id为必填，表示触发消息的id
     ) -> ActionPlannerInfo:
         """解析单个动作"""
         action_type = json_obj.get("action", "no_reply")
-        action_reasoning = reasoning if reasoning else "未提供原因"
+        action_reasoning = reasoning or "未提供原因"
         action_data = {k: v for k, v in json_obj.items() if k != "action"}
 
         if action_type not in ["no_reply", "reply"] and action_type not in available_actions:

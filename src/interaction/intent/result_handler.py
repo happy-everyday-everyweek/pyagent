@@ -8,8 +8,6 @@ from typing import Any
 
 from src.execution import TaskResult
 
-from .intent_types import IntentType
-
 
 class ResultHandler:
     """结果处理器"""
@@ -37,8 +35,7 @@ class ResultHandler:
         """
         if result.success:
             return self._format_success_result(result, intent_type)
-        else:
-            return self._format_error_result(result, intent_type)
+        return self._format_error_result(result, intent_type)
 
     def _format_success_result(
         self,

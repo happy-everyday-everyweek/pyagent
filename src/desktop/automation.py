@@ -5,11 +5,11 @@ PyAgent 桌面自动化模块 - 自动化核心
 import asyncio
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Callable
+from typing import Any
 
-from .screen import ScreenCapture
-from .mouse import MouseController, MouseButton
 from .keyboard import KeyboardController
+from .mouse import MouseController
+from .screen import ScreenCapture
 
 
 @dataclass
@@ -132,7 +132,7 @@ class DesktopAutomation:
         except Exception as e:
             return OperationResult(
                 success=False,
-                message=f"执行失败: {str(e)}"
+                message=f"执行失败: {e!s}"
             )
 
     def _parse_ai_response(self, response: str) -> list[dict[str, Any]]:
@@ -153,20 +153,20 @@ class DesktopAutomation:
         if action == "click":
             x, y = step.get("x", 0), step.get("y", 0)
             return self.mouse.click(x, y)
-        elif action == "double_click":
+        if action == "double_click":
             x, y = step.get("x", 0), step.get("y", 0)
             return self.mouse.double_click(x, y)
-        elif action == "type":
+        if action == "type":
             text = step.get("text", "")
             return self.keyboard.type_text(text)
-        elif action == "hotkey":
+        if action == "hotkey":
             keys = step.get("keys", [])
             return self.keyboard.hotkey(*keys)
-        elif action == "scroll":
+        if action == "scroll":
             direction = step.get("direction", "down")
             amount = step.get("amount", 3)
             return self.mouse.scroll(direction, amount)
-        elif action == "wait":
+        if action == "wait":
             duration = step.get("duration", 1.0)
             await asyncio.sleep(duration)
             return True
@@ -192,7 +192,7 @@ class DesktopAutomation:
 
         try:
             response = await self._llm_client.chat(
-                "请验证操作是否成功执行。返回JSON: {\"success\": true/false, \"message\": \"描述\"}"
+                '请验证操作是否成功执行。返回JSON: {"success": true/false, "message": "描述"}'
             )
 
             import json

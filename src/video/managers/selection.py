@@ -1,19 +1,20 @@
-from typing import Set, List, Callable
+from collections.abc import Callable
+
 from ..types import TimelineElement, Track
 
 
 class SelectionManager:
     def __init__(self):
-        self._selected_elements: Set[str] = set()
-        self._selected_tracks: Set[str] = set()
-        self._listeners: Set[Callable[[], None]] = set()
+        self._selected_elements: set[str] = set()
+        self._selected_tracks: set[str] = set()
+        self._listeners: set[Callable[[], None]] = set()
 
     @property
-    def selected_elements(self) -> Set[str]:
+    def selected_elements(self) -> set[str]:
         return self._selected_elements.copy()
 
     @property
-    def selected_tracks(self) -> Set[str]:
+    def selected_tracks(self) -> set[str]:
         return self._selected_tracks.copy()
 
     def select_element(self, element_id: str, add: bool = False) -> None:
@@ -49,16 +50,16 @@ class SelectionManager:
         self._selected_tracks.clear()
         self._notify()
 
-    def get_selected_elements(self, project) -> List[TimelineElement]:
-        elements: List[TimelineElement] = []
+    def get_selected_elements(self, project) -> list[TimelineElement]:
+        elements: list[TimelineElement] = []
         for track in project.tracks:
             for element in track.elements:
                 if element.id in self._selected_elements:
                     elements.append(element)
         return elements
 
-    def get_selected_tracks(self, project) -> List[Track]:
-        tracks: List[Track] = []
+    def get_selected_tracks(self, project) -> list[Track]:
+        tracks: list[Track] = []
         for track in project.tracks:
             if track.id in self._selected_tracks:
                 tracks.append(track)

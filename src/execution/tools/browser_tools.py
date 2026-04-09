@@ -527,9 +527,8 @@ class BrowserWaitTool(BaseTool):
                     success=success,
                     output=f"等待元素{'成功' if success else '超时'}"
                 )
-            else:
-                await self._controller.page.wait_for_timeout(timeout)
-                return ToolResult(success=True, output=f"等待{timeout}毫秒完成")
+            await self._controller.page.wait_for_timeout(timeout)
+            return ToolResult(success=True, output=f"等待{timeout}毫秒完成")
         except Exception as e:
             logger.error(f"等待失败: {e}")
             return ToolResult(success=False, error=str(e))
@@ -588,7 +587,7 @@ class BrowserTabTool(BaseTool):
                     output=f"新标签页已打开: {tab.tab_id}",
                     data=tab.to_dict()
                 )
-            elif action == "close":
+            if action == "close":
                 if not tab_id:
                     return ToolResult(success=False, error="缺少tab_id参数")
                 success = await self._tab_manager.close_tab(tab_id)
@@ -596,7 +595,7 @@ class BrowserTabTool(BaseTool):
                     success=success,
                     output=f"标签页{'已关闭' if success else '关闭失败'}"
                 )
-            elif action == "switch":
+            if action == "switch":
                 if not tab_id:
                     return ToolResult(success=False, error="缺少tab_id参数")
                 success = await self._tab_manager.switch_tab(tab_id)
@@ -604,14 +603,14 @@ class BrowserTabTool(BaseTool):
                     success=success,
                     output=f"{'已切换' if success else '切换失败'}"
                 )
-            elif action == "list":
+            if action == "list":
                 tabs = await self._tab_manager.get_tabs()
                 return ToolResult(
                     success=True,
                     output=f"当前有{len(tabs)}个标签页",
                     data={"tabs": [t.to_dict() for t in tabs]}
                 )
-            elif action == "active":
+            if action == "active":
                 tab = await self._tab_manager.get_active_tab()
                 if tab:
                     return ToolResult(
@@ -620,8 +619,7 @@ class BrowserTabTool(BaseTool):
                         data=tab.to_dict()
                     )
                 return ToolResult(success=False, error="没有活动标签页")
-            else:
-                return ToolResult(success=False, error=f"未知操作: {action}")
+            return ToolResult(success=False, error=f"未知操作: {action}")
         except Exception as e:
             logger.error(f"标签页操作失败: {e}")
             return ToolResult(success=False, error=str(e))

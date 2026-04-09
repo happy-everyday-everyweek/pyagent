@@ -20,11 +20,11 @@ from .intent import (
 )
 
 __all__ = [
-    "IntentType",
-    "Intent",
     "EntityInfo",
+    "Intent",
     "IntentContext",
     "IntentRecognizer",
-    "TaskCreator",
+    "IntentType",
     "ResultHandler",
+    "TaskCreator",
 ]

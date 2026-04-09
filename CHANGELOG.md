@@ -7,6 +7,32 @@
 
 ***
 
+## [0.9.11] - 2026-04-09
+
+### 修复
+
+**关键模块命名冲突问题**
+- 重命名 `src/calendar` 为 `src/calendar_module`，解决与 Python 标准库 `calendar` 模块的命名冲突
+- 更新所有相关导入语句（测试文件、路由文件、模块内部引用）
+- 确保 calendar 功能正常工作，所有 14 个测试通过
+
+**文档编码问题**
+- 创建文档编码检测和修复脚本 [fix_document_encoding.py](file:///workspace/fix_document_encoding.py)
+- 检测并修复 15 个文档的编码问题，从 latin-1 转换为 UTF-8
+- 涵盖 docs/ 目录下的主要文档和模块文档
+
+**依赖和代码质量**
+- 安装所有必需依赖（包括开发依赖）
+- 运行 ruff 代码检查工具，自动修复 2526 个问题
+- 确保项目可以正常导入和运行
+
+### 变更
+- 更新版本号到 0.9.11
+- 更新 [src/__init__.py](file:///workspace/src/__init__.py) 中的版本号
+- 更新 [pyproject.toml](file:///workspace/pyproject.toml) 中的版本号
+
+***
+
 ## [0.9.10] - 2026-04-08
 
 ### 新增

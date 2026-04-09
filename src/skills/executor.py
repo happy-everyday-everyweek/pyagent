@@ -34,15 +34,14 @@ class SkillExecutor:
 
         if action == "run":
             return await self._run_skill(skill, params)
-        elif action == "info":
+        if action == "info":
             return self._get_skill_info(skill)
-        elif action == "script":
+        if action == "script":
             return await self._run_script(skill, params)
-        else:
-            return {
-                "success": False,
-                "error": f"Unknown action: {action}"
-            }
+        return {
+            "success": False,
+            "error": f"Unknown action: {action}"
+        }
 
     async def _run_skill(
         self,

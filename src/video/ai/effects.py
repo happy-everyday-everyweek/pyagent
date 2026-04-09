@@ -1,6 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
 import random
+from dataclasses import dataclass
 
 
 @dataclass
@@ -38,7 +37,7 @@ class EffectRecommendationService:
     def recommend_transitions(
         self,
         video_path: str,
-        scene_count: Optional[int] = None
+        scene_count: int | None = None
     ) -> list[EffectRecommendation]:
         style = self.analyze_video_style(video_path)
         recommendations = []
@@ -82,7 +81,7 @@ class EffectRecommendationService:
             ))
         return sorted(recommendations, key=lambda x: x.confidence, reverse=True)
 
-    def recommend_music(self, video_path: str, mood: Optional[str] = None) -> list[dict]:
+    def recommend_music(self, video_path: str, mood: str | None = None) -> list[dict]:
         style = self.analyze_video_style(video_path)
         detected_mood = mood or random.choice(["happy", "sad", "energetic", "calm", "dramatic"])
         music_library = {

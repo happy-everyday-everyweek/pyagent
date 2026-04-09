@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
-import json
 
 
 @dataclass
@@ -32,9 +30,9 @@ class SubtitleService:
     def generate_subtitles(
         self,
         video_path: str,
-        language: Optional[str] = None,
+        language: str | None = None,
         auto_translate: bool = False,
-        target_languages: Optional[list[str]] = None
+        target_languages: list[str] | None = None
     ) -> list[SubtitleSegment]:
         lang = language or self.language
         self._segments = []
@@ -86,10 +84,10 @@ class SubtitleService:
     def edit_subtitle(
         self,
         index: int,
-        text: Optional[str] = None,
-        start_time: Optional[float] = None,
-        end_time: Optional[float] = None
-    ) -> Optional[SubtitleSegment]:
+        text: str | None = None,
+        start_time: float | None = None,
+        end_time: float | None = None
+    ) -> SubtitleSegment | None:
         for i, seg in enumerate(self._segments):
             if seg.index == index:
                 new_text = text if text is not None else seg.text

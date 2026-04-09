@@ -95,7 +95,6 @@ class UnifiedTool(ABC):
         Returns:
             激活是否成功
         """
-        pass
 
     @abstractmethod
     async def execute(self, context: ToolContext, **kwargs) -> ToolResult:
@@ -109,7 +108,6 @@ class UnifiedTool(ABC):
         Returns:
             工具执行结果
         """
-        pass
 
     @abstractmethod
     async def dormant(self, context: ToolContext) -> bool:
@@ -122,7 +120,6 @@ class UnifiedTool(ABC):
         Returns:
             休眠是否成功
         """
-        pass
 
     def _validate_state_transition(
         self,
@@ -220,7 +217,7 @@ class UnifiedTool(ABC):
             self._last_error = str(e)
             return ToolResult(
                 success=False,
-                error=f"工具 {self.name} 执行异常: {str(e)}"
+                error=f"工具 {self.name} 执行异常: {e!s}"
             )
 
     async def sleep(self, context: ToolContext | None = None) -> bool:

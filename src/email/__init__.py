@@ -4,20 +4,20 @@ PyAgent 邮件模块
 提供邮件收发和管理功能。
 """
 
-from .client import Email, EmailClient, Attachment
+from .ai_assistant import ActionItem, AIEmailAssistant, EmailCategory, EmailUrgency
+from .client import Attachment, Email, EmailClient
 from .parser import EmailParser
 from .templates import EmailTemplate, TemplateManager
-from .ai_assistant import AIEmailAssistant, EmailCategory, EmailUrgency, ActionItem
 
 __all__ = [
-    "Email",
-    "EmailClient",
+    "AIEmailAssistant",
+    "ActionItem",
     "Attachment",
+    "Email",
+    "EmailCategory",
+    "EmailClient",
     "EmailParser",
     "EmailTemplate",
-    "TemplateManager",
-    "AIEmailAssistant",
-    "EmailCategory",
     "EmailUrgency",
-    "ActionItem",
+    "TemplateManager",
 ]

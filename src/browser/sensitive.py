@@ -9,7 +9,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -40,12 +40,12 @@ class SensitiveField:
 
 class SensitiveDataConfig(BaseModel):
     """敏感数据配置"""
-    
+
     enabled: bool = True
     placeholder: str = "[REDACTED]"
     log_redaction: bool = True
     fields: list[dict[str, Any]] = Field(default_factory=list)
-    
+
     def get_default_fields(self) -> list[SensitiveField]:
         """获取默认敏感字段"""
         return [
@@ -66,7 +66,7 @@ class SensitiveDataConfig(BaseModel):
 
 class SensitiveDataHandler:
     """敏感数据处理器"""
-    
+
     def __init__(
         self,
         config: SensitiveDataConfig | None = None,
@@ -83,9 +83,9 @@ class SensitiveDataHandler:
         self._secure_storage = secure_storage
         self._sensitive_values: dict[str, str] = {}
         self._field_patterns: dict[str, re.Pattern] = {}
-        
+
         self._init_patterns()
-    
+
     def _init_patterns(self) -> None:
         """初始化正则表达式模式"""
         patterns = {
@@ -95,13 +95,13 @@ class SensitiveDataHandler:
             "ssn": r"\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b",
             "api_key": r"\b[a-zA-Z0-9]{32,}\b",
         }
-        
+
         for name, pattern in patterns.items():
             try:
                 self._field_patterns[name] = re.compile(pattern)
             except re.error:
                 logger.warning(f"Invalid pattern for {name}")
-    
+
     def register_sensitive_field(
         self,
         field_name: str,
@@ -121,15 +121,15 @@ class SensitiveDataHandler:
             data_type=data_type,
             placeholder=placeholder or self.config.placeholder,
         )
-        
+
         self.config.fields.append({
             "name": field.name,
             "data_type": field.data_type.value,
             "placeholder": field.placeholder,
         })
-        
+
         logger.debug(f"Registered sensitive field: {field_name}")
-    
+
     def store_sensitive_value(
         self,
         key: str,
@@ -143,13 +143,13 @@ class SensitiveDataHandler:
             value: 敏感值
         """
         self._sensitive_values[key] = value
-        
+
         if self._secure_storage:
             try:
                 self._secure_storage.set(key, value)
             except Exception as e:
                 logger.error(f"Failed to store sensitive value: {e}")
-    
+
     def get_sensitive_value(
         self,
         key: str,
@@ -165,15 +165,15 @@ class SensitiveDataHandler:
         """
         if key in self._sensitive_values:
             return self._sensitive_values[key]
-        
+
         if self._secure_storage:
             try:
                 return self._secure_storage.get(key)
             except Exception as e:
                 logger.error(f"Failed to get sensitive value: {e}")
-        
+
         return None
-    
+
     def redact_value(
         self,
         key: str,
@@ -191,22 +191,22 @@ class SensitiveDataHandler:
         """
         if not self.config.enabled:
             return value
-        
+
         if not isinstance(value, str):
             return value
-        
+
         key_lower = key.lower()
-        
+
         for field_config in self.config.fields:
             if field_config["name"] == key_lower:
                 return field_config["placeholder"]
-        
+
         for field_config in self.config.get_default_fields():
             if field_config.name == key_lower:
                 return field_config.placeholder
-        
+
         return value
-    
+
     def redact_dict(
         self,
         data: dict[str, Any],
@@ -222,9 +222,9 @@ class SensitiveDataHandler:
         """
         if not self.config.enabled:
             return data
-        
+
         result = {}
-        
+
         for key, value in data.items():
             if isinstance(value, dict):
                 result[key] = self.redact_dict(value)
@@ -236,9 +236,9 @@ class SensitiveDataHandler:
                 ]
             else:
                 result[key] = self.redact_value(key, value)
-        
+
         return result
-    
+
     def redact_string(
         self,
         text: str,
@@ -254,19 +254,19 @@ class SensitiveDataHandler:
         """
         if not self.config.enabled or not self.config.log_redaction:
             return text
-        
+
         result = text
-        
+
         for pattern_name, pattern in self._field_patterns.items():
             placeholder = f"[{pattern_name.upper()}]"
             result = pattern.sub(placeholder, result)
-        
+
         for key, value in self._sensitive_values.items():
             if value and len(value) > 3:
                 result = result.replace(value, f"[{key.upper()}]")
-        
+
         return result
-    
+
     def create_safe_log_message(
         self,
         message: str,
@@ -283,13 +283,13 @@ class SensitiveDataHandler:
             安全的日志消息
         """
         safe_message = self.redact_string(message)
-        
+
         if kwargs:
             safe_kwargs = self.redact_dict(kwargs)
             return f"{safe_message} | {safe_kwargs}"
-        
+
         return safe_message
-    
+
     def inject_sensitive_value(
         self,
         action_params: dict[str, Any],
@@ -307,9 +307,9 @@ class SensitiveDataHandler:
         """
         if not sensitive_keys:
             return action_params
-        
+
         result = action_params.copy()
-        
+
         for param_name, storage_key in sensitive_keys.items():
             if param_name in result:
                 placeholder = result[param_name]
@@ -317,14 +317,14 @@ class SensitiveDataHandler:
                     actual_value = self.get_sensitive_value(storage_key)
                     if actual_value:
                         result[param_name] = actual_value
-        
+
         return result
-    
+
     def clear_sensitive_values(self) -> None:
         """清除所有敏感值"""
         self._sensitive_values.clear()
         logger.info("Sensitive values cleared")
-    
+
     def get_statistics(self) -> dict[str, Any]:
         """获取统计信息"""
         return {
@@ -337,15 +337,15 @@ class SensitiveDataHandler:
 
 class SensitiveLogFilter(logging.Filter):
     """敏感日志过滤器"""
-    
+
     def __init__(self, handler: SensitiveDataHandler):
         super().__init__()
         self.handler = handler
-    
+
     def filter(self, record: logging.LogRecord) -> bool:
         if hasattr(record, "msg") and isinstance(record.msg, str):
             record.msg = self.handler.redact_string(record.msg)
-        
+
         if hasattr(record, "args") and record.args:
             if isinstance(record.args, dict):
                 record.args = self.handler.redact_dict(record.args)
@@ -354,5 +354,5 @@ class SensitiveLogFilter(logging.Filter):
                     self.handler.redact_dict(arg) if isinstance(arg, dict) else arg
                     for arg in record.args
                 )
-        
+
         return True

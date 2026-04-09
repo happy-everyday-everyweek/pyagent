@@ -7,7 +7,7 @@ PyAgent 执行模块 - 任务定义
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class TaskStatus(Enum):
@@ -57,16 +57,16 @@ class Task:
     context: dict[str, Any] = field(default_factory=dict)
     status: TaskStatus = TaskStatus.PENDING
     state: TaskState = TaskState.ACTIVE
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    result: Any | None = None
+    error: str | None = None
     priority: int = 0
     tags: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     progress: float = 0.0
     retry_count: int = 0
     max_retries: int = 5
-    waiting_type: Optional[WaitingType] = None
-    waiting_message: Optional[str] = None
+    waiting_type: WaitingType | None = None
+    waiting_message: str | None = None
     _state_change_callbacks: list = field(default_factory=list, repr=False)
 
     def is_pending(self) -> bool:
@@ -160,24 +160,23 @@ class Task:
         """获取显示状态文本"""
         if self.status == TaskStatus.COMPLETED:
             return "执行｜完成"
-        elif self.status == TaskStatus.FAILED:
+        if self.status == TaskStatus.FAILED:
             return "执行｜失败"
-        elif self.state == TaskState.PAUSED:
+        if self.state == TaskState.PAUSED:
             return "执行｜已暂停"
-        elif self.state == TaskState.ERROR:
+        if self.state == TaskState.ERROR:
             return "执行｜异常"
-        elif self.state == TaskState.WAITING:
+        if self.state == TaskState.WAITING:
             if self.waiting_type == WaitingType.CONFIRM:
                 return "执行｜须您确认"
-            elif self.waiting_type == WaitingType.ASSIST:
+            if self.waiting_type == WaitingType.ASSIST:
                 return "执行｜须您协助"
             return "执行｜等待中"
-        elif self.status == TaskStatus.RUNNING:
+        if self.status == TaskStatus.RUNNING:
             if self.progress > 0:
                 return f"执行｜{int(self.progress)}%"
             return "执行｜规划中"
-        else:
-            return "执行｜待处理"
+        return "执行｜待处理"
 
     def on_state_change(self, callback) -> None:
         """注册状态变更回调"""
@@ -245,7 +244,7 @@ class TaskResult:
     """
     success: bool
     data: Any = None
-    error: Optional[str] = None
+    error: str | None = None
     duration: float = 0.0
     steps: list[dict[str, Any]] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)

@@ -3,9 +3,9 @@ PyAgent 语音模块 - 语音处理器
 """
 
 import asyncio
-from typing import Any, Callable
+from collections.abc import Callable
 
-from .asr import ASRModule, ASRConfig
+from .asr import ASRConfig, ASRModule
 
 
 class VoiceProcessor:

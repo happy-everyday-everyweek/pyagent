@@ -6,7 +6,6 @@ PyAgent IM平台适配器 - 消息路由器
 
 import logging
 from collections.abc import Callable
-from typing import Any, Optional
 
 from .base import BaseIMAdapter, IMMessage, IMReply
 from .intent_middleware import IntentMiddleware, ProcessedMessage
@@ -26,15 +25,15 @@ class MessageRouter:
         self._adapters: dict[str, BaseIMAdapter] = {}
         self._handlers: list[Callable] = []
         self._platform_handlers: dict[str, list[Callable]] = {}
-        self._intent_middleware: Optional[IntentMiddleware] = None
-        self._verification_middleware: Optional[VerificationMiddleware] = None
+        self._intent_middleware: IntentMiddleware | None = None
+        self._verification_middleware: VerificationMiddleware | None = None
         self._enable_intent_analysis = enable_intent_analysis
         self._enable_verification = enable_verification
         self._intent_handlers: dict[str, Callable] = {}
-        
+
         if enable_intent_analysis:
             self._intent_middleware = IntentMiddleware()
-        
+
         if enable_verification:
             self._verification_middleware = verification_middleware
 
@@ -89,9 +88,8 @@ class MessageRouter:
             if platform in self._platform_handlers:
                 if handler in self._platform_handlers[platform]:
                     self._platform_handlers[platform].remove(handler)
-        else:
-            if handler in self._handlers:
-                self._handlers.remove(handler)
+        elif handler in self._handlers:
+            self._handlers.remove(handler)
 
     async def _route_message(self, message: IMMessage) -> None:
         """路由消息"""
@@ -105,9 +103,9 @@ class MessageRouter:
                         reply
                     )
                 return
-        
+
         processed = await self._analyze_and_route(message)
-        
+
         if processed.should_forward_to_chat:
             for handler in self._handlers:
                 try:
@@ -139,13 +137,13 @@ class MessageRouter:
                 intent=None,
                 should_forward_to_chat=True
             )
-        
+
         processed = await self._intent_middleware.process(message)
-        
+
         if processed.route_result and processed.route_result.redirect_url:
             intent_type_name = processed.intent.type.name
             handler = self._intent_handlers.get(intent_type_name)
-            
+
             if handler:
                 try:
                     await handler(processed)
@@ -160,7 +158,7 @@ class MessageRouter:
                     f"Intent {intent_type_name} needs redirect to: "
                     f"{processed.route_result.redirect_url}"
                 )
-        
+
         return processed
 
     async def send_message(
@@ -171,7 +169,6 @@ class MessageRouter:
         **kwargs
     ) -> bool:
         """发送消息"""
-        from .base import IMReply
 
         adapter = self._adapters.get(platform)
         if not adapter:

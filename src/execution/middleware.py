@@ -7,10 +7,11 @@ PyAgent 执行模块 - 增强型中间件系统
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -59,11 +60,11 @@ class BaseMiddleware(ABC):
 
         if phase == MiddlewarePhase.BEFORE_EXECUTE:
             return await self.before_execute(context)
-        elif phase == MiddlewarePhase.AFTER_EXECUTE:
+        if phase == MiddlewarePhase.AFTER_EXECUTE:
             return await self.after_execute(context)
-        elif phase == MiddlewarePhase.ON_ERROR:
+        if phase == MiddlewarePhase.ON_ERROR:
             return await self.on_error(context)
-        elif phase == MiddlewarePhase.ON_RETRY:
+        if phase == MiddlewarePhase.ON_RETRY:
             return await self.on_retry(context)
 
         return context

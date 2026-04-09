@@ -4,8 +4,6 @@ PyAgent PDF模块 - PDF解析器
 
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -134,15 +132,14 @@ class PDFParser:
         if self._fitz_available:
             logger.info(f"Parsing PDF with fitz (PyMuPDF): {file_path}")
             return self._parse_with_fitz(file_path)
-        elif self._pdfplumber_available:
+        if self._pdfplumber_available:
             logger.info(f"Parsing PDF with pdfplumber: {file_path}")
             return self._parse_with_pdfplumber(file_path)
-        elif self._pypdf2_available:
+        if self._pypdf2_available:
             logger.info(f"Parsing PDF with PyPDF2: {file_path}")
             return self._parse_with_pypdf2(file_path)
-        else:
-            logger.error("No PDF parsing library available (fitz, pdfplumber, or PyPDF2)")
-            return None
+        logger.error("No PDF parsing library available (fitz, pdfplumber, or PyPDF2)")
+        return None
 
     def parse_bytes(self, data: bytes) -> PDFDocument | None:
         import tempfile
@@ -218,10 +215,10 @@ class PDFParser:
                     text = page.extract_text() or ""
                     width = page.width
                     height = page.height
-                    
+
                     blocks = self._extract_blocks_pdfplumber(page)
                     page_tables = self._extract_tables_pdfplumber(page, page_num)
-                    
+
                     pages.append(PDFPage(
                         page_num=page_num,
                         width=width,
@@ -255,16 +252,16 @@ class PDFParser:
         try:
             import PyPDF2
 
-            with open(file_path, 'rb') as file:
+            with open(file_path, "rb") as file:
                 reader = PyPDF2.PdfReader(file)
                 pages: list[PDFPage] = []
 
                 for page_num, page in enumerate(reader.pages, start=1):
                     text = page.extract_text() or ""
-                    
+
                     width = float(page.mediabox[2]) if page.mediabox else 612.0
                     height = float(page.mediabox[3]) if page.mediabox else 792.0
-                    
+
                     pages.append(PDFPage(
                         page_num=page_num,
                         width=width,
@@ -299,57 +296,57 @@ class PDFParser:
             chars = page.chars
             if not chars:
                 return blocks
-            
+
             current_block = []
             current_y = None
             y_tolerance = 2.0
-            
+
             for char in chars:
                 if current_y is None:
-                    current_y = char['top']
+                    current_y = char["top"]
                     current_block.append(char)
-                elif abs(char['top'] - current_y) <= y_tolerance:
+                elif abs(char["top"] - current_y) <= y_tolerance:
                     current_block.append(char)
                 else:
                     if current_block:
-                        text = ''.join([c['text'] for c in current_block])
-                        x0 = min([c['x0'] for c in current_block])
-                        y0 = min([c['top'] for c in current_block])
-                        x1 = max([c['x1'] for c in current_block])
-                        y1 = max([c['bottom'] for c in current_block])
-                        
+                        text = "".join([c["text"] for c in current_block])
+                        x0 = min([c["x0"] for c in current_block])
+                        y0 = min([c["top"] for c in current_block])
+                        x1 = max([c["x1"] for c in current_block])
+                        y1 = max([c["bottom"] for c in current_block])
+
                         blocks.append(TextBlock(
                             x=x0,
                             y=y0,
                             width=x1 - x0,
                             height=y1 - y0,
                             text=text,
-                            font_name=current_block[0].get('fontname', ''),
-                            font_size=current_block[0].get('size', 0.0),
+                            font_name=current_block[0].get("fontname", ""),
+                            font_size=current_block[0].get("size", 0.0),
                         ))
-                    
+
                     current_block = [char]
-                    current_y = char['top']
-            
+                    current_y = char["top"]
+
             if current_block:
-                text = ''.join([c['text'] for c in current_block])
-                x0 = min([c['x0'] for c in current_block])
-                y0 = min([c['top'] for c in current_block])
-                x1 = max([c['x1'] for c in current_block])
-                y1 = max([c['bottom'] for c in current_block])
-                
+                text = "".join([c["text"] for c in current_block])
+                x0 = min([c["x0"] for c in current_block])
+                y0 = min([c["top"] for c in current_block])
+                x1 = max([c["x1"] for c in current_block])
+                y1 = max([c["bottom"] for c in current_block])
+
                 blocks.append(TextBlock(
                     x=x0,
                     y=y0,
                     width=x1 - x0,
                     height=y1 - y0,
                     text=text,
-                    font_name=current_block[0].get('fontname', ''),
-                    font_size=current_block[0].get('size', 0.0),
+                    font_name=current_block[0].get("fontname", ""),
+                    font_size=current_block[0].get("size", 0.0),
                 ))
         except Exception as e:
             logger.warning(f"Error extracting blocks with pdfplumber: {e}")
-        
+
         return blocks
 
     def _extract_tables_pdfplumber(self, page, page_num: int) -> list[Table]:
@@ -358,10 +355,10 @@ class PDFParser:
             extracted_tables = page.extract_tables()
             for table_data in extracted_tables:
                 if table_data:
-                    bbox = page.bbox if page.bbox else (0, 0, page.width, page.height)
+                    bbox = page.bbox or (0, 0, page.width, page.height)
                     rows = len(table_data)
                     cols = len(table_data[0]) if table_data else 0
-                    
+
                     tables.append(Table(
                         page_num=page_num,
                         x=int(bbox[0]),
@@ -373,7 +370,7 @@ class PDFParser:
                     ))
         except Exception as e:
             logger.warning(f"Error extracting tables with pdfplumber: {e}")
-        
+
         return tables
 
     def _extract_metadata_pdfplumber(self, pdf) -> dict[str, Any]:
@@ -381,17 +378,17 @@ class PDFParser:
         try:
             if pdf.metadata:
                 metadata = {
-                    "title": pdf.metadata.get('Title', ''),
-                    "author": pdf.metadata.get('Author', ''),
-                    "subject": pdf.metadata.get('Subject', ''),
-                    "creator": pdf.metadata.get('Creator', ''),
-                    "producer": pdf.metadata.get('Producer', ''),
-                    "creationDate": pdf.metadata.get('CreationDate', ''),
-                    "modDate": pdf.metadata.get('ModDate', ''),
+                    "title": pdf.metadata.get("Title", ""),
+                    "author": pdf.metadata.get("Author", ""),
+                    "subject": pdf.metadata.get("Subject", ""),
+                    "creator": pdf.metadata.get("Creator", ""),
+                    "producer": pdf.metadata.get("Producer", ""),
+                    "creationDate": pdf.metadata.get("CreationDate", ""),
+                    "modDate": pdf.metadata.get("ModDate", ""),
                 }
         except Exception as e:
             logger.warning(f"Error extracting metadata with pdfplumber: {e}")
-        
+
         return metadata
 
     def _extract_metadata_pypdf2(self, reader) -> dict[str, Any]:
@@ -399,17 +396,17 @@ class PDFParser:
         try:
             if reader.metadata:
                 metadata = {
-                    "title": reader.metadata.get('/Title', ''),
-                    "author": reader.metadata.get('/Author', ''),
-                    "subject": reader.metadata.get('/Subject', ''),
-                    "creator": reader.metadata.get('/Creator', ''),
-                    "producer": reader.metadata.get('/Producer', ''),
-                    "creationDate": reader.metadata.get('/CreationDate', ''),
-                    "modDate": reader.metadata.get('/ModDate', ''),
+                    "title": reader.metadata.get("/Title", ""),
+                    "author": reader.metadata.get("/Author", ""),
+                    "subject": reader.metadata.get("/Subject", ""),
+                    "creator": reader.metadata.get("/Creator", ""),
+                    "producer": reader.metadata.get("/Producer", ""),
+                    "creationDate": reader.metadata.get("/CreationDate", ""),
+                    "modDate": reader.metadata.get("/ModDate", ""),
                 }
         except Exception as e:
             logger.warning(f"Error extracting metadata with PyPDF2: {e}")
-        
+
         return metadata
 
     def _extract_blocks(self, page) -> list[TextBlock]:
@@ -433,7 +430,6 @@ class PDFParser:
     def _extract_tables(self, page) -> list[Table]:
         tables: list[Table] = []
         try:
-            import fitz
             for table in page.find_tables():
                 bbox = table.bbox
                 tables.append(Table(
@@ -452,7 +448,6 @@ class PDFParser:
     def _extract_images(self, page, page_num: int) -> list[Image]:
         images: list[Image] = []
         try:
-            import fitz
             for img in page.get_images():
                 bbox = img["bbox"]
                 images.append(Image(

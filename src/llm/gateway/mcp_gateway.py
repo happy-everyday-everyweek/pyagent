@@ -6,10 +6,11 @@ supporting HTTP, SSE, and stdio transports with OAuth authentication.
 
 import asyncio
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -220,9 +221,9 @@ class MCPGateway:
         """
         if server.transport == MCPTransportType.STDIO:
             return await self._fetch_tools_stdio(server)
-        elif server.transport == MCPTransportType.HTTP:
+        if server.transport == MCPTransportType.HTTP:
             return await self._fetch_tools_http(server)
-        elif server.transport == MCPTransportType.SSE:
+        if server.transport == MCPTransportType.SSE:
             return await self._fetch_tools_sse(server)
         return []
 
@@ -381,8 +382,7 @@ class MCPGateway:
         """
         if server.transport == MCPTransportType.STDIO:
             return await self._execute_stdio(server, tool_name, arguments)
-        else:
-            return await self._execute_http(server, tool_name, arguments)
+        return await self._execute_http(server, tool_name, arguments)
 
     async def _execute_http(
         self,
@@ -407,7 +407,7 @@ class MCPGateway:
                     response.raise_for_status()
                     data = response.json()
                     return data.get("content", data)
-                except httpx.HTTPError as e:
+                except httpx.HTTPError:
                     if attempt == server.retry_count - 1:
                         raise
                     await asyncio.sleep(2**attempt)

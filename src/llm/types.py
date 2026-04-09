@@ -13,7 +13,7 @@ PyAgent LLM 类型定义
 
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
 
 class ModelTier(StrEnum):
@@ -88,7 +88,7 @@ TASK_TO_VERTICAL: dict[TaskType, VerticalType] = {
 }
 
 
-def get_model_for_task(task_type: TaskType) -> Union[ModelTier, VerticalType]:
+def get_model_for_task(task_type: TaskType) -> ModelTier | VerticalType:
     """根据任务类型获取对应的模型层级或垂类模型类型
     
     Args:
@@ -319,7 +319,7 @@ class ModelConfig:
         """检查是否具有指定能力"""
         return capability.lower() in [c.lower() for c in self.capabilities]
 
-    def get_vertical_model(self, vertical_type: VerticalType) -> Optional[VerticalModelConfig]:
+    def get_vertical_model(self, vertical_type: VerticalType) -> VerticalModelConfig | None:
         """获取指定类型的垂类模型配置
         
         Args:
@@ -546,22 +546,18 @@ class LLMResponse:
 class LLMError(Exception):
     """LLM相关错误基类"""
 
-    pass
 
 
 class ConfigurationError(LLMError):
     """配置错误"""
 
-    pass
 
 
 class ModelNotFoundError(LLMError):
     """模型未找到错误"""
 
-    pass
 
 
 class ProviderNotFoundError(LLMError):
     """提供商未找到错误"""
 
-    pass

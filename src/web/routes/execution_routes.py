@@ -5,12 +5,12 @@ PyAgent Web服务 - 执行模块API路由
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from src.execution.collaboration import CollaborationMode, CollaborationConfig
+from src.execution.collaboration import CollaborationMode
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +37,12 @@ class CollaborationModeRequest(BaseModel):
 
 class CollaborationConfigRequest(BaseModel):
     """协作配置请求"""
-    max_agents: Optional[int] = 3
-    parallel_timeout: Optional[float] = 300.0
-    retry_count: Optional[int] = 2
-    failover_enabled: Optional[bool] = True
-    enable_parallel: Optional[bool] = True
-    auto_assign: Optional[bool] = True
+    max_agents: int | None = 3
+    parallel_timeout: float | None = 300.0
+    retry_count: int | None = 2
+    failover_enabled: bool | None = True
+    enable_parallel: bool | None = True
+    auto_assign: bool | None = True
 
 
 class ExecutionRequest(BaseModel):
@@ -53,9 +53,9 @@ class ExecutionRequest(BaseModel):
 class ExecutionResponse(BaseModel):
     """执行响应"""
     success: bool
-    result: Optional[Any] = None
-    error: Optional[str] = None
-    duration: Optional[float] = None
+    result: Any | None = None
+    error: str | None = None
+    duration: float | None = None
 
 
 class ExecutionPlanResponse(BaseModel):
@@ -82,10 +82,10 @@ async def set_collaboration_mode(mode: CollaborationModeRequest) -> dict[str, An
     """设置协作模式"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     new_mode = CollaborationMode.MULTI if mode.enabled else CollaborationMode.SINGLE
     _collaboration_manager.set_mode(new_mode)
-    
+
     return {
         "success": True,
         "mode": new_mode.value,
@@ -98,9 +98,9 @@ async def get_collaboration_mode() -> dict[str, Any]:
     """获取当前协作模式"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     config = _collaboration_manager.get_config()
-    
+
     return {
         "mode": config.mode.value,
         "multi_agent_enabled": _collaboration_manager.is_multi_agent_enabled(),
@@ -113,9 +113,9 @@ async def set_collaboration_config(config: CollaborationConfigRequest) -> dict[s
     """设置协作配置"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     current_config = _collaboration_manager.get_config()
-    
+
     if config.max_agents is not None:
         current_config.max_agents = config.max_agents
     if config.parallel_timeout is not None:
@@ -128,7 +128,7 @@ async def set_collaboration_config(config: CollaborationConfigRequest) -> dict[s
         current_config.enable_parallel = config.enable_parallel
     if config.auto_assign is not None:
         current_config.auto_assign = config.auto_assign
-    
+
     return {
         "success": True,
         "config": current_config.to_dict()
@@ -140,7 +140,7 @@ async def get_collaboration_config() -> dict[str, Any]:
     """获取协作配置"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     config = _collaboration_manager.get_config()
     return {"config": config.to_dict()}
 
@@ -150,18 +150,19 @@ async def execute_task(request: ExecutionRequest) -> ExecutionResponse:
     """执行任务"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     from src.execution.task import Task
+
     from .task_routes import _task_store
-    
+
     if request.task_id in _task_store:
         task = _task_store[request.task_id]
     else:
         task = Task(id=request.task_id, prompt="")
-    
+
     try:
         result = await _collaboration_manager.execute(task)
-        
+
         return ExecutionResponse(
             success=result.success,
             result=result.data if result.success else None,
@@ -178,12 +179,12 @@ async def get_execution_plan(task_id: str) -> ExecutionPlanResponse:
     """获取执行计划"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     plan = _collaboration_manager.get_execution_plan(task_id)
-    
+
     if not plan:
         raise HTTPException(status_code=404, detail="Execution plan not found")
-    
+
     return ExecutionPlanResponse(
         task_id=task_id,
         strategy=plan.strategy.value,
@@ -197,9 +198,9 @@ async def get_execution_statistics() -> StatisticsResponse:
     """获取执行统计信息"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     stats = _collaboration_manager.get_statistics()
-    
+
     return StatisticsResponse(
         total_tasks=stats.total_tasks,
         completed_tasks=stats.completed_tasks,
@@ -216,9 +217,9 @@ async def reset_statistics() -> dict[str, Any]:
     """重置统计信息"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     _collaboration_manager.reset_statistics()
-    
+
     return {"success": True}
 
 
@@ -227,9 +228,9 @@ async def list_executors() -> dict[str, Any]:
     """列出所有执行器"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     executors = _collaboration_manager.get_all_executors()
-    
+
     return {
         "count": len(executors),
         "executors": [
@@ -248,7 +249,7 @@ async def clear_execution_plan(task_id: str) -> dict[str, Any]:
     """清除执行计划"""
     if not _collaboration_manager:
         raise HTTPException(status_code=503, detail="Collaboration manager not initialized")
-    
+
     _collaboration_manager.clear_execution_plan(task_id)
-    
+
     return {"success": True, "task_id": task_id}

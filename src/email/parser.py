@@ -3,10 +3,8 @@ PyAgent 邮件模块 - 邮件解析器
 """
 
 import re
-from email.message import Message
-from typing import Any
 
-from .client import Email, Attachment
+from .client import Attachment, Email
 
 
 class EmailParser:
@@ -99,10 +97,10 @@ class EmailParser:
 
     @staticmethod
     def extract_addresses(text: str) -> list[str]:
-        email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+        email_pattern = r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
         return list(set(re.findall(email_pattern, text)))
 
     @staticmethod
     def extract_phone_numbers(text: str) -> list[str]:
-        phone_pattern = r'\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}'
+        phone_pattern = r"\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}"
         return re.findall(phone_pattern, text)

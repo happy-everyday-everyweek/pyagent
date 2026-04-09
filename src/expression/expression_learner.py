@@ -43,9 +43,9 @@ class ExpressionLearner:
         self._load_data()
 
         self._jargon_patterns = [
-            r'[a-zA-Z]{2,}',
-            r'[^\w\s]{2,}',
-            r'\d{2,}',
+            r"[a-zA-Z]{2,}",
+            r"[^\w\s]{2,}",
+            r"\d{2,}",
         ]
 
     def _load_data(self) -> None:
@@ -131,7 +131,7 @@ class ExpressionLearner:
 
     def _extract_expressions(self, message: str) -> list[str]:
         """提取表达方式"""
-        sentences = re.split(r'[。！？\n]+', message)
+        sentences = re.split(r"[。！？\n]+", message)
 
         expressions = []
         for sentence in sentences:
@@ -147,7 +147,7 @@ class ExpressionLearner:
         if not text:
             return False
 
-        if re.match(r'^[\d\s\W]+$', text):
+        if re.match(r"^[\d\s\W]+$", text):
             return False
 
         if len(text) < 3:
@@ -190,13 +190,13 @@ class ExpressionLearner:
         """提取黑话"""
         jargons = set()
 
-        words = re.findall(r'[\u4e00-\u9fff]+', message)
+        words = re.findall(r"[\u4e00-\u9fff]+", message)
         for word in words:
             if 2 <= len(word) <= 4:
                 if self._is_potential_jargon(word, message):
                     jargons.add(word)
 
-        abbreviations = re.findall(r'\b[A-Z]{2,}\b', message)
+        abbreviations = re.findall(r"\b[A-Z]{2,}\b", message)
         jargons.update(abbreviations)
 
         return list(jargons)

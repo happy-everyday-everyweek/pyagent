@@ -5,7 +5,6 @@ PyAgent 桌面自动化模块 - 鼠标控制器
 import asyncio
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any
 
 
 class MouseButton(Enum):

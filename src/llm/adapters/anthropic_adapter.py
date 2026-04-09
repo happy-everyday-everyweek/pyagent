@@ -10,15 +10,12 @@ import httpx
 
 from .base import (
     BaseAdapter,
-    ContentBlockType,
     LLMError,
     LLMRequest,
     LLMResponse,
-    Message,
     RateLimitError,
     StopReason,
     StreamChunk,
-    Tool,
     ToolCall,
     Usage,
 )
@@ -56,14 +53,14 @@ class AnthropicAdapter(BaseAdapter):
             for attempt in range(self.max_retries):
                 try:
                     response = await client.post(url, headers=self._headers, json=payload)
-                    
+
                     if response.status_code == 429:
                         raise RateLimitError("Rate limit exceeded")
-                    
+
                     response.raise_for_status()
                     data = response.json()
                     return self._parse_response(data)
-                    
+
                 except httpx.HTTPStatusError as e:
                     if e.response.status_code == 429:
                         raise RateLimitError("Rate limit exceeded") from e
@@ -80,22 +77,22 @@ class AnthropicAdapter(BaseAdapter):
     async def generate_stream(self, request: LLMRequest) -> AsyncIterator[StreamChunk]:
         """流式生成响应"""
         url = f"{self._api_base}/v1/messages"
-        
+
         payload = self._build_payload(request)
         payload["stream"] = True
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             async with client.stream("POST", url, headers=self._headers, json=payload) as response:
                 response.raise_for_status()
-                
+
                 async for line in response.aiter_lines():
                     if not line.startswith("data: "):
                         continue
-                    
+
                     data_str = line[6:]
                     if data_str == "[DONE]":
                         break
-                    
+
                     try:
                         data = json.loads(data_str)
                         chunk = self._parse_stream_chunk(data)
@@ -144,7 +141,7 @@ class AnthropicAdapter(BaseAdapter):
         """解析响应"""
         content = ""
         tool_calls = []
-        
+
         for block in data.get("content", []):
             if block.get("type") == "text":
                 content += block.get("text", "")
@@ -181,12 +178,12 @@ class AnthropicAdapter(BaseAdapter):
     def _parse_stream_chunk(self, data: dict[str, Any]) -> StreamChunk | None:
         """解析流式响应块"""
         event_type = data.get("type", "")
-        
+
         if event_type == "content_block_delta":
             delta = data.get("delta", {})
             if delta.get("type") == "text_delta":
                 return StreamChunk(content=delta.get("text", ""))
-        
+
         elif event_type == "content_block_start":
             block = data.get("content_block", {})
             if block.get("type") == "tool_use":
@@ -197,10 +194,10 @@ class AnthropicAdapter(BaseAdapter):
                         arguments={},
                     )]
                 )
-        
+
         elif event_type == "message_stop":
             return StreamChunk(is_final=True)
-        
+
         elif event_type == "message_delta":
             usage_data = data.get("usage", {})
             if usage_data:
@@ -210,5 +207,5 @@ class AnthropicAdapter(BaseAdapter):
                         output_tokens=usage_data.get("output_tokens", 0),
                     )
                 )
-        
+
         return None

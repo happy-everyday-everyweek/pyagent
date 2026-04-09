@@ -92,18 +92,17 @@ class SkillTool(UnifiedTool):
 
             if isinstance(result, ToolResult):
                 return result
-            elif isinstance(result, dict):
+            if isinstance(result, dict):
                 return ToolResult(
                     success=result.get("success", True),
                     output=result.get("output", ""),
                     error=result.get("error", ""),
                     data=result.get("data"),
                 )
-            else:
-                return ToolResult(
-                    success=True,
-                    output=str(result) if result else "",
-                )
+            return ToolResult(
+                success=True,
+                output=str(result) if result else "",
+            )
 
         except Exception as e:
             logger.error(f"执行Skill '{self._skill_name}' 失败: {e}")

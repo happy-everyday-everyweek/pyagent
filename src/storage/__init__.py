@@ -26,15 +26,15 @@ from .sync_protocol import (
 
 __all__ = [
     "DistributedStorage",
-    "distributed_storage",
-    "get_distributed_storage",
-    "FileMetadata",
-    "FileStatus",
     "FileLocation",
-    "FileTracker",
-    "SyncProtocol",
-    "SyncMessage",
-    "SyncMessageType",
+    "FileMetadata",
     "FilePullRequest",
     "FilePullResponse",
+    "FileStatus",
+    "FileTracker",
+    "SyncMessage",
+    "SyncMessageType",
+    "SyncProtocol",
+    "distributed_storage",
+    "get_distributed_storage",
 ]

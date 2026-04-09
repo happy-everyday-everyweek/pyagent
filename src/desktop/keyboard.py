@@ -4,7 +4,6 @@ PyAgent 桌面自动化模块 - 键盘控制器
 
 import asyncio
 from dataclasses import dataclass
-from typing import Any
 
 
 @dataclass

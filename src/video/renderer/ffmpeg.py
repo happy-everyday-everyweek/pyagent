@@ -1,9 +1,8 @@
-import subprocess
 import re
 import shutil
-from pathlib import Path
-from typing import Optional
+import subprocess
 import time
+from pathlib import Path
 
 from .base import BaseRenderer, RenderConfig, RenderJob
 
@@ -12,7 +11,7 @@ class FFmpegRenderer(BaseRenderer):
     def __init__(self, ffmpeg_path: str = "ffmpeg"):
         super().__init__()
         self.ffmpeg_path = ffmpeg_path
-        self._process: Optional[subprocess.Popen] = None
+        self._process: subprocess.Popen | None = None
         self._duration: float = 0.0
 
     def render(self, project, config: RenderConfig) -> RenderJob:
@@ -85,9 +84,9 @@ class FFmpegRenderer(BaseRenderer):
         encoders = self._detect_hardware_encoders()
         if encoders.get("nvenc"):
             return "h264_nvenc"
-        elif encoders.get("qsv"):
+        if encoders.get("qsv"):
             return "h264_qsv"
-        elif encoders.get("videotoolbox"):
+        if encoders.get("videotoolbox"):
             return "h264_videotoolbox"
         return "libx264"
 

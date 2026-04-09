@@ -5,8 +5,8 @@ import os
 import uuid
 from datetime import datetime
 
-from src.calendar.event import Event, EventStatus, Reminder
-from src.calendar.reminder import ReminderService
+from .event import Event, EventStatus, Reminder
+from .reminder import ReminderService
 
 logger = logging.getLogger(__name__)
 

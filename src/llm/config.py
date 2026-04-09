@@ -73,9 +73,9 @@ def deep_substitute_env_vars(obj: Any) -> Any:
     """
     if isinstance(obj, str):
         return substitute_env_vars(obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: deep_substitute_env_vars(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [deep_substitute_env_vars(item) for item in obj]
     return obj
 

@@ -5,13 +5,11 @@ PyAgent 移动端模块 - 屏幕操作工具
 v0.8.0: 新增移动端支持
 """
 
-import asyncio
 import base64
 import logging
-import os
 import subprocess
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -251,7 +249,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to capture screen: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to capture screen: {str(e)}"
+                error=f"Failed to capture screen: {e!s}"
             )
 
     async def tap(self, x: int, y: int) -> ToolResult:
@@ -298,7 +296,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to tap: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to tap: {str(e)}"
+                error=f"Failed to tap: {e!s}"
             )
 
     async def swipe(
@@ -359,7 +357,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to swipe: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to swipe: {str(e)}"
+                error=f"Failed to swipe: {e!s}"
             )
 
     async def input_text(self, text: str) -> ToolResult:
@@ -406,7 +404,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to input text: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to input text: {str(e)}"
+                error=f"Failed to input text: {e!s}"
             )
 
     async def get_screen_info(self) -> ToolResult:
@@ -463,7 +461,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to press key: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to press key: {str(e)}"
+                error=f"Failed to press key: {e!s}"
             )
 
     async def long_press(self, x: int, y: int, duration: int = 1000) -> ToolResult:
@@ -515,7 +513,7 @@ class ScreenTools(UnifiedTool):
             self._logger.error(f"Failed to long press: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to long press: {str(e)}"
+                error=f"Failed to long press: {e!s}"
             )
 
     def cleanup_screenshots(self, max_age_hours: int = 24) -> int:

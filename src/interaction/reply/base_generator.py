@@ -35,7 +35,6 @@ class BaseReplyer(ABC):
         **kwargs
     ) -> tuple[bool, ReplySet | None]:
         """生成回复"""
-        pass
 
     async def _build_reply_prompt(
         self,

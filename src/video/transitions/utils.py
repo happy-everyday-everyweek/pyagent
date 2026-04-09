@@ -1,5 +1,6 @@
 import uuid
-from ..types import Track, TrackTransition, TransitionType, TimelineElement
+
+from ..types import TimelineElement, Track, TrackTransition, TransitionType
 
 ADJACENCY_EPSILON = 0.05
 

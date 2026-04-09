@@ -3,7 +3,6 @@ PyAgent IM平台适配器 - Kimi适配器
 """
 
 import asyncio
-import json
 from typing import Any
 
 import httpx
@@ -215,9 +214,8 @@ class KimiAdapter(BaseIMAdapter):
 
                 if response.status_code == 200:
                     return True
-                else:
-                    print(f"Failed to send Kimi message: {response.status_code}")
-                    return False
+                print(f"Failed to send Kimi message: {response.status_code}")
+                return False
 
         except Exception as e:
             print(f"Failed to send Kimi message: {e}")

@@ -4,27 +4,23 @@ PyAgent 视频编辑器模块 - 编辑器核心
 实现时间线管理、媒体管理、播放管理和渲染管理的适配器。
 """
 
-from dataclasses import dataclass, field
+import uuid
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-import uuid
 
+from .commands import Command, CommandManager
+from .manager import video_manager
+from .managers import SaveManager, SelectionManager
 from .project import VideoProject
 from .types import (
-    Track,
-    TrackType,
-    TimelineElement,
-    MediaType,
-    MediaFile,
-    Effect,
-    EffectType,
     ExportFormat,
     ExportQuality,
+    MediaFile,
+    MediaType,
+    TimelineElement,
 )
-from .manager import video_manager
-from .commands import CommandManager, Command
-from .managers import SelectionManager, SaveManager
 
 
 @dataclass
@@ -149,9 +145,9 @@ class MediaManager:
         image_extensions = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"}
         if extension in video_extensions:
             return MediaType.VIDEO
-        elif extension in audio_extensions:
+        if extension in audio_extensions:
             return MediaType.AUDIO
-        elif extension in image_extensions:
+        if extension in image_extensions:
             return MediaType.IMAGE
         return None
 

@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from src.calendar import CalendarManager, AIScheduler, Event, Reminder
+from src.calendar_module import AIScheduler, CalendarManager
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
 
@@ -22,13 +22,13 @@ class EventCreate(BaseModel):
 
 
 class EventUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    start_time: Optional[str] = None
-    end_time: Optional[str] = None
-    location: Optional[str] = None
-    attendees: Optional[list[str]] = None
-    status: Optional[str] = None
+    title: str | None = None
+    description: str | None = None
+    start_time: str | None = None
+    end_time: str | None = None
+    location: str | None = None
+    attendees: list[str] | None = None
+    status: str | None = None
 
 
 class ReminderCreate(BaseModel):
@@ -38,7 +38,7 @@ class ReminderCreate(BaseModel):
 
 class SuggestTimesRequest(BaseModel):
     duration_minutes: int = 60
-    preferences: Optional[dict] = None
+    preferences: dict | None = None
     days_ahead: int = 7
 
 
@@ -82,8 +82,8 @@ async def delete_event(event_id: str):
 
 @router.get("/events", response_model=dict)
 async def list_events(
-    start_date: Optional[str] = Query(None),
-    end_date: Optional[str] = Query(None),
+    start_date: str | None = Query(None),
+    end_date: str | None = Query(None),
 ):
     start = datetime.fromisoformat(start_date) if start_date else None
     end = datetime.fromisoformat(end_date) if end_date else None

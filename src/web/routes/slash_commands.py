@@ -6,9 +6,10 @@ PyAgent Web服务 - 斜杠命令处理器
 
 import logging
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +43,12 @@ class CommandResult:
     message: str
     action: str
     data: dict[str, Any]
-    redirect_url: Optional[str] = None
+    redirect_url: str | None = None
 
 
 class SlashCommandProcessor:
     """斜杠命令处理器"""
-    
+
     COMMAND_PATTERNS = {
         SlashCommandType.OPEN_APP: [
             r"^/(calendar|日历)$",
@@ -86,7 +87,7 @@ class SlashCommandProcessor:
             r"^/新话题$",
         ],
     }
-    
+
     APP_ROUTES = {
         "calendar": "/calendar",
         "日历": "/calendar",
@@ -110,11 +111,11 @@ class SlashCommandProcessor:
         "setting": "/settings",
         "设置": "/settings",
     }
-    
+
     def __init__(self):
         self._handlers: dict[SlashCommandType, Callable[[SlashCommand], CommandResult]] = {}
         self._register_default_handlers()
-    
+
     def _register_default_handlers(self) -> None:
         """注册默认处理器"""
         self._handlers[SlashCommandType.OPEN_APP] = self._handle_open_app
@@ -124,7 +125,7 @@ class SlashCommandProcessor:
         self._handlers[SlashCommandType.MODIFY_SETTINGS] = self._handle_modify_settings
         self._handlers[SlashCommandType.TOGGLE_MATE] = self._handle_toggle_mate
         self._handlers[SlashCommandType.NEW_TOPIC] = self._handle_new_topic
-    
+
     def parse(self, user_input: str) -> SlashCommand:
         """
         解析用户输入
@@ -136,8 +137,8 @@ class SlashCommandProcessor:
             SlashCommand: 解析后的命令
         """
         user_input = user_input.strip()
-        
-        if not user_input.startswith('/'):
+
+        if not user_input.startswith("/"):
             return SlashCommand(
                 type=SlashCommandType.UNKNOWN,
                 raw_input=user_input,
@@ -145,7 +146,7 @@ class SlashCommandProcessor:
                 args="",
                 params={}
             )
-        
+
         for command_type, patterns in self.COMMAND_PATTERNS.items():
             for pattern in patterns:
                 match = re.match(pattern, user_input, re.IGNORECASE)
@@ -158,7 +159,7 @@ class SlashCommandProcessor:
                         args=args,
                         params={"target": args} if args else {}
                     )
-        
+
         return SlashCommand(
             type=SlashCommandType.UNKNOWN,
             raw_input=user_input,
@@ -166,7 +167,7 @@ class SlashCommandProcessor:
             args="",
             params={}
         )
-    
+
     def execute(self, command: SlashCommand) -> CommandResult:
         """
         执行命令
@@ -185,23 +186,23 @@ class SlashCommandProcessor:
                 logger.error(f"Command execution failed: {e}")
                 return CommandResult(
                     success=False,
-                    message=f"命令执行失败: {str(e)}",
+                    message=f"命令执行失败: {e!s}",
                     action="error",
                     data={}
                 )
-        
+
         return CommandResult(
             success=False,
             message=f"未知命令: {command.raw_input}",
             action="unknown",
             data={}
         )
-    
+
     def _handle_open_app(self, command: SlashCommand) -> CommandResult:
         """处理打开应用命令"""
         app_name = command.args.lower() if command.args else ""
         redirect_url = self.APP_ROUTES.get(app_name)
-        
+
         if redirect_url:
             return CommandResult(
                 success=True,
@@ -210,14 +211,14 @@ class SlashCommandProcessor:
                 data={"app_name": app_name},
                 redirect_url=redirect_url
             )
-        
+
         return CommandResult(
             success=False,
             message=f"未知应用: {app_name}",
             action="open_app",
             data={}
         )
-    
+
     def _handle_open_file(self, command: SlashCommand) -> CommandResult:
         """处理打开文件命令"""
         file_name = command.args
@@ -229,7 +230,7 @@ class SlashCommandProcessor:
                 data={"file_name": file_name},
                 redirect_url=f"/files?search={file_name}"
             )
-        
+
         return CommandResult(
             success=True,
             message="正在打开文件管理器",
@@ -237,7 +238,7 @@ class SlashCommandProcessor:
             data={},
             redirect_url="/files"
         )
-    
+
     def _handle_create_event(self, command: SlashCommand) -> CommandResult:
         """处理创建日程命令"""
         event_content = command.args
@@ -249,7 +250,7 @@ class SlashCommandProcessor:
                 data={"event_content": event_content},
                 redirect_url=f"/calendar/create?content={event_content}"
             )
-        
+
         return CommandResult(
             success=True,
             message="正在打开日程创建页面",
@@ -257,7 +258,7 @@ class SlashCommandProcessor:
             data={},
             redirect_url="/calendar/create"
         )
-    
+
     def _handle_create_todo(self, command: SlashCommand) -> CommandResult:
         """处理创建待办命令"""
         todo_content = command.args
@@ -269,7 +270,7 @@ class SlashCommandProcessor:
                 data={"todo_content": todo_content},
                 redirect_url=f"/tasks/create?content={todo_content}"
             )
-        
+
         return CommandResult(
             success=True,
             message="正在打开待办创建页面",
@@ -277,7 +278,7 @@ class SlashCommandProcessor:
             data={},
             redirect_url="/tasks/create"
         )
-    
+
     def _handle_modify_settings(self, command: SlashCommand) -> CommandResult:
         """处理修改设置命令"""
         settings_input = command.args
@@ -288,7 +289,7 @@ class SlashCommandProcessor:
             data={"settings_input": settings_input},
             redirect_url="/settings"
         )
-    
+
     def _handle_toggle_mate(self, command: SlashCommand) -> CommandResult:
         """处理切换Mate模式命令"""
         return CommandResult(
@@ -298,7 +299,7 @@ class SlashCommandProcessor:
             data={},
             redirect_url=None
         )
-    
+
     def _handle_new_topic(self, command: SlashCommand) -> CommandResult:
         """处理新话题命令"""
         return CommandResult(
@@ -308,7 +309,7 @@ class SlashCommandProcessor:
             data={},
             redirect_url=None
         )
-    
+
     def register_handler(
         self,
         command_type: SlashCommandType,
@@ -322,7 +323,7 @@ class SlashCommandProcessor:
             handler: 处理函数
         """
         self._handlers[command_type] = handler
-    
+
     def get_supported_commands(self) -> list[dict[str, str]]:
         """
         获取支持的命令列表

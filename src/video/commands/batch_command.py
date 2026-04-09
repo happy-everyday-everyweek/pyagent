@@ -1,9 +1,9 @@
-from typing import List
+
 from .base import Command
 
 
 class BatchCommand(Command):
-    def __init__(self, commands: List[Command], description: str = None):
+    def __init__(self, commands: list[Command], description: str = None):
         self._commands = commands
         self._description = description
 
@@ -24,7 +24,7 @@ class BatchCommand(Command):
         return self._description or f"Batch command ({len(self._commands)} commands)"
 
     @property
-    def commands(self) -> List[Command]:
+    def commands(self) -> list[Command]:
         return self._commands.copy()
 
     def add_command(self, command: Command) -> None:

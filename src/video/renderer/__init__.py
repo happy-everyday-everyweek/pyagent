@@ -5,9 +5,9 @@ from .queue import RenderQueue
 
 __all__ = [
     "BaseRenderer",
-    "RenderConfig",
-    "RenderJob",
     "CanvasRenderer",
     "FFmpegRenderer",
+    "RenderConfig",
+    "RenderJob",
     "RenderQueue",
 ]

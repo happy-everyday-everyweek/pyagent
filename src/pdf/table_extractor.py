@@ -1,9 +1,8 @@
 """PDF table extraction and OCR enhancement."""
 
-import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -210,7 +209,7 @@ class OCREnhancer:
                 result = self._ocr_engine.image_to_string(str(image_path), lang="chi_sim+eng")
                 return OCRResult(text=result.strip(), confidence=0.8)
 
-            elif self._engine == "easyocr":
+            if self._engine == "easyocr":
                 results = self._ocr_engine.readtext(str(image_path))
                 text = " ".join(r[1] for r in results)
                 avg_conf = sum(r[2] for r in results) / len(results) if results else 0.0

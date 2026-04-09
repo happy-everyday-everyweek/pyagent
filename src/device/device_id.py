@@ -33,12 +33,11 @@ class DeviceType(Enum):
             if "android" in platform.platform().lower():
                 return cls.MOBILE
             return cls.EDGE
-        elif system in ["windows", "darwin"]:
+        if system in ["windows", "darwin"]:
             return cls.PC
-        elif system == "linux":
+        if system == "linux":
             return cls.SERVER
-        else:
-            return cls.PC
+        return cls.PC
 
 
 @dataclass

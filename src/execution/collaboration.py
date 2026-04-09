@@ -11,9 +11,9 @@ PyAgent 执行模块 - 多智能体协作管理器
 import asyncio
 import time
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from .executor_agent import ExecutorAgent
 from .planner import (
@@ -23,7 +23,7 @@ from .planner import (
     SubTask,
     SubTaskStatus,
 )
-from .task import Task, TaskResult, TaskStatus
+from .task import Task, TaskResult
 
 
 class CollaborationMode(Enum):
@@ -125,7 +125,7 @@ class CollaborationManager:
         )
 
         self._executors: dict[str, ExecutorAgent] = {}
-        self._executor_pool: Optional[ThreadPoolExecutor] = None
+        self._executor_pool: ThreadPoolExecutor | None = None
         self._execution_plans: dict[str, ExecutionPlan] = {}
         self._statistics = ExecutionStatistics()
 
@@ -337,16 +337,15 @@ class CollaborationManager:
                             context_data.update(result.data)
                         else:
                             context_data[subtask.id] = result.data
-                else:
-                    if self.config.failover_enabled:
-                        failover_result = await self._handle_failure(subtask, Exception(result.error))
-                        if failover_result.success:
-                            result = failover_result
-                            subtask.status = SubTaskStatus.COMPLETED
-                        else:
-                            subtask.status = SubTaskStatus.FAILED
+                elif self.config.failover_enabled:
+                    failover_result = await self._handle_failure(subtask, Exception(result.error))
+                    if failover_result.success:
+                        result = failover_result
+                        subtask.status = SubTaskStatus.COMPLETED
                     else:
                         subtask.status = SubTaskStatus.FAILED
+                else:
+                    subtask.status = SubTaskStatus.FAILED
 
                 results[subtask.id] = result
 
@@ -450,16 +449,15 @@ class CollaborationManager:
 
                 if result.success:
                     subtask.status = SubTaskStatus.COMPLETED
-                else:
-                    if self.config.failover_enabled:
-                        failover_result = await self._handle_failure(subtask, Exception(result.error))
-                        if failover_result.success:
-                            result = failover_result
-                            subtask.status = SubTaskStatus.COMPLETED
-                        else:
-                            subtask.status = SubTaskStatus.FAILED
+                elif self.config.failover_enabled:
+                    failover_result = await self._handle_failure(subtask, Exception(result.error))
+                    if failover_result.success:
+                        result = failover_result
+                        subtask.status = SubTaskStatus.COMPLETED
                     else:
                         subtask.status = SubTaskStatus.FAILED
+                else:
+                    subtask.status = SubTaskStatus.FAILED
 
                 subtask.result = result
                 return subtask.id, result
@@ -520,7 +518,7 @@ class CollaborationManager:
         """
         if agent_id not in self._executors:
             if len(self._executors) >= self.config.max_agents:
-                min_tasks = float('inf')
+                min_tasks = float("inf")
                 least_busy = None
 
                 for eid, executor in self._executors.items():
@@ -593,7 +591,7 @@ class CollaborationManager:
 
         return TaskResult(
             success=False,
-            error=f"故障切换失败，已重试{self.config.retry_count}次: {str(error)}"
+            error=f"故障切换失败，已重试{self.config.retry_count}次: {error!s}"
         )
 
     def get_execution_plan(self, task_id: str) -> ExecutionPlan | None:

@@ -594,7 +594,7 @@ class Document:
 
         self.word_path = self.unpacked_path / "word"
 
-        self.rsid = rsid if rsid else _generate_rsid()
+        self.rsid = rsid or _generate_rsid()
         print(f"使用 RSID: {self.rsid}")
 
         self.author = author

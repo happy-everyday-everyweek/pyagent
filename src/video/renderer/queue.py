@@ -1,9 +1,8 @@
-from typing import Optional
-from queue import Queue
-from threading import Thread, Lock
 import time
+from queue import Queue
+from threading import Lock, Thread
 
-from .base import RenderJob, RenderConfig, BaseRenderer
+from .base import BaseRenderer, RenderConfig, RenderJob
 
 
 class RenderQueue:
@@ -28,7 +27,7 @@ class RenderQueue:
             self._queue.put(job.id)
         return job.id
 
-    def get_job(self, job_id: str) -> Optional[RenderJob]:
+    def get_job(self, job_id: str) -> RenderJob | None:
         with self._lock:
             return self._jobs.get(job_id)
 

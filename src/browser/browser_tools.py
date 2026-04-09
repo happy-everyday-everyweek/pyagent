@@ -8,11 +8,11 @@ PyAgent 浏览器自动化模块 - 内置动作集
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .registry import ActionModel, ActionResult, Registry
+from .registry import ActionResult, Registry
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         Registry: 配置好的注册中心
     """
     registry = Registry()
-    
+
     @registry.action(
         "Navigate to a URL",
         param_model=NavigateParams,
@@ -102,9 +102,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             await page.goto(params.url, wait_until="domcontentloaded", timeout=30000)
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Navigated to {params.url}",
@@ -113,7 +113,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Navigate failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Go back to the previous page",
     )
@@ -123,9 +123,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             await page.go_back(wait_until="domcontentloaded", timeout=30000)
-            
+
             return ActionResult(
                 success=True,
                 extracted_content="Went back to previous page",
@@ -134,7 +134,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Go back failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Go forward to the next page",
     )
@@ -144,9 +144,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             await page.go_forward(wait_until="domcontentloaded", timeout=30000)
-            
+
             return ActionResult(
                 success=True,
                 extracted_content="Went forward to next page",
@@ -155,7 +155,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Go forward failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Refresh the current page",
     )
@@ -165,9 +165,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             await page.reload(wait_until="domcontentloaded", timeout=30000)
-            
+
             return ActionResult(
                 success=True,
                 extracted_content="Page refreshed",
@@ -176,7 +176,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Refresh failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Click on an element by its index",
         param_model=ClickParams,
@@ -187,18 +187,18 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             dom = browser_session.dom_serializer
             if not dom:
                 return ActionResult(success=False, error="DOM 序列化器未初始化")
-            
+
             element = dom.get_element_by_highlight_index(params.index)
             if not element:
                 return ActionResult(
                     success=False,
                     error=f"Element with index {params.index} not found",
                 )
-            
+
             if element.css_selector:
                 locator = page.locator(element.css_selector)
             elif element.xpath:
@@ -215,9 +215,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
                         long_term_memory=f"Clicked element {params.index}",
                     )
                 return ActionResult(success=False, error="无法定位元素")
-            
+
             await locator.click(click_count=params.num_clicks, timeout=10000)
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Clicked element [{params.index}]",
@@ -226,7 +226,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Click failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Type text into an input element by its index",
         param_model=InputParams,
@@ -237,33 +237,33 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             dom = browser_session.dom_serializer
             if not dom:
                 return ActionResult(success=False, error="DOM 序列化器未初始化")
-            
+
             element = dom.get_element_by_highlight_index(params.index)
             if not element:
                 return ActionResult(
                     success=False,
                     error=f"Element with index {params.index} not found",
                 )
-            
+
             if element.css_selector:
                 locator = page.locator(element.css_selector)
             elif element.xpath:
                 locator = page.locator(f"xpath={element.xpath}")
             else:
                 return ActionResult(success=False, error="无法定位元素")
-            
+
             if params.clear_first:
                 await locator.clear()
-            
+
             await locator.type(params.text, delay=10)
-            
+
             if params.press_enter:
                 await locator.press("Enter")
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Typed '{params.text[:50]}...' into element [{params.index}]",
@@ -272,7 +272,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Input failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Scroll the page in a direction",
         param_model=ScrollParams,
@@ -283,14 +283,14 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             if params.direction == "down":
                 await page.evaluate(f"window.scrollBy(0, {params.amount})")
             elif params.direction == "up":
                 await page.evaluate(f"window.scrollBy(0, -{params.amount})")
             else:
                 return ActionResult(success=False, error=f"Invalid direction: {params.direction}")
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Scrolled {params.direction} by {params.amount}px",
@@ -299,7 +299,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Scroll failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Select an option from a dropdown by element index",
         param_model=SelectParams,
@@ -310,32 +310,32 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             dom = browser_session.dom_serializer
             if not dom:
                 return ActionResult(success=False, error="DOM 序列化器未初始化")
-            
+
             element = dom.get_element_by_highlight_index(params.index)
             if not element:
                 return ActionResult(
                     success=False,
                     error=f"Element with index {params.index} not found",
                 )
-            
+
             if element.css_selector:
                 locator = page.locator(element.css_selector)
             elif element.xpath:
                 locator = page.locator(f"xpath={element.xpath}")
             else:
                 return ActionResult(success=False, error="无法定位元素")
-            
+
             if params.value:
                 await locator.select_option(value=params.value)
             elif params.label:
                 await locator.select_option(label=params.label)
             else:
                 return ActionResult(success=False, error="必须提供 value 或 label 参数")
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Selected option in element [{params.index}]",
@@ -344,7 +344,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Select failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Switch to a different browser tab by index",
         param_model=SwitchTabParams,
@@ -355,19 +355,19 @@ def create_browser_tools(browser_session: Any) -> Registry:
             context = browser_session.context
             if not context:
                 return ActionResult(success=False, error="浏览器上下文未初始化")
-            
+
             pages = context.pages
             if params.tab_id < 0 or params.tab_id >= len(pages):
                 return ActionResult(
                     success=False,
                     error=f"Invalid tab index: {params.tab_id}, available: 0-{len(pages)-1}",
                 )
-            
+
             page = pages[params.tab_id]
             await page.bring_to_front()
-            
+
             browser_session.page = page
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Switched to tab {params.tab_id}",
@@ -376,7 +376,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Switch tab failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Close a browser tab by index",
         param_model=CloseTabParams,
@@ -387,9 +387,9 @@ def create_browser_tools(browser_session: Any) -> Registry:
             context = browser_session.context
             if not context:
                 return ActionResult(success=False, error="浏览器上下文未初始化")
-            
+
             pages = context.pages
-            
+
             if params.tab_id is not None:
                 if params.tab_id < 0 or params.tab_id >= len(pages):
                     return ActionResult(
@@ -401,23 +401,23 @@ def create_browser_tools(browser_session: Any) -> Registry:
                 page = browser_session.page
                 if not page:
                     return ActionResult(success=False, error="没有活动标签页")
-            
+
             await page.close()
-            
+
             if context.pages:
                 browser_session.page = context.pages[-1]
             else:
                 browser_session.page = None
-            
+
             return ActionResult(
                 success=True,
-                extracted_content=f"Closed tab",
+                extracted_content="Closed tab",
                 long_term_memory="Closed browser tab",
             )
         except Exception as e:
             logger.error(f"Close tab failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Open a new browser tab",
     )
@@ -427,10 +427,10 @@ def create_browser_tools(browser_session: Any) -> Registry:
             context = browser_session.context
             if not context:
                 return ActionResult(success=False, error="浏览器上下文未初始化")
-            
+
             page = await context.new_page()
             browser_session.page = page
-            
+
             return ActionResult(
                 success=True,
                 extracted_content="Opened new tab",
@@ -439,7 +439,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"New tab failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Extract content from the current page",
         param_model=ExtractParams,
@@ -450,16 +450,16 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             text = await page.evaluate("""
                 () => {
                     const body = document.body;
                     return body.innerText || body.textContent || '';
                 }
             """)
-            
+
             text = text[:5000] if len(text) > 5000 else text
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=text,
@@ -468,7 +468,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Extract failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Search for text on the current page",
     )
@@ -478,7 +478,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             content = await page.evaluate("""
                 (query) => {
                     const body = document.body;
@@ -486,23 +486,22 @@ def create_browser_tools(browser_session: Any) -> Registry:
                     return text.toLowerCase().includes(query.toLowerCase());
                 }
             """, query)
-            
+
             if content:
                 return ActionResult(
                     success=True,
                     extracted_content=f"Found '{query}' on page",
                     long_term_memory=f"Searched for '{query}' - found",
                 )
-            else:
-                return ActionResult(
-                    success=True,
-                    extracted_content=f"'{query}' not found on page",
-                    long_term_memory=f"Searched for '{query}' - not found",
-                )
+            return ActionResult(
+                success=True,
+                extracted_content=f"'{query}' not found on page",
+                long_term_memory=f"Searched for '{query}' - not found",
+            )
         except Exception as e:
             logger.error(f"Search failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Read content from a file",
         param_model=ReadFileParams,
@@ -513,10 +512,10 @@ def create_browser_tools(browser_session: Any) -> Registry:
             path = Path(params.path)
             if not path.exists():
                 return ActionResult(success=False, error=f"File not found: {params.path}")
-            
+
             content = path.read_text(encoding="utf-8")
             content_preview = content[:2000] if len(content) > 2000 else content
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=content_preview,
@@ -525,7 +524,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Read file failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Write content to a file",
         param_model=WriteFileParams,
@@ -536,7 +535,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
             path = Path(params.path)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(params.content, encoding="utf-8")
-            
+
             return ActionResult(
                 success=True,
                 extracted_content=f"Wrote {len(params.content)} chars to {params.path}",
@@ -545,7 +544,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Write file failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Take a screenshot of the current page",
     )
@@ -555,12 +554,12 @@ def create_browser_tools(browser_session: Any) -> Registry:
             page = browser_session.page
             if not page:
                 return ActionResult(success=False, error="浏览器未启动")
-            
+
             screenshot_bytes = await page.screenshot(type="png")
-            
+
             import base64
             screenshot_base64 = base64.b64encode(screenshot_bytes).decode("utf-8")
-            
+
             return ActionResult(
                 success=True,
                 extracted_content="Screenshot captured",
@@ -573,7 +572,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
         except Exception as e:
             logger.error(f"Screenshot failed: {e}")
             return ActionResult(success=False, error=str(e))
-    
+
     @registry.action(
         "Wait for a specified number of seconds",
     )
@@ -585,7 +584,7 @@ def create_browser_tools(browser_session: Any) -> Registry:
             extracted_content=f"Waited for {seconds} seconds",
             long_term_memory=f"Waited for {seconds} seconds",
         )
-    
+
     @registry.action(
         "Complete the task with a message",
         terminates_sequence=True,
@@ -598,13 +597,13 @@ def create_browser_tools(browser_session: Any) -> Registry:
             extracted_content=text,
             long_term_memory=f"Task completed: {success} - {text[:100]}",
         )
-    
+
     return registry
 
 
 class BrowserTools:
     """浏览器工具类"""
-    
+
     def __init__(self, browser_session: Any):
         """
         初始化浏览器工具
@@ -614,15 +613,15 @@ class BrowserTools:
         """
         self.browser_session = browser_session
         self.registry = create_browser_tools(browser_session)
-    
+
     def get_action_schemas(self) -> dict[str, dict]:
         """获取所有动作的 Schema"""
         return self.registry.get_action_schemas()
-    
+
     def get_action_descriptions(self) -> dict[str, str]:
         """获取所有动作的描述"""
         return self.registry.get_action_descriptions()
-    
+
     async def execute(self, action_name: str, params: dict | None = None) -> ActionResult:
         """执行动作"""
         return await self.registry.execute_action(action_name, params)

@@ -105,7 +105,7 @@ class HeartFChatting:
         """开始新的循环"""
         self._cycle_counter += 1
         self._current_cycle_detail = CycleDetail(self._cycle_counter)
-        self._current_cycle_detail.thinking_id = f"tid{str(round(time.time(), 2))}"
+        self._current_cycle_detail.thinking_id = f"tid{round(time.time(), 2)!s}"
         return {}, self._current_cycle_detail.thinking_id
 
     def end_cycle(self, loop_info: dict[str, Any], timers: dict[str, float]) -> None:
@@ -255,7 +255,7 @@ class HeartFChatting:
             self.consecutive_no_reply_count += 1
             return {"action_type": "no_reply", "success": True, "result": "选择不回复"}
 
-        elif action_type == "reply":
+        if action_type == "reply":
             self.consecutive_no_reply_count = 0
             self.last_active_time = time.time()
 
@@ -264,13 +264,11 @@ class HeartFChatting:
 
             return {"action_type": "reply", "success": True, "result": reply_text}
 
-        else:
-            handler = self._action_handlers.get(action_type)
-            if handler:
-                result = await handler(action)
-                return {"action_type": action_type, "success": True, "result": result}
-            else:
-                return {"action_type": action_type, "success": False, "result": "未知动作"}
+        handler = self._action_handlers.get(action_type)
+        if handler:
+            result = await handler(action)
+            return {"action_type": action_type, "success": True, "result": result}
+        return {"action_type": action_type, "success": False, "result": "未知动作"}
 
     async def _generate_reply(self, action: dict[str, Any]) -> str:
         """生成回复"""

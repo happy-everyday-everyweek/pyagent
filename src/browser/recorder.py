@@ -416,37 +416,36 @@ class BrowserPlayer:
         if action.action_type == ActionType.NAVIGATE:
             return await self._browser.navigate(params.get("url", ""))
 
-        elif action.action_type == ActionType.CLICK:
+        if action.action_type == ActionType.CLICK:
             selector = action.selector or params.get("selector")
             if selector:
                 return await self._browser.click(selector)
             return await self._browser.click_at(params.get("x", 0), params.get("y", 0))
 
-        elif action.action_type == ActionType.INPUT:
+        if action.action_type == ActionType.INPUT:
             selector = action.selector or params.get("selector")
             text = params.get("text", "")
             if selector:
                 return await self._browser.input_text(selector, text)
             raise ValueError("Input action requires a selector")
 
-        elif action.action_type == ActionType.SCROLL:
+        if action.action_type == ActionType.SCROLL:
             direction = params.get("direction", "down")
             amount = params.get("amount", 300)
             return await self._browser.scroll(direction, amount)
 
-        elif action.action_type == ActionType.WAIT:
+        if action.action_type == ActionType.WAIT:
             duration = params.get("duration", 1.0) / self._speed
             import asyncio
 
             await asyncio.sleep(duration)
             return {"waited": duration}
 
-        elif action.action_type == ActionType.SCREENSHOT:
+        if action.action_type == ActionType.SCREENSHOT:
             return await self._browser.screenshot()
 
-        elif action.action_type == ActionType.EXTRACT:
+        if action.action_type == ActionType.EXTRACT:
             selector = action.selector or params.get("selector")
             return await self._browser.extract(selector)
 
-        else:
-            raise ValueError(f"Unknown action type: {action.action_type}")
+        raise ValueError(f"Unknown action type: {action.action_type}")
