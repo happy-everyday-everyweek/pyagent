@@ -3,11 +3,11 @@ PyAgent 邮件模块 - 邮件模板
 """
 
 import json
+import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-import re
 
 
 @dataclass
@@ -57,7 +57,7 @@ class EmailTemplate:
         return result
 
     def extract_variables(self) -> list[str]:
-        pattern = r'\{\{(\w+)\}\}'
+        pattern = r"\{\{(\w+)\}\}"
         subject_vars = re.findall(pattern, self.subject)
         body_vars = re.findall(pattern, self.body_text)
         html_vars = re.findall(pattern, self.body_html)

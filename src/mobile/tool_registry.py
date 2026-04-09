@@ -843,8 +843,8 @@ class MobileToolRegistry:
 
     async def _tool_phone_operation(self, params: dict[str, Any]) -> ToolResult:
         try:
-            from src.mobile.advanced_control.subagent import get_mobile_control_manager
             from src.llm import get_default_client
+            from src.mobile.advanced_control.subagent import get_mobile_control_manager
 
             intent = params.get("intent", "")
             if not intent:

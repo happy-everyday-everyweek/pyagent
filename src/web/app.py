@@ -13,21 +13,21 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from src.web.routes.calendar_routes import router as calendar_router
+from src.web.routes.document_routes import router as document_router
+from src.web.routes.domain_routes import router as domain_router
 from src.web.routes.execution_routes import router as execution_router
 from src.web.routes.execution_routes import (
-    get_collaboration_manager,
     set_collaboration_manager,
 )
-from src.web.routes.task_routes import router as task_router
-from src.web.routes.task_routes import get_executor_agent, set_executor_agent
-from src.web.routes.todo_routes import router as todo_router
-from src.web.routes.hot_reload import router as hot_reload_router
 from src.web.routes.hot_reload import init_hot_reload
-from src.web.routes.document_routes import router as document_router
-from src.web.routes.video_routes import router as video_router
-from src.web.routes.domain_routes import router as domain_router
-from src.web.routes.storage_routes import router as storage_router
+from src.web.routes.hot_reload import router as hot_reload_router
 from src.web.routes.human_tasks_routes import router as human_tasks_router
+from src.web.routes.storage_routes import router as storage_router
+from src.web.routes.task_routes import router as task_router
+from src.web.routes.task_routes import set_executor_agent
+from src.web.routes.todo_routes import router as todo_router
+from src.web.routes.video_routes import router as video_router
 
 logger = logging.getLogger(__name__)
 
@@ -99,12 +99,12 @@ async def lifespan(app: FastAPI):
 
     logger.info("Starting PyAgent...")
 
-    from src.interaction.heart_flow.heartf_chatting import HeartFChatting
     from src.execution.executor_agent import ExecutorAgent
     from src.execution.tools.file_tools import FileListTool, FileReadTool, FileWriteTool
     from src.execution.tools.registry import ToolRegistry
     from src.execution.tools.shell_tool import ShellTool
     from src.execution.tools.web_tools import WebFetchTool, WebRequestTool
+    from src.interaction.heart_flow.heartf_chatting import HeartFChatting
     from src.llm import create_client_from_env
 
     try:
@@ -274,8 +274,10 @@ app.include_router(video_router)
 app.include_router(domain_router)
 app.include_router(storage_router)
 app.include_router(human_tasks_router)
+app.include_router(calendar_router)
 
 from pathlib import Path
+
 init_hot_reload(Path(__file__).parent.parent.parent.parent)
 
 

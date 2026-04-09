@@ -6,13 +6,13 @@ v0.8.0: 新增移动端支持
 """
 
 import asyncio
-import json
 import logging
 import subprocess
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 
 class NotificationPriority(Enum):
@@ -273,12 +273,11 @@ class NotificationReader:
 
         if priority >= 2:
             return NotificationPriority.MAX
-        elif priority >= 1:
+        if priority >= 1:
             return NotificationPriority.HIGH
-        elif priority <= -2:
+        if priority <= -2:
             return NotificationPriority.LOW
-        else:
-            return NotificationPriority.DEFAULT
+        return NotificationPriority.DEFAULT
 
     async def get_notification_count(self) -> int:
         """获取通知数量"""

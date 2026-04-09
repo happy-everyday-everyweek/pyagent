@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 from difflib import SequenceMatcher
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -257,7 +257,7 @@ class BrowserState(BaseModel):
             str: LLM友好的状态文本
         """
         lines = [
-            f"[Browser State]",
+            "[Browser State]",
             f"URL: {self.url}",
             f"Title: {self.title}",
             f"Tabs: {len(self.tabs)} (active: {self.active_tab_id})",

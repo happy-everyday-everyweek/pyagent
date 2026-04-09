@@ -177,12 +177,11 @@ class OpenAIAdapter(BaseAdapter):
 
         if status_code == 401:
             raise AuthenticationError(f"Authentication failed: {error_msg}")
-        elif status_code == 429:
+        if status_code == 429:
             raise RateLimitError(f"Rate limit exceeded: {error_msg}")
-        elif status_code >= 500:
+        if status_code >= 500:
             raise NetworkError(f"Server error: {error_msg}")
-        else:
-            raise LLMError(f"API error ({status_code}): {error_msg}")
+        raise LLMError(f"API error ({status_code}): {error_msg}")
 
     async def generate(self, request: LLMRequest) -> LLMResponse:
         client = await self._get_client()

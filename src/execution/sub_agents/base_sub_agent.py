@@ -42,7 +42,6 @@ class BaseSubAgent(ABC):
         context: dict[str, Any] | None = None
     ) -> SubAgentResult:
         """执行任务"""
-        pass
 
     def get_info(self) -> dict[str, Any]:
         """获取Agent信息"""

@@ -12,10 +12,11 @@ import asyncio
 import logging
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -128,39 +129,39 @@ class CDPSessionWrapper:
             CDPCommandResult: 命令执行结果
         """
         start_time = time.perf_counter()
-        
+
         async with self._lock:
             try:
                 self._info.state = SessionState.ACTIVE
                 self._info.touch()
-                
+
                 params = params or {}
                 result = await self._session.send(method, params)
-                
+
                 self._info.command_count += 1
                 self._info.state = SessionState.IDLE
-                
+
                 execution_time = (time.perf_counter() - start_time) * 1000
-                
+
                 logger.debug(
                     f"CDP 命令执行成功: {method}, "
                     f"耗时: {execution_time:.2f}ms"
                 )
-                
+
                 return CDPCommandResult(
                     success=True,
                     result=result,
                     execution_time_ms=execution_time
                 )
-                
+
             except Exception as e:
                 self._info.error_count += 1
                 self._info.state = SessionState.ERROR
-                
+
                 execution_time = (time.perf_counter() - start_time) * 1000
-                
+
                 logger.error(f"CDP 命令执行失败: {method}, 错误: {e}")
-                
+
                 return CDPCommandResult(
                     success=False,
                     error=str(e),
@@ -178,7 +179,7 @@ class CDPSessionWrapper:
         if event not in self._event_handlers:
             self._event_handlers[event] = []
         self._event_handlers[event].append(handler)
-        
+
         self._session.on(event, handler)
         logger.debug(f"已注册 CDP 事件监听器: {event}")
 
@@ -192,7 +193,7 @@ class CDPSessionWrapper:
         """
         if event not in self._event_handlers:
             return
-            
+
         if handler is None:
             for h in self._event_handlers[event]:
                 self._session.remove_listener(event, h)
@@ -201,7 +202,7 @@ class CDPSessionWrapper:
             self._session.remove_listener(event, handler)
             if handler in self._event_handlers[event]:
                 self._event_handlers[event].remove(handler)
-                
+
         logger.debug(f"已移除 CDP 事件监听器: {event}")
 
     async def close(self) -> bool:
@@ -218,16 +219,16 @@ class CDPSessionWrapper:
                         self._session.remove_listener(event, handler)
                     except Exception:
                         pass
-            
+
             self._event_handlers.clear()
-            
+
             await self._session.detach()
-            
+
             self._info.state = SessionState.CLOSED
-            
+
             logger.info(f"CDP 会话已关闭: {self.session_id}")
             return True
-            
+
         except Exception as e:
             logger.error(f"关闭 CDP 会话失败: {e}")
             self._info.state = SessionState.ERROR
@@ -269,10 +270,10 @@ class CDPSessionManager:
         """
         self._controller = controller
         self._config = config or {}
-        
+
         self._sessions: dict[str, CDPSessionWrapper] = {}
         self._target_sessions: dict[str, str] = {}
-        
+
         self._session_timeout = self._config.get(
             "session_timeout",
             self.DEFAULT_SESSION_TIMEOUT
@@ -285,7 +286,7 @@ class CDPSessionManager:
             "max_sessions",
             self.MAX_SESSIONS
         )
-        
+
         self._cleanup_task: asyncio.Task | None = None
         self._running = False
         self._lock = asyncio.Lock()
@@ -310,7 +311,7 @@ class CDPSessionManager:
         """启动会话管理器"""
         if self._running:
             return
-            
+
         self._running = True
         self._cleanup_task = asyncio.create_task(self._cleanup_loop())
         logger.info("CDP 会话管理器已启动")
@@ -318,7 +319,7 @@ class CDPSessionManager:
     async def stop(self) -> None:
         """停止会话管理器"""
         self._running = False
-        
+
         if self._cleanup_task:
             self._cleanup_task.cancel()
             try:
@@ -326,7 +327,7 @@ class CDPSessionManager:
             except asyncio.CancelledError:
                 pass
             self._cleanup_task = None
-        
+
         await self.close_all_sessions()
         logger.info("CDP 会话管理器已停止")
 
@@ -353,38 +354,37 @@ class CDPSessionManager:
                     if await session.is_alive():
                         session.info.touch()
                         return session
-                    else:
-                        await self._remove_session(session_id)
-            
+                    await self._remove_session(session_id)
+
             target_page = page or self.page
             if not target_page:
                 logger.error("无法创建 CDP 会话：页面未初始化")
                 return None
-            
+
             try:
                 cdp_session = await target_page.context.new_cdp_session(target_page)
-                
+
                 session_id = str(uuid.uuid4())[:8]
                 actual_target_id = target_id or str(uuid.uuid4())[:8]
-                
+
                 info = CDPSessionInfo(
                     session_id=session_id,
                     target_id=actual_target_id,
                     state=SessionState.IDLE
                 )
-                
+
                 wrapper = CDPSessionWrapper(cdp_session, info)
-                
+
                 self._sessions[session_id] = wrapper
                 self._target_sessions[actual_target_id] = session_id
-                
+
                 logger.info(
                     f"CDP 会话已创建: session_id={session_id}, "
                     f"target_id={actual_target_id}"
                 )
-                
+
                 return wrapper
-                
+
             except Exception as e:
                 logger.error(f"创建 CDP 会话失败: {e}")
                 return None
@@ -441,17 +441,17 @@ class CDPSessionManager:
         """
         if session_id not in self._sessions:
             return False
-        
+
         session = self._sessions[session_id]
-        
+
         await session.close()
-        
+
         target_id = session.target_id
         if target_id in self._target_sessions:
             del self._target_sessions[target_id]
-        
+
         del self._sessions[session_id]
-        
+
         logger.info(f"CDP 会话已移除: {session_id}")
         return True
 
@@ -464,17 +464,17 @@ class CDPSessionManager:
         """
         async with self._lock:
             closed_count = 0
-            
+
             for session_id in list(self._sessions.keys()):
                 try:
                     await self._remove_session(session_id)
                     closed_count += 1
                 except Exception as e:
                     logger.error(f"关闭会话失败 {session_id}: {e}")
-            
+
             self._sessions.clear()
             self._target_sessions.clear()
-            
+
             logger.info(f"已关闭所有 CDP 会话: {closed_count} 个")
             return closed_count
 
@@ -498,21 +498,21 @@ class CDPSessionManager:
             CDPCommandResult: 命令执行结果
         """
         session = None
-        
+
         if session_id:
             session = await self.get_session(session_id)
         elif target_id:
             session = await self.get_session_by_target(target_id)
-        
+
         if not session:
             session = await self.get_or_create_cdp_session(target_id)
-        
+
         if not session:
             return CDPCommandResult(
                 success=False,
                 error="无法获取 CDP 会话"
             )
-        
+
         return await session.execute(method, params)
 
     async def _cleanup_loop(self) -> None:
@@ -535,15 +535,13 @@ class CDPSessionManager:
         """
         now = datetime.now()
         expired_sessions = []
-        
+
         for session_id, session in self._sessions.items():
             time_since_use = (now - session.info.last_used_at).total_seconds()
-            
-            if time_since_use > self._session_timeout:
+
+            if time_since_use > self._session_timeout or not await session.is_alive():
                 expired_sessions.append(session_id)
-            elif not await session.is_alive():
-                expired_sessions.append(session_id)
-        
+
         cleaned_count = 0
         for session_id in expired_sessions:
             try:
@@ -551,10 +549,10 @@ class CDPSessionManager:
                 cleaned_count += 1
             except Exception as e:
                 logger.error(f"清理会话失败 {session_id}: {e}")
-        
+
         if cleaned_count > 0:
             logger.info(f"已清理过期 CDP 会话: {cleaned_count} 个")
-        
+
         return cleaned_count
 
     async def get_all_sessions(self) -> list[CDPSessionInfo]:
@@ -577,7 +575,7 @@ class CDPSessionManager:
         active_sessions = 0
         error_sessions = 0
         idle_sessions = 0
-        
+
         for session in self._sessions.values():
             if session.state == SessionState.ACTIVE:
                 active_sessions += 1
@@ -585,7 +583,7 @@ class CDPSessionManager:
                 error_sessions += 1
             elif session.state == SessionState.IDLE:
                 idle_sessions += 1
-        
+
         return {
             "total_sessions": total_sessions,
             "active_sessions": active_sessions,
@@ -741,7 +739,7 @@ class CDPCommands:
         params: dict[str, Any] = {"depth": depth}
         if frame_id:
             params["frameId"] = frame_id
-            
+
         return await self._manager.execute_cdp_command(
             "Accessibility.getFullAXTree",
             params,
@@ -874,7 +872,7 @@ class CDPCommands:
             params["quality"] = quality
         if clip:
             params["clip"] = clip
-            
+
         return await self._manager.execute_cdp_command(
             "Page.captureScreenshot",
             params,
@@ -912,7 +910,7 @@ class CDPCommands:
         }
         if object_group:
             params["objectGroup"] = object_group
-            
+
         return await self._manager.execute_cdp_command(
             "Runtime.evaluate",
             params,
@@ -951,7 +949,7 @@ class CDPCommands:
             params["objectId"] = object_id
         if arguments:
             params["arguments"] = arguments
-            
+
         return await self._manager.execute_cdp_command(
             "Runtime.callFunctionOn",
             params,

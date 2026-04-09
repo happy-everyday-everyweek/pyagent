@@ -1,6 +1,6 @@
+import os
 import platform
 import sys
-import os
 
 
 class PlatformDetector:
@@ -8,10 +8,9 @@ class PlatformDetector:
     def detect() -> str:
         if PlatformDetector.is_mobile():
             return "mobile"
-        elif PlatformDetector.is_web():
+        if PlatformDetector.is_web():
             return "web"
-        else:
-            return "desktop"
+        return "desktop"
 
     @staticmethod
     def is_mobile() -> bool:
@@ -51,25 +50,24 @@ class PlatformDetector:
     def get_os() -> str:
         if PlatformDetector.is_web():
             return "web"
-        
+
         system = platform.system().lower()
-        
+
         if system == "windows":
             return "windows"
-        elif system == "darwin":
+        if system == "darwin":
             return "macos"
-        elif system == "linux":
+        if system == "linux":
             if PlatformDetector.is_mobile():
                 if "android" in platform.platform().lower():
                     return "android"
                 return "linux"
             return "linux"
-        elif system == "android":
+        if system == "android":
             return "android"
-        elif "ios" in platform.platform().lower() or "iphone" in platform.platform().lower():
+        if "ios" in platform.platform().lower() or "iphone" in platform.platform().lower():
             return "ios"
-        else:
-            return system
+        return system
 
     @staticmethod
     def get_device_info() -> dict:

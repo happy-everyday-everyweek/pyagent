@@ -6,7 +6,7 @@ PyAgent IM平台适配器 - 意图分析中间件
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any
 
 from .base import IMMessage
 
@@ -28,25 +28,25 @@ class ProcessedMessage:
     """处理后的消息"""
     original: IMMessage
     intent: Any = None
-    route_result: Optional[Any] = None
+    route_result: Any | None = None
     should_forward_to_chat: bool = True
     extra: dict[str, Any] = field(default_factory=dict)
 
 
 class IntentMiddleware:
     """意图分析中间件"""
-    
+
     def __init__(
         self,
-        recognizer: Optional[Any] = None,
-        router: Optional[Any] = None,
-        config: Optional[dict[str, Any]] = None
+        recognizer: Any | None = None,
+        router: Any | None = None,
+        config: dict[str, Any] | None = None
     ):
         self.config = config or {}
         self._enabled = self.config.get("enabled", True)
         self._log_intents = self.config.get("log_intents", True)
         self._available = IntentRecognizer is not None and IntentRouter is not None
-        
+
         if self._available:
             self.recognizer = recognizer or IntentRecognizer()
             self.router = router or IntentRouter()
@@ -55,7 +55,7 @@ class IntentMiddleware:
             self.router = None
             self._enabled = False
             logger.warning("Intent analysis module not available, middleware disabled")
-    
+
     async def process(self, message: IMMessage) -> ProcessedMessage:
         """
         处理消息，进行意图分析
@@ -72,21 +72,21 @@ class IntentMiddleware:
                 intent=None,
                 should_forward_to_chat=True
             )
-        
+
         try:
             context = self._build_context(message)
             intent = await self.recognizer.recognize(message.content, context)
-            
+
             if self._log_intents and intent:
                 logger.info(
                     f"Intent recognized: {intent.type.name} "
                     f"(confidence: {intent.confidence:.2f}) "
                     f"for message: {message.content[:50]}..."
                 )
-            
+
             route_result = self.router.route(intent) if self.router else None
             should_forward = not intent.needs_redirect() if intent else True
-            
+
             return ProcessedMessage(
                 original=message,
                 intent=intent,
@@ -97,7 +97,7 @@ class IntentMiddleware:
                     "handler_name": route_result.handler_name if route_result else None
                 }
             )
-            
+
         except Exception as e:
             logger.error(f"Intent analysis failed: {e}")
             return ProcessedMessage(
@@ -105,7 +105,7 @@ class IntentMiddleware:
                 intent=None,
                 should_forward_to_chat=True
             )
-    
+
     def _build_context(self, message: IMMessage) -> dict[str, Any]:
         """
         构建意图分析上下文
@@ -124,17 +124,17 @@ class IntentMiddleware:
             "is_at_bot": message.is_at_bot,
             "timestamp": message.timestamp
         }
-    
+
     def enable(self) -> None:
         """启用意图分析"""
         self._enabled = True
         logger.info("Intent middleware enabled")
-    
+
     def disable(self) -> None:
         """禁用意图分析"""
         self._enabled = False
         logger.info("Intent middleware disabled")
-    
+
     def is_enabled(self) -> bool:
         """检查是否启用"""
         return self._enabled

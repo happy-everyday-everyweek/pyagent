@@ -6,12 +6,12 @@ PyAgent 执行模块工具系统 - 离线地图工具
 """
 
 import json
-from pathlib import Path
-from typing import Any, Optional
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from ..base import BaseTool, ToolCategory, ToolResult, ToolParameter, RiskLevel
-from .geo_utils import GeoUtils, GeoPoint, GeoBounds
+from ..base import BaseTool, RiskLevel, ToolCategory, ToolParameter, ToolResult
+from .geo_utils import GeoBounds, GeoUtils
 
 
 @dataclass
@@ -117,7 +117,7 @@ class OfflineMapTool(BaseTool):
         maps_path = self.COLLECTIONS_DIR / "maps.json"
         if maps_path.exists():
             try:
-                with open(maps_path, "r", encoding="utf-8") as f:
+                with open(maps_path, encoding="utf-8") as f:
                     data = json.load(f)
                     for collection in data.get("collections", []):
                         for resource in collection.get("resources", []):
@@ -148,13 +148,13 @@ class OfflineMapTool(BaseTool):
                         bounds=GeoBounds(-90, -180, 90, 180),
                         size_mb=round(size_mb, 2)
                     )
-        
+
         self._load_sample_pois()
 
     def _load_sample_pois(self):
         """加载示例POI数据"""
         sample_pois = [
-            POI(id="bj_tiananmen", name="天安门", lat=39.9087, lon=116.3975, 
+            POI(id="bj_tiananmen", name="天安门", lat=39.9087, lon=116.3975,
                 category="landmark", address="北京市东城区东长安街"),
             POI(id="bj_forbidden", name="故宫", lat=39.9163, lon=116.3972,
                 category="museum", address="北京市东城区景山前街4号"),
@@ -176,21 +176,20 @@ class OfflineMapTool(BaseTool):
     async def execute(self, **kwargs) -> ToolResult:
         """执行工具"""
         action = kwargs.get("action", "regions")
-        
+
         if action == "regions":
             return self._list_regions()
-        elif action == "collections":
+        if action == "collections":
             return self._list_collections()
-        elif action == "search":
+        if action == "search":
             return self._search_poi(kwargs)
-        elif action == "nearby":
+        if action == "nearby":
             return self._nearby_search(kwargs)
-        elif action == "reverse_geocode":
+        if action == "reverse_geocode":
             return self._reverse_geocode(kwargs)
-        elif action == "distance":
+        if action == "distance":
             return self._calculate_distance(kwargs)
-        else:
-            return ToolResult(success=False, error=f"未知操作: {action}")
+        return ToolResult(success=False, error=f"未知操作: {action}")
 
     def _list_regions(self) -> ToolResult:
         """列出地图区域"""
@@ -204,7 +203,7 @@ class OfflineMapTool(BaseTool):
                 "description": region.description,
                 "url": region.url
             })
-        
+
         return ToolResult(
             success=True,
             output=f"找到 {len(regions)} 个地图区域",
@@ -215,10 +214,10 @@ class OfflineMapTool(BaseTool):
         """列出地图收藏集"""
         maps_path = self.COLLECTIONS_DIR / "maps.json"
         collections = []
-        
+
         if maps_path.exists():
             try:
-                with open(maps_path, "r", encoding="utf-8") as f:
+                with open(maps_path, encoding="utf-8") as f:
                     data = json.load(f)
                     for col in data.get("collections", []):
                         collections.append({
@@ -229,7 +228,7 @@ class OfflineMapTool(BaseTool):
                         })
             except Exception:
                 pass
-        
+
         return ToolResult(
             success=True,
             output=f"找到 {len(collections)} 个地图收藏集",
@@ -240,10 +239,10 @@ class OfflineMapTool(BaseTool):
         """搜索POI"""
         query = kwargs.get("query", "").lower()
         limit = kwargs.get("limit", 10)
-        
+
         if not query:
             return ToolResult(success=False, error="请提供搜索关键词")
-        
+
         results = []
         for poi in self._pois:
             if query in poi.name.lower() or query in poi.address.lower():
@@ -255,7 +254,7 @@ class OfflineMapTool(BaseTool):
                     "category": poi.category,
                     "address": poi.address
                 })
-        
+
         return ToolResult(
             success=True,
             output=f"找到 {len(results)} 个匹配的POI",
@@ -271,10 +270,10 @@ class OfflineMapTool(BaseTool):
             limit = kwargs.get("limit", 10)
         except (ValueError, TypeError):
             return ToolResult(success=False, error="请提供有效的坐标")
-        
+
         if lat == 0 and lon == 0:
             return ToolResult(success=False, error="请提供坐标 (lat, lon)")
-        
+
         results = []
         for poi in self._pois:
             distance = GeoUtils.haversine_distance(lat, lon, poi.lat, poi.lon)
@@ -288,9 +287,9 @@ class OfflineMapTool(BaseTool):
                     "address": poi.address,
                     "distance_km": round(distance, 2)
                 })
-        
+
         results.sort(key=lambda x: x["distance_km"])
-        
+
         return ToolResult(
             success=True,
             output=f"在 {radius} 公里范围内找到 {len(results)} 个POI",
@@ -304,21 +303,21 @@ class OfflineMapTool(BaseTool):
             lon = float(kwargs.get("lon", 0))
         except (ValueError, TypeError):
             return ToolResult(success=False, error="请提供有效的坐标")
-        
+
         if lat == 0 and lon == 0:
             return ToolResult(success=False, error="请提供坐标 (lat, lon)")
-        
+
         nearest = None
         min_distance = float("inf")
-        
+
         for poi in self._pois:
             distance = GeoUtils.haversine_distance(lat, lon, poi.lat, poi.lon)
             if distance < min_distance:
                 min_distance = distance
                 nearest = poi
-        
+
         coord_str = GeoUtils.format_coordinates(lat, lon, "dms")
-        
+
         if nearest and min_distance < 50:
             return ToolResult(
                 success=True,
@@ -335,7 +334,7 @@ class OfflineMapTool(BaseTool):
                     "coordinates_formatted": coord_str
                 }
             )
-        
+
         return ToolResult(
             success=True,
             output=f"坐标: {coord_str}",
@@ -355,18 +354,18 @@ class OfflineMapTool(BaseTool):
             lon2 = float(kwargs.get("lon2", 0))
         except (ValueError, TypeError):
             return ToolResult(success=False, error="请提供有效的坐标")
-        
+
         if lat1 == 0 and lon1 == 0:
             return ToolResult(success=False, error="请提供起点坐标 (lat, lon)")
         if lat2 == 0 and lon2 == 0:
             return ToolResult(success=False, error="请提供终点坐标 (lat2, lon2)")
-        
+
         distance_km = GeoUtils.haversine_distance(lat1, lon1, lat2, lon2)
         distance_m = distance_km * 1000
         bearing = GeoUtils.bearing(lat1, lon1, lat2, lon2)
-        
+
         direction = self._bearing_to_direction(bearing)
-        
+
         return ToolResult(
             success=True,
             output=f"距离: {distance_km:.2f} 公里, 方向: {direction} ({bearing:.1f}°)",

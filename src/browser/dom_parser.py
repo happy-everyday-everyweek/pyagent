@@ -121,24 +121,23 @@ class DOMParser:
     def _determine_element_type(self, tag: str, attrs: dict[str, str]) -> ElementType:
         if tag == "button" or attrs.get("role") == "button":
             return ElementType.BUTTON
-        elif tag == "a" or attrs.get("role") == "link":
+        if tag == "a" or attrs.get("role") == "link":
             return ElementType.LINK
-        elif tag == "input":
+        if tag == "input":
             return ElementType.INPUT
-        elif tag == "select":
+        if tag == "select":
             return ElementType.SELECT
-        elif tag == "img":
+        if tag == "img":
             return ElementType.IMAGE
-        elif tag == "form":
+        if tag == "form":
             return ElementType.FORM
-        elif tag == "table":
+        if tag == "table":
             return ElementType.TABLE
-        elif tag in {"ul", "ol", "li"}:
+        if tag in {"ul", "ol", "li"}:
             return ElementType.LIST
-        elif tag in {"div", "section", "article", "main", "aside", "header", "footer", "nav"}:
+        if tag in {"div", "section", "article", "main", "aside", "header", "footer", "nav"}:
             return ElementType.CONTAINER
-        else:
-            return ElementType.OTHER
+        return ElementType.OTHER
 
     def _generate_selector(self, tag: str, attrs: dict[str, str]) -> str:
         if attrs.get("id"):
@@ -192,9 +191,8 @@ class DOMParser:
             if exact:
                 if text_lower == element_text:
                     results.append(element)
-            else:
-                if text_lower in element_text:
-                    results.append(element)
+            elif text_lower in element_text:
+                results.append(element)
 
         return results
 

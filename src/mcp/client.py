@@ -162,10 +162,9 @@ class MCPClient:
         try:
             if config.transport == "streamable_http":
                 return await self._connect_http(server_name, config)
-            elif config.transport == "sse":
+            if config.transport == "sse":
                 return await self._connect_sse(server_name, config)
-            else:
-                return await self._connect_stdio(server_name, config)
+            return await self._connect_stdio(server_name, config)
 
         except Exception as e:
             return MCPConnectResult(

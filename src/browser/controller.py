@@ -500,10 +500,9 @@ class BrowserController:
             return await self._page.evaluate(
                 f"localStorage.getItem('{key}')"
             )
-        else:
-            return await self._page.evaluate(
-                "Object.assign({}, localStorage)"
-            )
+        return await self._page.evaluate(
+            "Object.assign({}, localStorage)"
+        )
 
     async def wait_for_load_state(self, state: str = "load") -> None:
         """

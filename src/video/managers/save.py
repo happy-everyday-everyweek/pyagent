@@ -1,8 +1,8 @@
-import threading
-from datetime import datetime
-from typing import Optional, Callable, Set
-from pathlib import Path
 import json
+import threading
+from collections.abc import Callable
+from datetime import datetime
+from pathlib import Path
 
 
 class SaveManager:
@@ -15,14 +15,14 @@ class SaveManager:
         self._auto_save_enabled = auto_save_enabled
         self._auto_save_interval = auto_save_interval
         self._debounce_ms = debounce_ms
-        self._last_save_time: Optional[datetime] = None
+        self._last_save_time: datetime | None = None
         self._is_dirty = False
         self._is_saving = False
         self._is_paused = False
         self._has_pending_save = False
-        self._listeners: Set[Callable[[], None]] = set()
-        self._save_timer: Optional[threading.Timer] = None
-        self._auto_save_timer: Optional[threading.Timer] = None
+        self._listeners: set[Callable[[], None]] = set()
+        self._save_timer: threading.Timer | None = None
+        self._auto_save_timer: threading.Timer | None = None
         self._lock = threading.Lock()
 
     @property
@@ -49,7 +49,7 @@ class SaveManager:
             self._start_auto_save_timer()
 
     @property
-    def last_save_time(self) -> Optional[datetime]:
+    def last_save_time(self) -> datetime | None:
         return self._last_save_time
 
     @property

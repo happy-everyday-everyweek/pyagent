@@ -59,14 +59,13 @@ class ExecuteTool:
                         mode=ExecutionMode.ASYNC,
                         status="pending"
                     )
-                else:
-                    result = await self.executor_agent.execute_sync(task, timeout)
-                    return ExecuteToolResult(
-                        success=True,
-                        result=result,
-                        mode=ExecutionMode.SYNC,
-                        status="completed"
-                    )
+                result = await self.executor_agent.execute_sync(task, timeout)
+                return ExecuteToolResult(
+                    success=True,
+                    result=result,
+                    mode=ExecutionMode.SYNC,
+                    status="completed"
+                )
             except Exception as e:
                 return ExecuteToolResult(
                     success=False,

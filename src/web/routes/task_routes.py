@@ -5,12 +5,12 @@ PyAgent Web服务 - 任务API路由
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from src.execution.task import Task, TaskStatus, TaskResult, TaskState, WaitingType
+from src.execution.task import Task, TaskState, TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +34,9 @@ def get_executor_agent() -> Any:
 class TaskCreate(BaseModel):
     """创建任务请求"""
     prompt: str
-    context: Optional[dict[str, Any]] = None
-    priority: Optional[int] = 0
-    tags: Optional[list[str]] = None
+    context: dict[str, Any] | None = None
+    priority: int | None = 0
+    tags: list[str] | None = None
 
 
 class TaskResponse(BaseModel):
@@ -47,10 +47,10 @@ class TaskResponse(BaseModel):
     state: str = "active"
     progress: float = 0.0
     display_status: str = ""
-    waiting_type: Optional[str] = None
-    waiting_message: Optional[str] = None
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    waiting_type: str | None = None
+    waiting_message: str | None = None
+    result: Any | None = None
+    error: str | None = None
     priority: int = 0
     tags: list[str] = []
 
@@ -99,9 +99,9 @@ async def create_task(task: TaskCreate) -> TaskResponse:
         priority=task.priority or 0,
         tags=task.tags or []
     )
-    
+
     _task_store[new_task.id] = new_task
-    
+
     return _create_task_response(new_task)
 
 
@@ -111,7 +111,7 @@ async def get_task(task_id: str) -> TaskResponse:
     if task_id in _task_store:
         task = _task_store[task_id]
         return _create_task_response(task)
-    
+
     if _executor_agent:
         status = await _executor_agent.get_task_status(task_id)
         if status:
@@ -129,24 +129,24 @@ async def get_task(task_id: str) -> TaskResponse:
                 priority=0,
                 tags=[]
             )
-    
+
     raise HTTPException(status_code=404, detail="Task not found")
 
 
 @router.get("/", response_model=TaskListResponse)
-async def list_tasks(status: Optional[str] = None) -> TaskListResponse:
+async def list_tasks(status: str | None = None) -> TaskListResponse:
     """列出任务"""
     tasks = list(_task_store.values())
-    
+
     if status:
         try:
             filter_status = TaskStatus(status)
             tasks = [t for t in tasks if t.status == filter_status]
         except ValueError:
             pass
-    
+
     task_responses = [_create_task_response(t) for t in tasks]
-    
+
     return TaskListResponse(tasks=task_responses, total=len(task_responses))
 
 
@@ -159,11 +159,11 @@ async def cancel_task(task_id: str) -> dict[str, Any]:
             task.mark_cancelled()
             return {"success": True, "task_id": task_id, "status": "cancelled"}
         return {"success": False, "error": "Task cannot be cancelled"}
-    
+
     if _executor_agent:
         success = await _executor_agent.cancel_task(task_id)
         return {"success": success, "task_id": task_id}
-    
+
     raise HTTPException(status_code=404, detail="Task not found")
 
 
@@ -172,18 +172,18 @@ async def pause_task(task_id: str) -> TaskResponse:
     """暂停任务"""
     if task_id not in _task_store:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task = _task_store[task_id]
-    
+
     if task.status != TaskStatus.RUNNING:
         raise HTTPException(status_code=400, detail="Only running tasks can be paused")
-    
+
     if task.state == TaskState.PAUSED:
         raise HTTPException(status_code=400, detail="Task is already paused")
-    
+
     task.pause()
     logger.info(f"Task {task_id} paused")
-    
+
     return _create_task_response(task)
 
 
@@ -192,15 +192,15 @@ async def resume_task(task_id: str) -> TaskResponse:
     """恢复任务"""
     if task_id not in _task_store:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task = _task_store[task_id]
-    
+
     if task.state != TaskState.PAUSED:
         raise HTTPException(status_code=400, detail="Only paused tasks can be resumed")
-    
+
     task.resume()
     logger.info(f"Task {task_id} resumed")
-    
+
     return _create_task_response(task)
 
 
@@ -209,15 +209,15 @@ async def respond_to_task(task_id: str, request: UserRespondRequest) -> TaskResp
     """用户响应任务（确认或协助）"""
     if task_id not in _task_store:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task = _task_store[task_id]
-    
+
     if task.state != TaskState.WAITING:
         raise HTTPException(status_code=400, detail="Task is not waiting for user response")
-    
+
     task.user_responded()
     logger.info(f"User responded to task {task_id}: confirmed={request.confirmed}")
-    
+
     return _create_task_response(task)
 
 
@@ -226,18 +226,18 @@ async def execute_task(task_id: str) -> dict[str, Any]:
     """执行任务"""
     if task_id not in _task_store:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task = _task_store[task_id]
-    
+
     if task.status != TaskStatus.PENDING:
         raise HTTPException(status_code=400, detail="Task is not in pending status")
-    
+
     if not _executor_agent:
         raise HTTPException(status_code=503, detail="Executor agent not initialized")
-    
+
     try:
         result = await _executor_agent.execute(task)
-        
+
         return {
             "success": result.success,
             "task_id": task_id,
@@ -255,14 +255,14 @@ async def delete_task(task_id: str) -> dict[str, Any]:
     """删除任务"""
     if task_id not in _task_store:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     task = _task_store[task_id]
-    
+
     if task.status == TaskStatus.RUNNING:
         raise HTTPException(status_code=400, detail="Cannot delete running task")
-    
+
     del _task_store[task_id]
-    
+
     return {"success": True, "task_id": task_id}
 
 
@@ -271,12 +271,12 @@ async def get_task_statistics() -> dict[str, Any]:
     """获取任务统计信息"""
     total = len(_task_store)
     by_status = {}
-    
+
     for status in TaskStatus:
         count = sum(1 for t in _task_store.values() if t.status == status)
         if count > 0:
             by_status[status.value] = count
-    
+
     return {
         "total": total,
         "by_status": by_status

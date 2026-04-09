@@ -7,9 +7,8 @@ PyAgent Web服务 - 设置管理API
 import json
 import logging
 import os
-from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -202,36 +201,36 @@ SETTING_DEFINITIONS = {
 
 class SettingsManager:
     """设置管理器"""
-    
+
     def __init__(self, settings_dir: str = "data/settings"):
         self.settings_dir = settings_dir
         self._ensure_dir()
         self._settings: dict[str, Any] = {}
         self._load_settings()
-    
+
     def _ensure_dir(self) -> None:
         """确保设置目录存在"""
         if not os.path.exists(self.settings_dir):
             os.makedirs(self.settings_dir, exist_ok=True)
-    
+
     def _get_settings_file(self, scope: SettingScope) -> str:
         """获取设置文件路径"""
         return os.path.join(self.settings_dir, f"{scope.value}_settings.json")
-    
+
     def _load_settings(self) -> None:
         """加载设置"""
         for scope in SettingScope:
             file_path = self._get_settings_file(scope)
             try:
                 if os.path.exists(file_path):
-                    with open(file_path, 'r', encoding='utf-8') as f:
+                    with open(file_path, encoding="utf-8") as f:
                         self._settings[scope.value] = json.load(f)
                 else:
                     self._settings[scope.value] = self._get_default_settings(scope)
             except Exception as e:
                 logger.error(f"Failed to load {scope.value} settings: {e}")
                 self._settings[scope.value] = self._get_default_settings(scope)
-    
+
     def _get_default_settings(self, scope: SettingScope) -> dict[str, Any]:
         """获取默认设置"""
         defaults = {}
@@ -242,58 +241,58 @@ class SettingsManager:
                     for key, setting in config["settings"].items()
                 }
         return defaults
-    
+
     def _save_settings(self, scope: SettingScope) -> bool:
         """保存设置"""
         file_path = self._get_settings_file(scope)
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(self._settings[scope.value], f, ensure_ascii=False, indent=2)
             return True
         except Exception as e:
             logger.error(f"Failed to save {scope.value} settings: {e}")
             return False
-    
+
     def get_all_settings(self) -> dict[str, Any]:
         """获取所有设置"""
         return self._settings.copy()
-    
+
     def get_category_settings(self, category: str) -> dict[str, Any]:
         """获取分类设置"""
         return self._settings.get(category, {})
-    
+
     def get_setting(self, category: str, key: str) -> Any:
         """获取单个设置"""
         return self._settings.get(category, {}).get(key)
-    
+
     def set_setting(self, category: str, key: str, value: Any) -> bool:
         """设置单个设置"""
         if category not in self._settings:
             self._settings[category] = {}
-        
+
         self._settings[category][key] = value
-        
+
         config = SETTING_DEFINITIONS.get(category)
         if config:
             scope = config["scope"]
             return self._save_settings(scope)
-        
+
         return False
-    
+
     def update_category(self, category: str, settings: dict[str, Any]) -> bool:
         """更新分类设置"""
         if category not in SETTING_DEFINITIONS:
             return False
-        
+
         self._settings[category] = settings
         config = SETTING_DEFINITIONS[category]
         return self._save_settings(config["scope"])
-    
-    def get_scope(self, category: str) -> Optional[SettingScope]:
+
+    def get_scope(self, category: str) -> SettingScope | None:
         """获取设置范围"""
         config = SETTING_DEFINITIONS.get(category)
         return config["scope"] if config else None
-    
+
     def is_sync_setting(self, category: str) -> bool:
         """是否为同步设置"""
         scope = self.get_scope(category)
@@ -330,7 +329,7 @@ async def get_category_settings(category: str) -> dict[str, Any]:
     """获取分类设置"""
     if category not in SETTING_DEFINITIONS:
         raise HTTPException(status_code=404, detail=f"Category {category} not found")
-    
+
     return {
         "category": category,
         "settings": settings_manager.get_category_settings(category),
@@ -343,10 +342,10 @@ async def get_setting(category: str, key: str) -> dict[str, Any]:
     """获取单个设置"""
     if category not in SETTING_DEFINITIONS:
         raise HTTPException(status_code=404, detail=f"Category {category} not found")
-    
+
     if key not in SETTING_DEFINITIONS[category]["settings"]:
         raise HTTPException(status_code=404, detail=f"Setting {key} not found in {category}")
-    
+
     value = settings_manager.get_setting(category, key)
     return {
         "category": category,
@@ -361,16 +360,16 @@ async def update_setting(request: SettingUpdateRequest) -> dict[str, Any]:
     """更新单个设置"""
     if request.category not in SETTING_DEFINITIONS:
         raise HTTPException(status_code=404, detail=f"Category {request.category} not found")
-    
+
     if request.key not in SETTING_DEFINITIONS[request.category]["settings"]:
         raise HTTPException(status_code=404, detail=f"Setting {request.key} not found")
-    
+
     success = settings_manager.set_setting(request.category, request.key, request.value)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to save setting")
-    
+
     is_sync = settings_manager.is_sync_setting(request.category)
-    
+
     return {
         "success": True,
         "category": request.category,
@@ -386,13 +385,13 @@ async def update_category(request: CategoryUpdateRequest) -> dict[str, Any]:
     """更新分类设置"""
     if request.category not in SETTING_DEFINITIONS:
         raise HTTPException(status_code=404, detail=f"Category {request.category} not found")
-    
+
     success = settings_manager.update_category(request.category, request.settings)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to save settings")
-    
+
     is_sync = settings_manager.is_sync_setting(request.category)
-    
+
     return {
         "success": True,
         "category": request.category,
@@ -407,16 +406,16 @@ async def reset_category(category: str) -> dict[str, Any]:
     """重置分类设置为默认值"""
     if category not in SETTING_DEFINITIONS:
         raise HTTPException(status_code=404, detail=f"Category {category} not found")
-    
+
     defaults = {
         key: setting["default"]
         for key, setting in SETTING_DEFINITIONS[category]["settings"].items()
     }
-    
+
     success = settings_manager.update_category(category, defaults)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to reset settings")
-    
+
     return {
         "success": True,
         "category": category,

@@ -94,16 +94,15 @@ class ShellTool(BaseTool):
                     output=output,
                     metadata={"return_code": process.returncode}
                 )
-            else:
-                return ToolResult(
-                    success=False,
-                    output=output,
-                    error=error_output or f"命令返回非零退出码: {process.returncode}",
-                    metadata={"return_code": process.returncode}
-                )
+            return ToolResult(
+                success=False,
+                output=output,
+                error=error_output or f"命令返回非零退出码: {process.returncode}",
+                metadata={"return_code": process.returncode}
+            )
 
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"执行命令时出错: {str(e)}"
+                error=f"执行命令时出错: {e!s}"
             )

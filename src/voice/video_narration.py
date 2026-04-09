@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
-from .tts import TTSModule, TTSConfig
+from .tts import TTSConfig, TTSModule
 
 
 @dataclass
@@ -156,8 +156,7 @@ class VideoNarration:
             )
 
             with open(output_path, "w", encoding="utf-8") as f:
-                for entry in entries:
-                    f.write(entry.to_srt())
+                f.writelines(entry.to_srt() for entry in entries)
             return True
         except Exception:
             return False

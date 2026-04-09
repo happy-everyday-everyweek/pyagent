@@ -6,11 +6,11 @@ PyAgent 视频编辑器模块 - 视频工具
 
 from typing import Any
 
-from src.tools.base import UnifiedTool, ToolContext, ToolResult, ToolState
+from src.tools.base import ToolContext, ToolResult, ToolState, UnifiedTool
 
 from .editor_core import EditorCore
 from .manager import video_manager
-from .types import MediaType, TrackType, ExportFormat, ExportQuality
+from .types import ExportFormat, ExportQuality, MediaType, TrackType
 
 
 class VideoTool(UnifiedTool):
@@ -95,7 +95,7 @@ class VideoTool(UnifiedTool):
                 }
             )
         except Exception as e:
-            return ToolResult(success=False, error=f"Failed to create project: {str(e)}")
+            return ToolResult(success=False, error=f"Failed to create project: {e!s}")
 
     async def _handle_add_media(self, params: dict[str, Any]) -> ToolResult:
         project_id = params.get("project_id")
@@ -255,7 +255,7 @@ class VideoTool(UnifiedTool):
                 }
             )
         except Exception as e:
-            return ToolResult(success=False, error=f"Failed to export video: {str(e)}")
+            return ToolResult(success=False, error=f"Failed to export video: {e!s}")
 
     async def _handle_list_projects(self, params: dict[str, Any]) -> ToolResult:
         domain_id = params.get("domain_id")

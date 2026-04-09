@@ -126,12 +126,11 @@ class Scratchpad:
             if not root:
                 return []
             return self._build_chain(root)
-        else:
-            roots = [t for t in self._thoughts.values() if t.parent_id is None]
-            chains = []
-            for root in roots:
-                chains.extend(self._build_chain(root))
-            return chains
+        roots = [t for t in self._thoughts.values() if t.parent_id is None]
+        chains = []
+        for root in roots:
+            chains.extend(self._build_chain(root))
+        return chains
 
     def _build_chain(self, thought: ThoughtStep) -> list[ThoughtStep]:
         chain = [thought]

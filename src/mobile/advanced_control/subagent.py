@@ -127,9 +127,8 @@ class MobileSubAgent:
             if result:
                 logger.info(f"ScreenTools activated for agent {self.agent_id}")
                 return True
-            else:
-                logger.error(f"Failed to activate ScreenTools for agent {self.agent_id}")
-                return False
+            logger.error(f"Failed to activate ScreenTools for agent {self.agent_id}")
+            return False
         except Exception as e:
             logger.error(f"Error initializing ScreenTools: {e}")
             return False
@@ -151,9 +150,8 @@ class MobileSubAgent:
                 self._current_screenshot = base64_data
                 logger.debug(f"Screen captured, size: {len(base64_data) if base64_data else 0}")
                 return base64_data
-            else:
-                logger.error(f"Failed to capture screen: {result.error}")
-                return None
+            logger.error(f"Failed to capture screen: {result.error}")
+            return None
         except Exception as e:
             logger.error(f"Error capturing screen: {e}")
             return None
@@ -431,14 +429,14 @@ class MobileSubAgent:
                     data={"completed": True, "reason": action.reason}
                 )
 
-            elif action_type == "tap":
+            if action_type == "tap":
                 x = params.get("x", 0)
                 y = params.get("y", 0)
                 result = await self._screen_tools.tap(x, y)
                 await self._wait_for_response()
                 return result
 
-            elif action_type == "swipe":
+            if action_type == "swipe":
                 result = await self._screen_tools.swipe(
                     params.get("x1", 0),
                     params.get("y1", 0),
@@ -449,29 +447,28 @@ class MobileSubAgent:
                 await self._wait_for_response()
                 return result
 
-            elif action_type == "input_text":
+            if action_type == "input_text":
                 text = params.get("text", "")
                 result = await self._screen_tools.input_text(text)
                 await self._wait_for_response()
                 return result
 
-            elif action_type == "press_key":
+            if action_type == "press_key":
                 key = params.get("key", "back")
                 keycode = self._get_keycode(key)
                 result = await self._screen_tools.press_key(keycode)
                 await self._wait_for_response()
                 return result
 
-            elif action_type == "launch":
+            if action_type == "launch":
                 package = params.get("package", "")
                 if package:
                     result = await self._launch_app(package)
                     await self._wait_for_response(1000)
                     return result
-                else:
-                    return ToolResult(success=False, error="No package specified")
+                return ToolResult(success=False, error="No package specified")
 
-            elif action_type == "long_press":
+            if action_type == "long_press":
                 x = params.get("x", 0)
                 y = params.get("y", 0)
                 duration = params.get("duration", 1000)
@@ -479,8 +476,7 @@ class MobileSubAgent:
                 await self._wait_for_response()
                 return result
 
-            else:
-                return ToolResult(success=False, error=f"Unknown action type: {action_type}")
+            return ToolResult(success=False, error=f"Unknown action type: {action_type}")
 
         except Exception as e:
             logger.error(f"Error executing action: {e}")
@@ -519,11 +515,10 @@ class MobileSubAgent:
                     success=True,
                     output=f"Launched app: {package}"
                 )
-            else:
-                return ToolResult(
-                    success=False,
-                    error=f"Failed to launch app: {result.stderr}"
-                )
+            return ToolResult(
+                success=False,
+                error=f"Failed to launch app: {result.stderr}"
+            )
         except Exception as e:
             return ToolResult(success=False, error=str(e))
 
@@ -767,7 +762,7 @@ class MobileSubAgent:
             self._status = SubAgentStatus.FAILED
             return SubAgentResult(
                 success=False,
-                message=f"执行失败: {str(e)}",
+                message=f"执行失败: {e!s}",
                 agent_id=self.agent_id,
                 error=str(e)
             )

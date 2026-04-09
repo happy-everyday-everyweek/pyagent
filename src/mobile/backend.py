@@ -5,16 +5,16 @@ PyAgent 移动端模块 - 移动端后端
 v0.8.0: 新增移动端支持
 """
 
-import asyncio
 import logging
 import os
 import platform
-from dataclasses import dataclass, field
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from src.mobile.linux_env import EnvironmentStatus, LinuxEnv, ServiceConfig
+from src.mobile.linux_env import LinuxEnv, ServiceConfig
 
 
 class BackendMode(Enum):

@@ -9,10 +9,10 @@ import hashlib
 import json
 import logging
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from difflib import SequenceMatcher
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -60,7 +60,7 @@ class PageFingerprint:
 
 class LoopDetectorConfig(BaseModel):
     """循环检测器配置"""
-    
+
     max_action_repeat: int = Field(default=3, ge=1, le=10)
     max_page_stagnant: int = Field(default=5, ge=1, le=20)
     max_url_cycle: int = Field(default=3, ge=1, le=10)
@@ -70,7 +70,7 @@ class LoopDetectorConfig(BaseModel):
 
 class LoopDetector:
     """循环检测器"""
-    
+
     def __init__(self, config: LoopDetectorConfig | None = None):
         """
         初始化循环检测器
@@ -89,22 +89,22 @@ class LoopDetector:
             maxlen=self.config.history_size
         )
         self._alerts: list[LoopAlert] = []
-    
+
     def _hash_params(self, params: dict[str, Any] | None) -> str:
         """计算参数哈希"""
         if params is None:
             return ""
-        
+
         try:
             json_str = json.dumps(params, sort_keys=True, default=str)
             return hashlib.md5(json_str.encode()).hexdigest()[:8]
         except Exception:
             return ""
-    
+
     def _hash_content(self, content: str) -> str:
         """计算内容哈希"""
         return hashlib.md5(content.encode()).hexdigest()[:16]
-    
+
     def record_action(
         self,
         action_name: str,
@@ -122,7 +122,7 @@ class LoopDetector:
             result_summary: 结果摘要
         """
         import time
-        
+
         record = ActionRecord(
             action_name=action_name,
             params_hash=self._hash_params(params),
@@ -130,10 +130,10 @@ class LoopDetector:
             timestamp=time.time(),
             result_summary=result_summary,
         )
-        
+
         self._action_history.append(record)
         logger.debug(f"Recorded action: {action_name}")
-    
+
     def record_page(
         self,
         url: str,
@@ -153,7 +153,7 @@ class LoopDetector:
             interactive_count: 可交互元素数
         """
         import time
-        
+
         fingerprint = PageFingerprint(
             url=url,
             title=title,
@@ -162,11 +162,11 @@ class LoopDetector:
             interactive_count=interactive_count,
             timestamp=time.time(),
         )
-        
+
         self._page_history.append(fingerprint)
         self._url_history.append(url)
         logger.debug(f"Recorded page: {url}")
-    
+
     def check_action_loop(self) -> LoopAlert | None:
         """
         检测动作循环
@@ -176,17 +176,17 @@ class LoopDetector:
         """
         if len(self._action_history) < self.config.max_action_repeat:
             return None
-        
+
         recent_actions = list(self._action_history)[-self.config.max_action_repeat:]
-        
+
         first_action = recent_actions[0]
         for action in recent_actions[1:]:
             if (action.action_name != first_action.action_name or
                 action.params_hash != first_action.params_hash):
                 return None
-        
+
         count = self.config.max_action_repeat
-        
+
         return LoopAlert(
             loop_type=LoopType.ACTION_REPEAT,
             count=count,
@@ -201,7 +201,7 @@ class LoopDetector:
             ),
             severity="warning",
         )
-    
+
     def check_page_stagnant(self) -> LoopAlert | None:
         """
         检测页面停滞
@@ -211,16 +211,16 @@ class LoopDetector:
         """
         if len(self._page_history) < self.config.max_page_stagnant:
             return None
-        
+
         recent_pages = list(self._page_history)[-self.config.max_page_stagnant:]
-        
+
         first_page = recent_pages[0]
         for page in recent_pages[1:]:
             if page.content_hash != first_page.content_hash:
                 return None
-        
+
         count = self.config.max_page_stagnant
-        
+
         return LoopAlert(
             loop_type=LoopType.PAGE_STAGNANT,
             count=count,
@@ -235,7 +235,7 @@ class LoopDetector:
             ),
             severity="info",
         )
-    
+
     def check_url_cycle(self) -> LoopAlert | None:
         """
         检测 URL 循环
@@ -245,13 +245,13 @@ class LoopDetector:
         """
         if len(self._url_history) < 4:
             return None
-        
+
         recent_urls = list(self._url_history)
-        
+
         for cycle_len in range(2, min(6, len(recent_urls) // 2 + 1)):
             pattern = recent_urls[-cycle_len:]
             prev_pattern = recent_urls[-2*cycle_len:-cycle_len]
-            
+
             if pattern == prev_pattern:
                 return LoopAlert(
                     loop_type=LoopType.URL_CYCLE,
@@ -267,9 +267,9 @@ class LoopDetector:
                     ),
                     severity="warning",
                 )
-        
+
         return None
-    
+
     def check_state_similarity(self) -> LoopAlert | None:
         """
         检测状态相似性
@@ -279,20 +279,20 @@ class LoopDetector:
         """
         if len(self._page_history) < 3:
             return None
-        
+
         recent_pages = list(self._page_history)[-5:]
-        
+
         for i, page in enumerate(recent_pages[:-1]):
             for other in recent_pages[i+1:]:
                 if page.url != other.url:
                     continue
-                
+
                 similarity = SequenceMatcher(
                     None,
                     page.content_hash,
                     other.content_hash,
                 ).ratio()
-                
+
                 if similarity > self.config.similarity_threshold:
                     return LoopAlert(
                         loop_type=LoopType.STATE_SIMILAR,
@@ -307,9 +307,9 @@ class LoopDetector:
                         ),
                         severity="info",
                     )
-        
+
         return None
-    
+
     def detect(self) -> list[LoopAlert]:
         """
         执行所有循环检测
@@ -318,45 +318,45 @@ class LoopDetector:
             检测到的警告列表
         """
         alerts = []
-        
+
         action_alert = self.check_action_loop()
         if action_alert:
             alerts.append(action_alert)
-        
+
         page_alert = self.check_page_stagnant()
         if page_alert:
             alerts.append(page_alert)
-        
+
         url_alert = self.check_url_cycle()
         if url_alert:
             alerts.append(url_alert)
-        
+
         similarity_alert = self.check_state_similarity()
         if similarity_alert:
             alerts.append(similarity_alert)
-        
+
         self._alerts.extend(alerts)
-        
+
         return alerts
-    
+
     def has_loop(self) -> bool:
         """检查是否存在循环"""
         alerts = self.detect()
         return any(alert.severity == "warning" for alert in alerts)
-    
+
     def get_suggestions(self) -> list[str]:
         """获取所有建议"""
         alerts = self.detect()
         return [alert.suggestion for alert in alerts]
-    
+
     def get_alerts(self) -> list[LoopAlert]:
         """获取所有警告"""
         return self._alerts.copy()
-    
+
     def clear_alerts(self) -> None:
         """清除警告历史"""
         self._alerts.clear()
-    
+
     def reset(self) -> None:
         """重置检测器状态"""
         self._action_history.clear()
@@ -364,7 +364,7 @@ class LoopDetector:
         self._url_history.clear()
         self._alerts.clear()
         logger.info("Loop detector reset")
-    
+
     def get_statistics(self) -> dict[str, Any]:
         """获取统计信息"""
         return {

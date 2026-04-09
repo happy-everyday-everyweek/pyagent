@@ -1,15 +1,16 @@
 from typing import Optional
-from .base import PlatformCapabilities, PlatformAdapter
+
+from .base import PlatformAdapter, PlatformCapabilities
+from .desktop import DesktopAdapter, FFmpegRenderer, FileSystemAccess, HardwareEncoder
 from .detector import PlatformDetector
-from .desktop import DesktopAdapter, FileSystemAccess, FFmpegRenderer, HardwareEncoder
 from .mobile import (
-    MobileAdapter,
-    TouchGestureHandler,
-    PerformanceOptimizer,
-    OfflineStorage,
-    GestureType,
     DeviceTier,
+    GestureType,
+    MobileAdapter,
+    OfflineStorage,
+    PerformanceOptimizer,
     RendererConfig,
+    TouchGestureHandler,
 )
 
 
@@ -24,9 +25,9 @@ class DefaultAdapter(PlatformAdapter):
     def detect_capabilities(self) -> PlatformCapabilities:
         platform_type = PlatformDetector.detect()
         os_type = PlatformDetector.get_os()
-        
+
         capabilities = PlatformCapabilities()
-        
+
         if platform_type == "desktop":
             capabilities.can_hardware_encode = True
             capabilities.can_gpu_render = True
@@ -54,7 +55,7 @@ class DefaultAdapter(PlatformAdapter):
             capabilities.supports_offline = False
             capabilities.storage_type = "indexeddb"
             capabilities.renderer_type = "canvas"
-        
+
         return capabilities
 
     def get_storage(self):
@@ -72,12 +73,12 @@ class DefaultAdapter(PlatformAdapter):
         }
 
 
-_adapter_instance: Optional[PlatformAdapter] = None
+_adapter_instance: PlatformAdapter | None = None
 
 
 def get_platform_adapter() -> PlatformAdapter:
     global _adapter_instance
-    
+
     if _adapter_instance is None:
         platform_type = PlatformDetector.detect()
         if platform_type == "mobile":
@@ -86,24 +87,24 @@ def get_platform_adapter() -> PlatformAdapter:
             _adapter_instance = DesktopAdapter()
         else:
             _adapter_instance = DefaultAdapter()
-    
+
     return _adapter_instance
 
 
 __all__ = [
-    "PlatformCapabilities",
-    "PlatformAdapter",
-    "PlatformDetector",
-    "get_platform_adapter",
     "DesktopAdapter",
-    "FileSystemAccess",
+    "DeviceTier",
     "FFmpegRenderer",
+    "FileSystemAccess",
+    "GestureType",
     "HardwareEncoder",
     "MobileAdapter",
-    "TouchGestureHandler",
-    "PerformanceOptimizer",
     "OfflineStorage",
-    "GestureType",
-    "DeviceTier",
+    "PerformanceOptimizer",
+    "PlatformAdapter",
+    "PlatformCapabilities",
+    "PlatformDetector",
     "RendererConfig",
+    "TouchGestureHandler",
+    "get_platform_adapter",
 ]

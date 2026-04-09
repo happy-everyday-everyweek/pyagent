@@ -8,10 +8,10 @@ PyAgent 浏览器自动化模块 - 结构化输出处理器
 import hashlib
 import json
 import logging
-from dataclasses import dataclass, field
-from typing import Any, Optional, TypeVar
+from dataclasses import dataclass
+from typing import Any, TypeVar
 
-from pydantic import BaseModel, Field, ValidationError, create_model
+from pydantic import BaseModel, Field, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class ExtractionResult(BaseModel):
 
 class StructuredOutputProcessor:
     """结构化输出处理器"""
-    
+
     def __init__(
         self,
         output_model: type[BaseModel] | None = None,
@@ -61,30 +61,30 @@ class StructuredOutputProcessor:
         self._max_items = max_items
         self._extracted_hashes: set[str] = set()
         self._extracted_items: list[ExtractedItem] = []
-    
+
     def set_output_model(self, model: type[BaseModel]) -> None:
         """设置输出模型"""
         self._output_model = model
-    
+
     def _compute_hash(self, data: dict[str, Any]) -> str:
         """计算数据哈希"""
         json_str = json.dumps(data, sort_keys=True, default=str)
         return hashlib.md5(json_str.encode()).hexdigest()
-    
+
     def _is_duplicate(self, data: dict[str, Any]) -> bool:
         """检查是否重复"""
         if not self._dedup_enabled:
             return False
-        
+
         data_hash = self._compute_hash(data)
         return data_hash in self._extracted_hashes
-    
+
     def _add_to_extracted(self, data: dict[str, Any], source_url: str | None = None) -> ExtractedItem:
         """添加到已提取集合"""
         import datetime
-        
+
         data_hash = self._compute_hash(data)
-        
+
         item = ExtractedItem(
             id=data_hash[:8],
             data=data,
@@ -92,14 +92,14 @@ class StructuredOutputProcessor:
             extracted_at=datetime.datetime.now().isoformat(),
             hash=data_hash,
         )
-        
+
         if self._dedup_enabled:
             self._extracted_hashes.add(data_hash)
-        
+
         self._extracted_items.append(item)
-        
+
         return item
-    
+
     def validate_against_schema(
         self,
         data: dict[str, Any],
@@ -117,14 +117,14 @@ class StructuredOutputProcessor:
         """
         if self._output_model is None and schema is None:
             return True, data, None
-        
+
         try:
             if self._output_model:
                 validated = self._output_model(**data)
                 return True, validated.model_dump(), None
-            
+
             return True, data, None
-            
+
         except ValidationError as e:
             error_msg = str(e)
             logger.warning(f"Validation failed: {error_msg}")
@@ -133,7 +133,7 @@ class StructuredOutputProcessor:
             error_msg = str(e)
             logger.error(f"Validation error: {error_msg}")
             return False, None, error_msg
-    
+
     def extract_single(
         self,
         data: dict[str, Any],
@@ -156,7 +156,7 @@ class StructuredOutputProcessor:
                 success=False,
                 error=f"Maximum items ({self._max_items}) reached",
             )
-        
+
         if self._is_duplicate(data):
             logger.debug("Skipping duplicate item")
             return ExtractionResult(
@@ -164,7 +164,7 @@ class StructuredOutputProcessor:
                 items=[],
                 total_count=len(self._extracted_items),
             )
-        
+
         if validate:
             is_valid, validated_data, error = self.validate_against_schema(data)
             if not is_valid:
@@ -173,15 +173,15 @@ class StructuredOutputProcessor:
                     error=error,
                 )
             data = validated_data or data
-        
+
         item = self._add_to_extracted(data, source_url)
-        
+
         return ExtractionResult(
             success=True,
             items=[data],
             total_count=len(self._extracted_items),
         )
-    
+
     def extract_batch(
         self,
         data_list: list[dict[str, Any]],
@@ -201,25 +201,25 @@ class StructuredOutputProcessor:
         """
         extracted_items = []
         errors = []
-        
+
         for data in data_list:
             if len(self._extracted_items) >= self._max_items:
                 break
-            
+
             result = self.extract_single(data, source_url, validate)
-            
+
             if result.success and result.items:
                 extracted_items.extend(result.items)
             elif not result.success:
                 errors.append(result.error)
-        
+
         return ExtractionResult(
             success=len(extracted_items) > 0,
             items=extracted_items,
             total_count=len(self._extracted_items),
             error="; ".join(errors) if errors else None,
         )
-    
+
     async def extract_with_llm(
         self,
         llm_client: Any,
@@ -241,7 +241,7 @@ class StructuredOutputProcessor:
         if self._output_model:
             schema = self._output_model.model_json_schema()
             schema_description = f"\n\nOutput schema:\n{json.dumps(schema, indent=2)}"
-        
+
         default_prompt = f"""Extract structured data from the following content.
 {schema_description}
 
@@ -252,26 +252,26 @@ Content:
 {content}"""
 
         prompt = extraction_prompt or default_prompt
-        
+
         try:
             response = await llm_client.chat.completions.create(
                 model=llm_client.model,
                 messages=[{"role": "user", "content": prompt}],
             )
-            
+
             content = response.choices[0].message.content or "[]"
-            
+
             import re
-            json_match = re.search(r'\[[\s\S]*\]', content)
+            json_match = re.search(r"\[[\s\S]*\]", content)
             if json_match:
                 data_list = json.loads(json_match.group())
                 return self.extract_batch(data_list)
-            
+
             return ExtractionResult(
                 success=False,
                 error="No valid JSON array found in response",
             )
-            
+
         except json.JSONDecodeError as e:
             return ExtractionResult(
                 success=False,
@@ -283,15 +283,15 @@ Content:
                 success=False,
                 error=str(e),
             )
-    
+
     def get_all_extracted(self) -> list[dict[str, Any]]:
         """获取所有已提取的数据"""
         return [item.data for item in self._extracted_items]
-    
+
     def get_extracted_items(self) -> list[ExtractedItem]:
         """获取所有已提取的数据项（含元数据）"""
         return self._extracted_items.copy()
-    
+
     def get_statistics(self) -> dict[str, Any]:
         """获取统计信息"""
         return {
@@ -300,13 +300,13 @@ Content:
             "dedup_enabled": self._dedup_enabled,
             "max_items": self._max_items,
         }
-    
+
     def clear(self) -> None:
         """清除所有已提取的数据"""
         self._extracted_hashes.clear()
         self._extracted_items.clear()
         logger.info("Extracted data cleared")
-    
+
     def export_to_json(self, indent: int = 2) -> str:
         """导出为 JSON"""
         return json.dumps(
@@ -315,7 +315,7 @@ Content:
             ensure_ascii=False,
             default=str,
         )
-    
+
     def export_to_dict(self) -> dict[str, Any]:
         """导出为字典"""
         return {

@@ -69,7 +69,6 @@ class BaseTool(ABC):
     @abstractmethod
     async def execute(self, **kwargs) -> ToolResult:
         """执行工具"""
-        pass
 
     def get_parameters(self) -> list[ToolParameter]:
         """获取参数定义"""

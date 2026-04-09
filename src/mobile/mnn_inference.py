@@ -221,9 +221,8 @@ class MNNInference:
                             self._current_model = model_name
                             logger.info(f"MNN session created for: {model_name}")
                             return True
-                        else:
-                            self._model_status[model_name] = MNNModelStatus.ERROR
-                            return False
+                        self._model_status[model_name] = MNNModelStatus.ERROR
+                        return False
 
                     except Exception as e:
                         logger.error(f"Error creating MNN session: {e}")
@@ -360,7 +359,7 @@ class MNNInference:
             self._model_status[self._current_model] = MNNModelStatus.ERROR
             return MNNInferenceResult(
                 success=False,
-                error=f"Inference error: {str(e)}",
+                error=f"Inference error: {e!s}",
             )
 
     def _run_mnn_inference(
@@ -410,7 +409,7 @@ class MNNInference:
         except Exception as e:
             return MNNInferenceResult(
                 success=False,
-                error=f"MNN inference error: {str(e)}",
+                error=f"MNN inference error: {e!s}",
             )
 
     def _run_streaming_mnn(
@@ -461,7 +460,7 @@ class MNNInference:
         except Exception as e:
             return MNNInferenceResult(
                 success=False,
-                error=f"Streaming error: {str(e)}",
+                error=f"Streaming error: {e!s}",
             )
 
     def _run_simulation_inference(

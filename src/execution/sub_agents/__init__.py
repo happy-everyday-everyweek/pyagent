@@ -8,7 +8,7 @@ from .search_agent import SearchSubAgent
 
 __all__ = [
     "BaseSubAgent",
-    "SubAgentResult",
     "BrowserSubAgent",
     "SearchSubAgent",
+    "SubAgentResult",
 ]

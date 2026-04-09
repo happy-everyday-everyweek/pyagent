@@ -8,10 +8,11 @@ PyAgent 浏览器自动化模块 - 事件总线系统
 import asyncio
 import logging
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Generic, Protocol, TypeVar, runtime_checkable
+from typing import Any, Generic, Protocol, TypeVar, runtime_checkable
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class EventHandler(Protocol[T]):
     
     定义事件处理器的标准接口，支持同步和异步处理。
     """
-    
+
     async def __call__(self, event: "BaseEvent[T]") -> T:
         """处理事件
         
@@ -66,12 +67,12 @@ class EventResult(Generic[T]):
     error: Exception | None = None
     executed_at: datetime = field(default_factory=datetime.now)
     duration_ms: float = 0.0
-    
+
     @property
     def success(self) -> bool:
         """是否成功执行"""
         return self.error is None
-    
+
     def get_result(self) -> T:
         """获取结果，如果有错误则抛出
         
@@ -99,19 +100,19 @@ class BaseEvent(Generic[T]):
     _state: EventState = field(default=EventState.PENDING, repr=False)
     _results: list[EventResult[T]] = field(default_factory=list, repr=False)
     _waiters: list[asyncio.Future] = field(default_factory=list, repr=False)
-    
+
     def __post_init__(self) -> None:
         if not self.event_type:
             self.event_type = self.__class__.__name__
-    
+
     def add_result(self, result: EventResult[T]) -> None:
         """添加处理结果"""
         self._results.append(result)
-    
+
     def get_results(self) -> list[EventResult[T]]:
         """获取所有处理结果"""
         return self._results.copy()
-    
+
     def set_state(self, state: EventState) -> None:
         """设置事件状态"""
         self._state = state
@@ -119,7 +120,7 @@ class BaseEvent(Generic[T]):
             for waiter in self._waiters:
                 if not waiter.done():
                     waiter.set_result(self)
-    
+
     async def event_result(self, timeout: float | None = None) -> "BaseEvent[T]":
         """等待事件处理完成
         
@@ -134,11 +135,11 @@ class BaseEvent(Generic[T]):
         """
         if self._state in (EventState.COMPLETED, EventState.FAILED):
             return self
-        
+
         loop = asyncio.get_event_loop()
         future: asyncio.Future[BaseEvent[T]] = loop.create_future()
         self._waiters.append(future)
-        
+
         try:
             if timeout is not None:
                 return await asyncio.wait_for(future, timeout=timeout)
@@ -146,7 +147,7 @@ class BaseEvent(Generic[T]):
         except asyncio.TimeoutError:
             self._waiters.remove(future)
             raise
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {
@@ -165,11 +166,11 @@ class HandlerRegistration(Generic[T]):
     handler: Callable[[BaseEvent[T]], T] | Callable[[BaseEvent[T]], asyncio.Future[T]]
     priority: EventPriority = EventPriority.NORMAL
     handler_name: str = ""
-    
+
     def __post_init__(self) -> None:
         if not self.handler_name:
             self.handler_name = getattr(
-                self.handler, "__name__", 
+                self.handler, "__name__",
                 f"handler_{id(self.handler)}"
             )
 
@@ -185,20 +186,20 @@ class EventBus:
     - 事件链路追踪
     - 中间件模式
     """
-    
+
     def __init__(self, name: str = "default") -> None:
         self.name = name
         self._handlers: dict[
-            type[BaseEvent[Any]] | str, 
+            type[BaseEvent[Any]] | str,
             list[HandlerRegistration[Any]]
         ] = {}
         self._middlewares: list[Callable[[BaseEvent[Any]], bool]] = []
         self._event_history: list[BaseEvent[Any]] = []
         self._max_history: int = 1000
         self._lock = asyncio.Lock()
-    
+
     def on(
-        self, 
+        self,
         event_type: type[BaseEvent[T]] | str,
         handler: Callable[[BaseEvent[T]], T] | Callable[[BaseEvent[T]], asyncio.Future[T]],
         priority: EventPriority = EventPriority.NORMAL
@@ -218,25 +219,25 @@ class EventBus:
             handler=handler,
             priority=priority
         )
-        
+
         if event_type not in self._handlers:
             self._handlers[event_type] = []
-        
+
         self._handlers[event_type].append(registration)
         self._handlers[event_type].sort(
-            key=lambda r: r.priority.value, 
+            key=lambda r: r.priority.value,
             reverse=True
         )
-        
+
         logger.debug(
             f"[{self.name}] 注册事件处理器: "
             f"{registration.handler_name} -> {event_type}"
         )
-        
+
         return registration.handler_name
-    
+
     def off(
-        self, 
+        self,
         event_type: type[BaseEvent[T]] | str,
         handler: Callable[[BaseEvent[T]], Any] | str | None = None
     ) -> bool:
@@ -251,36 +252,36 @@ class EventBus:
         """
         if event_type not in self._handlers:
             return False
-        
+
         if handler is None:
             del self._handlers[event_type]
             logger.debug(f"[{self.name}] 移除所有处理器: {event_type}")
             return True
-        
+
         handler_name = handler if isinstance(handler, str) else getattr(
             handler, "__name__", None
         )
-        
+
         if handler_name is None:
             return False
-        
+
         original_count = len(self._handlers[event_type])
         self._handlers[event_type] = [
             r for r in self._handlers[event_type]
             if r.handler_name != handler_name
         ]
-        
+
         removed = len(self._handlers[event_type]) < original_count
-        
+
         if removed:
             logger.debug(
                 f"[{self.name}] 移除事件处理器: {handler_name} -> {event_type}"
             )
-        
+
         return removed
-    
+
     def add_middleware(
-        self, 
+        self,
         middleware: Callable[[BaseEvent[Any]], bool]
     ) -> None:
         """添加事件中间件
@@ -291,9 +292,9 @@ class EventBus:
             middleware: 中间件函数，返回True继续分发，False阻止
         """
         self._middlewares.append(middleware)
-    
+
     def remove_middleware(
-        self, 
+        self,
         middleware: Callable[[BaseEvent[Any]], bool]
     ) -> bool:
         """移除事件中间件
@@ -309,9 +310,9 @@ class EventBus:
             return True
         except ValueError:
             return False
-    
+
     def get_handlers(
-        self, 
+        self,
         event_type: type[BaseEvent[T]] | str
     ) -> list[HandlerRegistration[T]]:
         """获取指定事件类型的所有处理器
@@ -323,7 +324,7 @@ class EventBus:
             处理器列表
         """
         return self._handlers.get(event_type, []).copy()
-    
+
     async def dispatch(self, event: BaseEvent[T]) -> BaseEvent[T]:
         """分发事件到所有注册的处理器
         
@@ -336,7 +337,7 @@ class EventBus:
             处理完成后的事件对象
         """
         event.set_state(EventState.PROCESSING)
-        
+
         for middleware in self._middlewares:
             try:
                 if not middleware(event):
@@ -345,39 +346,39 @@ class EventBus:
                     return event
             except Exception as e:
                 logger.error(f"[{self.name}] 中间件执行错误: {e}")
-        
+
         handlers = self._get_handlers_for_event(event)
-        
+
         if not handlers:
             logger.debug(f"[{self.name}] 无处理器: {event.event_type}")
             event.set_state(EventState.COMPLETED)
             return event
-        
+
         for registration in handlers:
             await self._execute_handler(event, registration)
-        
+
         event.set_state(EventState.COMPLETED)
         self._add_to_history(event)
-        
+
         return event
-    
+
     async def _execute_handler(
-        self, 
-        event: BaseEvent[T], 
+        self,
+        event: BaseEvent[T],
         registration: HandlerRegistration[T]
     ) -> None:
         """执行单个处理器"""
         start_time = datetime.now()
         result = EventResult[T](handler_name=registration.handler_name)
-        
+
         try:
             handler_result = registration.handler(event)
-            
+
             if asyncio.iscoroutine(handler_result):
                 result.result = await handler_result
             else:
                 result.result = handler_result
-                
+
         except Exception as e:
             result.error = e
             logger.error(
@@ -389,44 +390,44 @@ class EventBus:
                 datetime.now() - start_time
             ).total_seconds() * 1000
             event.add_result(result)
-    
+
     def _get_handlers_for_event(
-        self, 
+        self,
         event: BaseEvent[T]
     ) -> list[HandlerRegistration[T]]:
         """获取事件的所有处理器（包括通配符处理器）"""
         handlers: list[HandlerRegistration[T]] = []
-        
+
         wildcard_handlers = self._handlers.get("*", [])
         handlers.extend(wildcard_handlers)
-        
+
         event_class = type(event)
         type_handlers = self._handlers.get(event_class, [])
         handlers.extend(type_handlers)
-        
+
         name_handlers = self._handlers.get(event.event_type, [])
         handlers.extend(name_handlers)
-        
+
         seen_names: set[str] = set()
         unique_handlers: list[HandlerRegistration[T]] = []
         for h in handlers:
             if h.handler_name not in seen_names:
                 seen_names.add(h.handler_name)
                 unique_handlers.append(h)
-        
+
         unique_handlers.sort(key=lambda r: r.priority.value, reverse=True)
-        
+
         return unique_handlers
-    
+
     def _add_to_history(self, event: BaseEvent[T]) -> None:
         """添加事件到历史记录"""
         self._event_history.append(event)
-        
+
         if len(self._event_history) > self._max_history:
             self._event_history = self._event_history[-self._max_history:]
-    
+
     def get_history(
-        self, 
+        self,
         event_type: type[BaseEvent[T]] | str | None = None,
         limit: int = 100
     ) -> list[BaseEvent[Any]]:
@@ -441,27 +442,27 @@ class EventBus:
         """
         if event_type is None:
             return self._event_history[-limit:]
-        
+
         filtered = [
             e for e in self._event_history
             if isinstance(e, event_type) or e.event_type == event_type
         ]
         return filtered[-limit:]
-    
+
     def clear_history(self) -> None:
         """清空事件历史记录"""
         self._event_history.clear()
-    
+
     async def emit(self, event: BaseEvent[T]) -> BaseEvent[T]:
         """发射事件（dispatch的别名）"""
         return await self.dispatch(event)
-    
+
     def subscribe(
-        self, 
+        self,
         event_type: type[BaseEvent[T]] | str,
         priority: EventPriority = EventPriority.NORMAL
     ) -> Callable[
-        [Callable[[BaseEvent[T]], T]], 
+        [Callable[[BaseEvent[T]], T]],
         Callable[[BaseEvent[T]], T]
     ]:
         """装饰器方式订阅事件
@@ -484,7 +485,7 @@ class EventBus:
             self.on(event_type, handler, priority)
             return handler
         return decorator
-    
+
     def __repr__(self) -> str:
         handler_count = sum(len(h) for h in self._handlers.values())
         return (
@@ -496,7 +497,6 @@ class EventBus:
 
 class BrowserEvent(BaseEvent[None]):
     """浏览器事件基类"""
-    pass
 
 
 @dataclass

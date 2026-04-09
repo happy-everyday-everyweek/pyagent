@@ -5,12 +5,11 @@ PyAgent 执行模块工具系统 - ZIM 文件解析器
 参考: https://wiki.openzim.org/wiki/ZIM_file_format
 """
 
-import struct
 import mmap
-import os
+import struct
 from dataclasses import dataclass
-from typing import Any, Optional
 from pathlib import Path
+from typing import Any
 
 
 @dataclass
@@ -37,8 +36,8 @@ class ZimArticle:
     url: str
     title: str
     content_type: str
-    content: Optional[bytes] = None
-    redirect_index: Optional[int] = None
+    content: bytes | None = None
+    redirect_index: int | None = None
 
 
 class ZimParser:
@@ -52,7 +51,7 @@ class ZimParser:
         self.zim_path = Path(zim_path)
         self._file = None
         self._mmap = None
-        self._header: Optional[ZimHeader] = None
+        self._header: ZimHeader | None = None
         self._mime_types: list[str] = []
         self._url_index: dict[str, int] = {}
         self._title_index: dict[str, int] = {}
@@ -87,10 +86,10 @@ class ZimParser:
             raise RuntimeError("ZIM file not open")
 
         header_data = self._mmap[:self.HEADER_SIZE]
-        
+
         magic, version = struct.unpack("<II", header_data[0:8])
         if magic != self.MAGIC_NUMBER:
-            raise ValueError(f"Invalid ZIM file: magic number mismatch")
+            raise ValueError("Invalid ZIM file: magic number mismatch")
 
         uuid = header_data[8:24]
         article_count, cluster_count = struct.unpack("<II", header_data[24:32])
@@ -148,15 +147,15 @@ class ZimParser:
 
         cluster_offset = struct.unpack("<Q", self._mmap[entry_pos:entry_pos + 8])[0]
         blob_number = struct.unpack("<I", self._mmap[entry_pos + 8:entry_pos + 12])[0]
-        
+
         redirect_flag = (cluster_offset >> 56) & 0x0F
         cluster_offset = cluster_offset & 0x00FFFFFFFFFFFFFF
 
         mime_type_idx = struct.unpack("<H", self._mmap[entry_pos + 12:entry_pos + 14])[0]
-        
+
         url_len = self._mmap.find(b"\x00", entry_pos + 16)
         url = self._mmap[entry_pos + 16:url_len].decode("utf-8", errors="ignore") if url_len > entry_pos + 16 else ""
-        
+
         title_start = url_len + 1 if url_len > entry_pos + 16 else entry_pos + 16
         title_len = self._mmap.find(b"\x00", title_start)
         title = self._mmap[title_start:title_len].decode("utf-8", errors="ignore") if title_len > title_start else ""
@@ -187,7 +186,7 @@ class ZimParser:
         for i in range(min(self._header.article_count, 10000)):
             try:
                 _, _, redirect_flag, mime_type, url, title = self._read_directory_entry(i)
-                
+
                 if redirect_flag == 0 and "text/html" in mime_type:
                     if query_lower in title.lower() or query_lower in url.lower():
                         results.append({
@@ -203,7 +202,7 @@ class ZimParser:
 
         return results
 
-    def get_article(self, index: int) -> Optional[ZimArticle]:
+    def get_article(self, index: int) -> ZimArticle | None:
         """获取指定索引的文章内容"""
         if not self._mmap or not self._header:
             return None
@@ -244,7 +243,7 @@ class ZimParser:
         except Exception:
             return None
 
-    def _read_uncompressed_blob(self, cluster_pos: int, blob_number: int) -> Optional[bytes]:
+    def _read_uncompressed_blob(self, cluster_pos: int, blob_number: int) -> bytes | None:
         """读取未压缩的 blob"""
         if not self._mmap:
             return None
@@ -252,11 +251,11 @@ class ZimParser:
         offset_pos = cluster_pos + blob_number * 4
         blob_offset = struct.unpack("<I", self._mmap[offset_pos:offset_pos + 4])[0]
         next_offset = struct.unpack("<I", self._mmap[offset_pos + 4:offset_pos + 8])[0]
-        
+
         blob_size = next_offset - blob_offset
         return self._mmap[cluster_pos + blob_offset:cluster_pos + next_offset]
 
-    def _read_lzma_blob(self, cluster_pos: int, blob_number: int) -> Optional[bytes]:
+    def _read_lzma_blob(self, cluster_pos: int, blob_number: int) -> bytes | None:
         """读取 LZMA 压缩的 blob（简化实现）"""
         return None
 

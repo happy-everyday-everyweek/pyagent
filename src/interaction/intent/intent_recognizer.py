@@ -7,9 +7,9 @@ PyAgent 交互模块 - 意图识别器
 import json
 import re
 import time
-from typing import Any, Optional
+from typing import Any
 
-from .intent_types import EntityInfo, Intent, IntentContext, IntentType
+from .intent_types import Intent, IntentContext, IntentType
 
 
 class IntentRecognizer:
@@ -329,20 +329,20 @@ class IntentRecognizer:
         try:
             json_pattern = r"```json\s*(.*?)\s*```"
             matches = re.findall(json_pattern, response, re.DOTALL)
-            
+
             if matches:
                 json_str = matches[0]
             else:
                 json_str = response
-            
+
             json_str = re.sub(r"//.*?\n", "\n", json_str)
             json_str = re.sub(r"/\*.*?\*/", "", json_str, flags=re.DOTALL)
-            
+
             data = json.loads(json_str.strip())
-            
+
             intent_type_str = data.get("intent_type", "UNKNOWN").upper()
             intent_type = IntentType[intent_type_str] if intent_type_str in IntentType.__members__ else IntentType.UNKNOWN
-            
+
             return Intent(
                 type=intent_type,
                 confidence=float(data.get("confidence", 0.5)),
@@ -404,8 +404,7 @@ class IntentRecognizer:
             intent, timestamp = self._cache[cache_key]
             if time.time() - timestamp < self._cache_ttl:
                 return intent
-            else:
-                del self._cache[cache_key]
+            del self._cache[cache_key]
 
         return None
 

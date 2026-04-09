@@ -5,7 +5,6 @@ PyAgent 移动端模块 - Linux环境管理
 v0.8.0: 新增移动端支持
 """
 
-import asyncio
 import logging
 import os
 import platform
@@ -334,12 +333,11 @@ class LinuxEnv:
 
         try:
             import aiohttp
-            async with aiohttp.ClientSession() as session:
-                async with session.get(
-                    f"{self._api_endpoint}/",
-                    timeout=aiohttp.ClientTimeout(total=5)
-                ) as response:
-                    return response.status == 200
+            async with aiohttp.ClientSession() as session, session.get(
+                f"{self._api_endpoint}/",
+                timeout=aiohttp.ClientTimeout(total=5)
+            ) as response:
+                return response.status == 200
         except Exception:
             return False
 

@@ -9,7 +9,7 @@ from .storage import VerificationStorage
 
 __all__ = [
     "IMVerificationManager",
-    "VerifiedUser",
     "VerificationStorage",
+    "VerifiedUser",
     "verification_manager",
 ]

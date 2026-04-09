@@ -192,7 +192,7 @@ class ReActEngine:
                     result = await tool.execute(**act_step.tool_args)
                     observation = str(result)
                 except Exception as e:
-                    observation = f"工具执行失败: {str(e)}"
+                    observation = f"工具执行失败: {e!s}"
 
         if not observation:
             observation = "无观察结果"

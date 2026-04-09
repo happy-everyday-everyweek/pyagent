@@ -6,7 +6,6 @@ import asyncio
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 
 @dataclass
@@ -48,8 +47,9 @@ class ScreenCapture:
 
     def _capture_with_mss(self) -> bytes | None:
         try:
-            import mss
             from io import BytesIO
+
+            import mss
 
             with mss.mss() as sct:
                 monitor = sct.monitors[0]
@@ -73,8 +73,9 @@ class ScreenCapture:
 
     def _capture_with_pil(self) -> bytes | None:
         try:
-            from PIL import ImageGrab
             from io import BytesIO
+
+            from PIL import ImageGrab
 
             img = ImageGrab.grab()
 
@@ -93,8 +94,9 @@ class ScreenCapture:
 
     def capture_region(self, x: int, y: int, width: int, height: int) -> bytes | None:
         try:
-            from PIL import ImageGrab
             from io import BytesIO
+
+            from PIL import ImageGrab
 
             img = ImageGrab.grab(bbox=(x, y, x + width, y + height))
             buffer = BytesIO()

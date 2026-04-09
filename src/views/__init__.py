@@ -3,11 +3,12 @@
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -46,25 +47,25 @@ class Filter:
 
         if self.operator == FilterOperator.EQUALS:
             return field_value == self.value
-        elif self.operator == FilterOperator.NOT_EQUALS:
+        if self.operator == FilterOperator.NOT_EQUALS:
             return field_value != self.value
-        elif self.operator == FilterOperator.CONTAINS:
+        if self.operator == FilterOperator.CONTAINS:
             return self.value in str(field_value) if field_value else False
-        elif self.operator == FilterOperator.STARTS_WITH:
+        if self.operator == FilterOperator.STARTS_WITH:
             return str(field_value).startswith(self.value) if field_value else False
-        elif self.operator == FilterOperator.ENDS_WITH:
+        if self.operator == FilterOperator.ENDS_WITH:
             return str(field_value).endswith(self.value) if field_value else False
-        elif self.operator == FilterOperator.GREATER_THAN:
+        if self.operator == FilterOperator.GREATER_THAN:
             return field_value > self.value if field_value is not None else False
-        elif self.operator == FilterOperator.LESS_THAN:
+        if self.operator == FilterOperator.LESS_THAN:
             return field_value < self.value if field_value is not None else False
-        elif self.operator == FilterOperator.IN:
+        if self.operator == FilterOperator.IN:
             return field_value in self.value if field_value is not None else False
-        elif self.operator == FilterOperator.NOT_IN:
+        if self.operator == FilterOperator.NOT_IN:
             return field_value not in self.value if field_value is not None else True
-        elif self.operator == FilterOperator.IS_EMPTY:
+        if self.operator == FilterOperator.IS_EMPTY:
             return field_value is None or field_value == "" or field_value == []
-        elif self.operator == FilterOperator.IS_NOT_EMPTY:
+        if self.operator == FilterOperator.IS_NOT_EMPTY:
             return field_value is not None and field_value != "" and field_value != []
 
         return True

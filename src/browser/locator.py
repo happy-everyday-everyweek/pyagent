@@ -6,10 +6,9 @@ PyAgent 浏览器自动化模块 - 智能元素定位器
 """
 
 import logging
-import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -74,11 +73,11 @@ class InputTextParams(BaseModel):
 
 class ElementLocator:
     """智能元素定位器"""
-    
+
     def __init__(self):
         self._elements: list[ElementInfo] = []
         self._selector_map: dict[int, ElementInfo] = {}
-    
+
     def update_elements(self, elements: list[ElementInfo]) -> None:
         """
         更新元素列表
@@ -89,7 +88,7 @@ class ElementLocator:
         self._elements = elements
         self._selector_map = {elem.index: elem for elem in elements}
         logger.debug(f"Updated {len(elements)} elements")
-    
+
     def get_element_by_index(self, index: int) -> ElementInfo | None:
         """
         通过索引获取元素
@@ -101,7 +100,7 @@ class ElementLocator:
             ElementInfo 或 None
         """
         return self._selector_map.get(index)
-    
+
     def get_element_by_text(
         self,
         text: str,
@@ -120,22 +119,21 @@ class ElementLocator:
             ElementInfo 或 None
         """
         search_text = text if case_sensitive else text.lower()
-        
+
         for elem in self._elements:
             if not elem.text:
                 continue
-            
+
             elem_text = elem.text if case_sensitive else elem.text.lower()
-            
+
             if exact:
                 if elem_text == search_text:
                     return elem
-            else:
-                if search_text in elem_text:
-                    return elem
-        
+            elif search_text in elem_text:
+                return elem
+
         return None
-    
+
     def get_elements_by_text(
         self,
         text: str,
@@ -155,34 +153,33 @@ class ElementLocator:
         """
         search_text = text if case_sensitive else text.lower()
         results = []
-        
+
         for elem in self._elements:
             if not elem.text:
                 continue
-            
+
             elem_text = elem.text if case_sensitive else elem.text.lower()
-            
+
             if exact:
                 if elem_text == search_text:
                     results.append(elem)
-            else:
-                if search_text in elem_text:
-                    results.append(elem)
-        
+            elif search_text in elem_text:
+                results.append(elem)
+
         return results
-    
+
     def get_clickable_elements(self) -> list[ElementInfo]:
         """获取所有可点击元素"""
         return [elem for elem in self._elements if elem.is_clickable]
-    
+
     def get_input_elements(self) -> list[ElementInfo]:
         """获取所有输入元素"""
         return [elem for elem in self._elements if elem.is_input]
-    
+
     def get_interactive_elements(self) -> list[ElementInfo]:
         """获取所有可交互元素"""
         return [elem for elem in self._elements if elem.is_interactive]
-    
+
     def locate(
         self,
         locator_type: LocatorType,
@@ -210,8 +207,8 @@ class ElementLocator:
                     error=f"Element with index {value} not found",
                     suggestion=f"Available indices: 0-{len(self._elements) - 1}",
                 )
-            
-            elif locator_type == LocatorType.TEXT:
+
+            if locator_type == LocatorType.TEXT:
                 exact = kwargs.get("exact", False)
                 case_sensitive = kwargs.get("case_sensitive", False)
                 element = self.get_element_by_text(
@@ -226,8 +223,8 @@ class ElementLocator:
                     error=f"Element with text '{value}' not found",
                     suggestion="Try using partial text match or check case sensitivity",
                 )
-            
-            elif locator_type == LocatorType.COORDINATE:
+
+            if locator_type == LocatorType.COORDINATE:
                 if isinstance(value, (tuple, list)) and len(value) == 2:
                     return LocateResult(
                         success=True,
@@ -246,8 +243,8 @@ class ElementLocator:
                     success=False,
                     error="Invalid coordinate format, expected (x, y)",
                 )
-            
-            elif locator_type == LocatorType.CSS_SELECTOR:
+
+            if locator_type == LocatorType.CSS_SELECTOR:
                 for elem in self._elements:
                     if elem.selector == value:
                         return LocateResult(success=True, element=elem)
@@ -255,20 +252,19 @@ class ElementLocator:
                     success=False,
                     error=f"Element with selector '{value}' not found",
                 )
-            
-            else:
-                return LocateResult(
-                    success=False,
-                    error=f"Unsupported locator type: {locator_type}",
-                )
-                
+
+            return LocateResult(
+                success=False,
+                error=f"Unsupported locator type: {locator_type}",
+            )
+
         except Exception as e:
             logger.error(f"Locate error: {e}")
             return LocateResult(
                 success=False,
                 error=str(e),
             )
-    
+
     def find_best_match(
         self,
         description: str,
@@ -285,9 +281,9 @@ class ElementLocator:
             ElementInfo 或 None
         """
         description_lower = description.lower()
-        
+
         candidates = self._elements
-        
+
         if element_type:
             tag_map = {
                 "button": ["button", "input"],
@@ -300,26 +296,26 @@ class ElementLocator:
                 elem for elem in candidates
                 if elem.tag_name.lower() in allowed_tags
             ]
-        
+
         for elem in candidates:
             if not elem.text:
                 continue
-            
+
             elem_text = elem.text.lower()
-            
+
             if description_lower == elem_text:
                 return elem
-            
+
             if description_lower in elem_text:
                 return elem
-        
+
         type_keywords = {
             "button": ["按钮", "button", "点击", "click"],
             "input": ["输入", "input", "框", "field", "搜索", "search"],
             "link": ["链接", "link", "跳转", "navigate"],
             "image": ["图片", "image", "img", "图标", "icon"],
         }
-        
+
         if element_type:
             keywords = type_keywords.get(element_type.lower(), [])
             for keyword in keywords:
@@ -327,9 +323,9 @@ class ElementLocator:
                     for elem in candidates:
                         if elem.text and keyword in elem.text.lower():
                             return elem
-        
+
         return None
-    
+
     def get_element_bounds(self, index: int) -> dict[str, float] | None:
         """
         获取元素的边界坐标
@@ -344,7 +340,7 @@ class ElementLocator:
         if element and element.bounds:
             return element.bounds
         return None
-    
+
     def get_element_center(self, index: int) -> tuple[float, float] | None:
         """
         获取元素的中心坐标
@@ -361,7 +357,7 @@ class ElementLocator:
             y = bounds.get("y", 0) + bounds.get("height", 0) / 2
             return (x, y)
         return None
-    
+
     def to_llm_format(self) -> str:
         """
         生成 LLM 友好的元素列表
@@ -370,23 +366,23 @@ class ElementLocator:
             格式化的元素列表字符串
         """
         lines = ["[Interactive Elements]"]
-        
+
         for elem in self._elements:
             if not elem.is_interactive:
                 continue
-            
+
             text_preview = ""
             if elem.text:
                 text_preview = elem.text[:50]
                 if len(elem.text) > 50:
                     text_preview += "..."
-            
+
             type_info = elem.tag_name
             if elem.is_clickable:
                 type_info += " [clickable]"
             if elem.is_input:
                 type_info += " [input]"
-            
+
             lines.append(f"[{elem.index}] {type_info}: {text_preview}")
-        
+
         return "\n".join(lines)

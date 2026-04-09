@@ -70,7 +70,7 @@ class MemoryTool:
                         message=f"已存储记忆: {key}"
                     )
 
-                elif op == MemoryOperation.RETRIEVE:
+                if op == MemoryOperation.RETRIEVE:
                     value = await self.memory_module.retrieve(key)
                     return MemoryToolResult(
                         success=True,
@@ -78,7 +78,7 @@ class MemoryTool:
                         entries=[MemoryEntry(key=key, value=value)]
                     )
 
-                elif op == MemoryOperation.FORGET:
+                if op == MemoryOperation.FORGET:
                     await self.memory_module.forget(key)
                     return MemoryToolResult(
                         success=True,
@@ -86,7 +86,7 @@ class MemoryTool:
                         message=f"已遗忘记忆: {key}"
                     )
 
-                elif op == MemoryOperation.LIST:
+                if op == MemoryOperation.LIST:
                     entries = await self.memory_module.list_all()
                     return MemoryToolResult(
                         success=True,

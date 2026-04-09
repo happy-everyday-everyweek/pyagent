@@ -46,14 +46,13 @@ class FrequencyControl:
 
         if time_since_last_reply < 10:
             return 0.3
-        elif time_since_last_reply < 30:
+        if time_since_last_reply < 30:
             return 0.5
-        elif time_since_last_reply < 60:
+        if time_since_last_reply < 60:
             return 0.7
-        elif time_since_last_reply < 120:
+        if time_since_last_reply < 120:
             return 0.85
-        else:
-            return 1.0
+        return 1.0
 
     def should_reply(self, threshold: float = 0.5) -> bool:
         """判断是否应该回复"""

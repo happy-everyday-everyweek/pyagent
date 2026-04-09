@@ -4,14 +4,14 @@ PyAgent PDF模块
 提供面向AI的高性能PDF解析功能。
 """
 
-from .parser import PDFParser, PDFDocument, PDFPage
-from .extractor import ContentExtractor
 from .converter import FormatConverter
+from .extractor import ContentExtractor
+from .parser import PDFDocument, PDFPage, PDFParser
 
 __all__ = [
-    "PDFParser",
-    "PDFDocument",
-    "PDFPage",
     "ContentExtractor",
     "FormatConverter",
+    "PDFDocument",
+    "PDFPage",
+    "PDFParser",
 ]

@@ -4,12 +4,11 @@ PyAgent LLM模块 - 模型网关
 参考LiteLLM设计，提供统一的模型提供商接口。
 """
 
-import asyncio
 import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
-from datetime import datetime
 from enum import Enum
-from typing import Any, AsyncIterator, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -160,8 +159,8 @@ class ModelGateway:
         return adapter
 
     async def _create_adapter(self, provider_info: ProviderInfo) -> Any:
-        from .adapters.openai_adapter import OpenAIAdapter
         from .adapters.anthropic_adapter import AnthropicAdapter
+        from .adapters.openai_adapter import OpenAIAdapter
 
         if provider_info.provider_type == ProviderType.ANTHROPIC:
             return AnthropicAdapter(
@@ -169,13 +168,12 @@ class ModelGateway:
                 base_url=provider_info.base_url,
                 model=provider_info.default_model,
             )
-        else:
-            return OpenAIAdapter(
-                api_key=provider_info.api_key,
-                base_url=provider_info.base_url,
-                model=provider_info.default_model,
-                provider=provider_info.provider_type.value,
-            )
+        return OpenAIAdapter(
+            api_key=provider_info.api_key,
+            base_url=provider_info.base_url,
+            model=provider_info.default_model,
+            provider=provider_info.provider_type.value,
+        )
 
     async def _fallback_chat(
         self,

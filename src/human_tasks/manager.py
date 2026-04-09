@@ -8,7 +8,7 @@ import json
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from .task import HumanTask, Priority, TaskStatus
 
@@ -23,11 +23,11 @@ class TaskManager:
     - 任务查询和搜索
     - 任务统计
     """
-    
+
     def __init__(self, data_dir: str = "data/human_tasks"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.tasks: dict[str, HumanTask] = {}
         self._load_data()
 
@@ -70,12 +70,12 @@ class TaskManager:
         title: str,
         description: str = "",
         priority: Priority = Priority.MEDIUM,
-        due_date: Optional[datetime] = None,
-        reminder: Optional[datetime] = None,
+        due_date: datetime | None = None,
+        reminder: datetime | None = None,
         category: str = "default",
-        tags: Optional[list[str]] = None,
-        subtasks: Optional[list[str]] = None,
-        attachments: Optional[list[str]] = None
+        tags: list[str] | None = None,
+        subtasks: list[str] | None = None,
+        attachments: list[str] | None = None
     ) -> HumanTask:
         """
         创建新任务
@@ -105,28 +105,28 @@ class TaskManager:
             tags=tags or [],
             attachments=attachments or []
         )
-        
+
         if subtasks:
             for subtask_title in subtasks:
                 task.add_subtask(subtask_title)
-        
+
         self.tasks[task.task_id] = task
         self._save_data()
-        
+
         return task
 
     def update_task(
         self,
         task_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        priority: Optional[Priority] = None,
-        due_date: Optional[datetime] = None,
-        reminder: Optional[datetime] = None,
-        category: Optional[str] = None,
-        tags: Optional[list[str]] = None,
-        attachments: Optional[list[str]] = None
-    ) -> Optional[HumanTask]:
+        title: str | None = None,
+        description: str | None = None,
+        priority: Priority | None = None,
+        due_date: datetime | None = None,
+        reminder: datetime | None = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
+        attachments: list[str] | None = None
+    ) -> HumanTask | None:
         """
         更新任务
         
@@ -147,7 +147,7 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         update_data = {}
         if title is not None:
             update_data["title"] = title
@@ -165,10 +165,10 @@ class TaskManager:
             update_data["tags"] = tags
         if attachments is not None:
             update_data["attachments"] = attachments
-        
+
         task.update(**update_data)
         self._save_data()
-        
+
         return task
 
     def delete_task(self, task_id: str) -> bool:
@@ -187,7 +187,7 @@ class TaskManager:
             return True
         return False
 
-    def complete_task(self, task_id: str) -> Optional[HumanTask]:
+    def complete_task(self, task_id: str) -> HumanTask | None:
         """
         完成任务
         
@@ -200,13 +200,13 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         task.mark_completed()
         self._save_data()
-        
+
         return task
 
-    def cancel_task(self, task_id: str) -> Optional[HumanTask]:
+    def cancel_task(self, task_id: str) -> HumanTask | None:
         """
         取消任务
         
@@ -219,13 +219,13 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         task.mark_cancelled()
         self._save_data()
-        
+
         return task
 
-    def start_task(self, task_id: str) -> Optional[HumanTask]:
+    def start_task(self, task_id: str) -> HumanTask | None:
         """
         开始任务（标记为进行中）
         
@@ -238,13 +238,13 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         task.mark_in_progress()
         self._save_data()
-        
+
         return task
 
-    def get_task(self, task_id: str) -> Optional[HumanTask]:
+    def get_task(self, task_id: str) -> HumanTask | None:
         """
         获取任务
         
@@ -258,9 +258,9 @@ class TaskManager:
 
     def list_tasks(
         self,
-        status: Optional[TaskStatus] = None,
-        category: Optional[str] = None,
-        priority: Optional[Priority] = None
+        status: TaskStatus | None = None,
+        category: str | None = None,
+        priority: Priority | None = None
     ) -> list[HumanTask]:
         """
         列出任务（支持过滤）
@@ -274,16 +274,16 @@ class TaskManager:
             任务列表
         """
         tasks = list(self.tasks.values())
-        
+
         if status:
             tasks = [t for t in tasks if t.status == status]
-        
+
         if category:
             tasks = [t for t in tasks if t.category == category]
-        
+
         if priority:
             tasks = [t for t in tasks if t.priority == priority]
-        
+
         return sorted(tasks, key=lambda x: x.created_at, reverse=True)
 
     def search_tasks(self, query: str) -> list[HumanTask]:
@@ -298,7 +298,7 @@ class TaskManager:
         """
         query_lower = query.lower()
         results = []
-        
+
         for task in self.tasks.values():
             if (
                 query_lower in task.title.lower() or
@@ -307,7 +307,7 @@ class TaskManager:
                 any(query_lower in tag.lower() for tag in task.tags)
             ):
                 results.append(task)
-        
+
         return sorted(results, key=lambda x: x.created_at, reverse=True)
 
     def get_overdue_tasks(self) -> list[HumanTask]:
@@ -351,33 +351,33 @@ class TaskManager:
             统计信息字典
         """
         total = len(self.tasks)
-        
+
         status_counts = {
             "pending": 0,
             "in_progress": 0,
             "completed": 0,
             "cancelled": 0
         }
-        
+
         priority_counts = {
             "low": 0,
             "medium": 0,
             "high": 0,
             "urgent": 0
         }
-        
+
         overdue_count = 0
         due_today_count = 0
-        
+
         for task in self.tasks.values():
             status_counts[task.status.value] += 1
             priority_counts[task.priority.value] += 1
-            
+
             if task.is_overdue():
                 overdue_count += 1
             if task.is_due_today():
                 due_today_count += 1
-        
+
         return {
             "total_tasks": total,
             "status_distribution": status_counts,
@@ -387,7 +387,7 @@ class TaskManager:
             "completion_rate": status_counts["completed"] / max(total, 1) * 100,
         }
 
-    def add_subtask(self, task_id: str, title: str) -> Optional[HumanTask]:
+    def add_subtask(self, task_id: str, title: str) -> HumanTask | None:
         """
         为任务添加子任务
         
@@ -401,13 +401,13 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         task.add_subtask(title)
         self._save_data()
-        
+
         return task
 
-    def complete_subtask(self, task_id: str, subtask_id: str) -> Optional[HumanTask]:
+    def complete_subtask(self, task_id: str, subtask_id: str) -> HumanTask | None:
         """
         完成子任务
         
@@ -421,14 +421,14 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         if task.complete_subtask(subtask_id):
             self._save_data()
             return task
-        
+
         return None
 
-    def remove_subtask(self, task_id: str, subtask_id: str) -> Optional[HumanTask]:
+    def remove_subtask(self, task_id: str, subtask_id: str) -> HumanTask | None:
         """
         移除子任务
         
@@ -442,11 +442,11 @@ class TaskManager:
         task = self.tasks.get(task_id)
         if not task:
             return None
-        
+
         if task.remove_subtask(subtask_id):
             self._save_data()
             return task
-        
+
         return None
 
 

@@ -19,7 +19,7 @@ class WipeTransition(Transition):
         progress = self.clamp_progress(progress)
         height, width = frame1.shape[:2]
         result = frame1.copy()
-        
+
         if self.direction == "right":
             boundary = int(width * progress)
             result[:, :boundary] = frame2[:, :boundary]
@@ -32,7 +32,7 @@ class WipeTransition(Transition):
         elif self.direction == "up":
             boundary = int(height * (1 - progress))
             result[boundary:, :] = frame2[boundary:, :]
-        
+
         return result
 
     def get_type(self) -> str:

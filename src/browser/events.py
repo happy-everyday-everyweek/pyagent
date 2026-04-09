@@ -7,7 +7,7 @@ PyAgent 浏览器自动化模块 - 事件类型定义
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -48,10 +48,10 @@ class BrowserEvent(BaseModel):
     event_id: str = Field(default_factory=lambda: str(id(object())))
     event_type: EventType
     timestamp: datetime = Field(default_factory=datetime.now)
-    target_id: Optional[str] = None
+    target_id: str | None = None
     status: EventStatus = EventStatus.PENDING
-    result: Optional[dict[str, Any]] = None
-    error: Optional[str] = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
     class Config:
@@ -63,41 +63,41 @@ class NavigateToUrlEvent(BrowserEvent):
     event_type: EventType = EventType.NAVIGATE_TO_URL
     url: str
     wait_until: str = "load"
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class GoBackEvent(BrowserEvent):
     """后退事件"""
     event_type: EventType = EventType.GO_BACK
     wait_until: str = "load"
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class GoForwardEvent(BrowserEvent):
     """前进事件"""
     event_type: EventType = EventType.GO_FORWARD
     wait_until: str = "load"
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class RefreshEvent(BrowserEvent):
     """刷新事件"""
     event_type: EventType = EventType.REFRESH
     wait_until: str = "load"
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class ClickElementEvent(BrowserEvent):
     """点击元素事件"""
     event_type: EventType = EventType.CLICK_ELEMENT
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
     button: str = "left"
     click_count: int = 1
     delay: int = 0
     force: bool = False
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class ClickCoordinateEvent(BrowserEvent):
@@ -114,12 +114,12 @@ class TypeTextEvent(BrowserEvent):
     """输入文本事件"""
     event_type: EventType = EventType.TYPE_TEXT
     text: str
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
     delay: int = 0
     clear_first: bool = False
-    timeout: Optional[int] = None
+    timeout: int | None = None
 
 
 class ScrollEvent(BrowserEvent):
@@ -127,9 +127,9 @@ class ScrollEvent(BrowserEvent):
     event_type: EventType = EventType.SCROLL
     direction: str = "down"
     amount: int = 300
-    selector: Optional[str] = None
-    element_id: Optional[str] = None
-    xpath: Optional[str] = None
+    selector: str | None = None
+    element_id: str | None = None
+    xpath: str | None = None
 
 
 class SendKeysEvent(BrowserEvent):
@@ -137,66 +137,66 @@ class SendKeysEvent(BrowserEvent):
     event_type: EventType = EventType.SEND_KEYS
     keys: str
     delay: int = 0
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
 
 
 class SwitchTabEvent(BrowserEvent):
     """切换标签页事件"""
     event_type: EventType = EventType.SWITCH_TAB
-    tab_index: Optional[int] = None
-    tab_id: Optional[str] = None
+    tab_index: int | None = None
+    tab_id: str | None = None
 
 
 class CloseTabEvent(BrowserEvent):
     """关闭标签页事件"""
     event_type: EventType = EventType.CLOSE_TAB
-    tab_index: Optional[int] = None
-    tab_id: Optional[str] = None
+    tab_index: int | None = None
+    tab_id: str | None = None
 
 
 class NewTabEvent(BrowserEvent):
     """新建标签页事件"""
     event_type: EventType = EventType.NEW_TAB
-    url: Optional[str] = None
+    url: str | None = None
 
 
 class SelectDropdownOptionEvent(BrowserEvent):
     """选择下拉选项事件"""
     event_type: EventType = EventType.SELECT_DROPDOWN_OPTION
-    value: Optional[str | list[str]] = None
-    label: Optional[str | list[str]] = None
-    index: Optional[int | list[int]] = None
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    value: str | list[str] | None = None
+    label: str | list[str] | None = None
+    index: int | list[int] | None = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
 
 
 class GetDropdownOptionsEvent(BrowserEvent):
     """获取下拉选项事件"""
     event_type: EventType = EventType.GET_DROPDOWN_OPTIONS
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
 
 
 class UploadFileEvent(BrowserEvent):
     """上传文件事件"""
     event_type: EventType = EventType.UPLOAD_FILE
     file_path: str
-    element_id: Optional[str] = None
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    element_id: str | None = None
+    selector: str | None = None
+    xpath: str | None = None
 
 
 class ScreenshotEvent(BrowserEvent):
     """截图事件"""
     event_type: EventType = EventType.SCREENSHOT
     full_page: bool = False
-    save_path: Optional[str] = None
+    save_path: str | None = None
     return_base64: bool = True
-    selector: Optional[str] = None
+    selector: str | None = None
 
 
 class ExecuteScriptEvent(BrowserEvent):
@@ -209,10 +209,10 @@ class ExecuteScriptEvent(BrowserEvent):
 class ExtractContentEvent(BrowserEvent):
     """提取内容事件"""
     event_type: EventType = EventType.EXTRACT_CONTENT
-    selector: Optional[str] = None
-    xpath: Optional[str] = None
+    selector: str | None = None
+    xpath: str | None = None
     extract_type: str = "text"
-    attribute: Optional[str] = None
+    attribute: str | None = None
     multiple: bool = False
 
 

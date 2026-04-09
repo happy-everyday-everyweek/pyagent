@@ -16,8 +16,8 @@ from .self_learning import (
 __all__ = [
     "Expression",
     "ExpressionLearner",
-    "expression_learner",
     "JargonEntry",
     "SelfLearningSystem",
+    "expression_learner",
     "self_learning_system",
 ]

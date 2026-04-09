@@ -5,7 +5,7 @@ PyAgent 执行模块 - 任务上下文
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
 @dataclass
@@ -19,8 +19,8 @@ class TaskContext:
     - 元数据管理
     """
     task_id: str
-    data: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     parent_context: Optional["TaskContext"] = None
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -50,7 +50,7 @@ class TaskContext:
         """
         self.data[key] = value
 
-    def update(self, data: Dict[str, Any]) -> None:
+    def update(self, data: dict[str, Any]) -> None:
         """
         批量更新上下文数据
         
@@ -133,7 +133,7 @@ class TaskContext:
         """获取所有键值对"""
         return [(k, self.get(k)) for k in self.keys()]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         result = {
             "task_id": self.task_id,
@@ -145,7 +145,7 @@ class TaskContext:
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], parent: Optional["TaskContext"] = None) -> "TaskContext":
+    def from_dict(cls, data: dict[str, Any], parent: Optional["TaskContext"] = None) -> "TaskContext":
         """从字典创建上下文"""
         return cls(
             task_id=data.get("task_id", ""),

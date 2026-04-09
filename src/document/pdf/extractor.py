@@ -77,7 +77,7 @@ class TextExtractor:
 
             text_parts = []
             with pdfplumber.open(pdf_path) as pdf:
-                page_indices = pages if pages else range(len(pdf.pages))
+                page_indices = pages or range(len(pdf.pages))
 
                 for page_idx in page_indices:
                     if 0 <= page_idx < len(pdf.pages):
@@ -230,7 +230,7 @@ class TableExtractor:
 
             tables = []
             with pdfplumber.open(pdf_path) as pdf:
-                page_indices = pages if pages else range(len(pdf.pages))
+                page_indices = pages or range(len(pdf.pages))
 
                 for page_idx in page_indices:
                     if 0 <= page_idx < len(pdf.pages):
@@ -239,7 +239,7 @@ class TableExtractor:
 
                         for table_data in page_tables:
                             if table_data:
-                                bbox = page.bbox if page.bbox else (0, 0, page.width, page.height)
+                                bbox = page.bbox or (0, 0, page.width, page.height)
                                 rows = len(table_data)
                                 cols = len(table_data[0]) if table_data else 0
 

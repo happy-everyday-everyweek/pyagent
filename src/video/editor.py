@@ -1,12 +1,10 @@
 """Video editing enhancements: preview, multitrack, export."""
 
 import asyncio
-import json
 import logging
 import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
-from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -70,8 +68,8 @@ class MultitrackTimeline:
             resolution=resolution,
         )
 
-        video_track = VideoTrack(id=f"video_0", name="Video 1", type="video")
-        audio_track = VideoTrack(id=f"audio_0", name="Audio 1", type="audio")
+        video_track = VideoTrack(id="video_0", name="Video 1", type="video")
+        audio_track = VideoTrack(id="audio_0", name="Audio 1", type="audio")
         project.tracks = [video_track, audio_track]
 
         self._projects[project.id] = project
@@ -87,7 +85,6 @@ class MultitrackTimeline:
         if not project:
             return None
 
-        import uuid
 
         track_num = len([t for t in project.tracks if t.type == track_type])
         track = VideoTrack(
@@ -333,8 +330,7 @@ class VideoExporter:
                     "codec": codec,
                     "quality": quality,
                 }
-            else:
-                return {"success": False, "error": stderr.decode()}
+            return {"success": False, "error": stderr.decode()}
 
         except Exception as e:
             return {"success": False, "error": str(e)}

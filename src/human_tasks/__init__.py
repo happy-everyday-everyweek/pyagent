@@ -23,17 +23,17 @@ from .notification import (
 from .task import HumanTask, Priority, SubTask, TaskStatus
 
 __all__ = [
-    "HumanTask",
-    "SubTask",
-    "TaskStatus",
-    "Priority",
     "Category",
     "CategoryManager",
-    "category_manager",
-    "TaskManager",
-    "task_manager",
+    "HumanTask",
     "Notification",
     "NotificationService",
     "NotificationType",
+    "Priority",
+    "SubTask",
+    "TaskManager",
+    "TaskStatus",
+    "category_manager",
     "notification_service",
+    "task_manager",
 ]

@@ -1,7 +1,7 @@
 from typing import Optional
 
 from .base import Transition
-from .fade import FadeTransition, DissolveTransition
+from .fade import DissolveTransition, FadeTransition
 from .slide import SlideTransition
 from .wipe import WipeTransition
 from .zoom import ZoomInTransition, ZoomOutTransition
@@ -22,7 +22,7 @@ TRANSITION_REGISTRY: dict[str, type[Transition]] = {
 }
 
 
-def get_transition(transition_type: str, duration: float = 0.5) -> Optional[Transition]:
+def get_transition(transition_type: str, duration: float = 0.5) -> Transition | None:
     transition_factory = TRANSITION_REGISTRY.get(transition_type)
     if transition_factory is None:
         return None
@@ -32,13 +32,13 @@ def get_transition(transition_type: str, duration: float = 0.5) -> Optional[Tran
 
 
 __all__ = [
-    "Transition",
-    "FadeTransition",
+    "TRANSITION_REGISTRY",
     "DissolveTransition",
-    "WipeTransition",
+    "FadeTransition",
     "SlideTransition",
+    "Transition",
+    "WipeTransition",
     "ZoomInTransition",
     "ZoomOutTransition",
-    "TRANSITION_REGISTRY",
     "get_transition",
 ]

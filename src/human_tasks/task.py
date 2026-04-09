@@ -8,7 +8,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class TaskStatus(Enum):
@@ -34,7 +34,7 @@ class SubTask:
     title: str = ""
     completed: bool = False
     created_at: datetime = field(default_factory=datetime.now)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
@@ -75,15 +75,15 @@ class HumanTask:
     description: str = ""
     status: TaskStatus = TaskStatus.PENDING
     priority: Priority = Priority.MEDIUM
-    due_date: Optional[datetime] = None
-    reminder: Optional[datetime] = None
+    due_date: datetime | None = None
+    reminder: datetime | None = None
     category: str = "default"
     tags: list[str] = field(default_factory=list)
     subtasks: list[SubTask] = field(default_factory=list)
     attachments: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    completed_at: Optional[datetime] = None
+    completed_at: datetime | None = None
 
     def is_overdue(self) -> bool:
         """检查任务是否过期"""
@@ -119,10 +119,10 @@ class HumanTask:
         if not self.subtasks:
             if self.status == TaskStatus.COMPLETED:
                 return 100.0
-            elif self.status == TaskStatus.IN_PROGRESS:
+            if self.status == TaskStatus.IN_PROGRESS:
                 return 50.0
             return 0.0
-        
+
         completed = sum(1 for st in self.subtasks if st.completed)
         return (completed / len(self.subtasks)) * 100.0
 
@@ -205,7 +205,7 @@ class HumanTask:
     def from_dict(cls, data: dict[str, Any]) -> "HumanTask":
         """从字典创建任务"""
         subtasks = [SubTask.from_dict(st) for st in data.get("subtasks", [])]
-        
+
         return cls(
             task_id=data.get("task_id", str(uuid.uuid4())),
             title=data.get("title", ""),

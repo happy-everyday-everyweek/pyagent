@@ -255,10 +255,9 @@ class PlannerAgent:
 
         if "sequential" in tags or (has_sequential and not has_parallel):
             return DecompositionStrategy.SEQUENTIAL
-        elif "parallel" in tags or (has_parallel and not has_sequential):
+        if "parallel" in tags or (has_parallel and not has_sequential):
             return DecompositionStrategy.PARALLEL
-        else:
-            return DecompositionStrategy.HYBRID
+        return DecompositionStrategy.HYBRID
 
     async def decompose_task(
         self,
@@ -343,7 +342,7 @@ class PlannerAgent:
     ) -> list[SubTask]:
         """解析分解响应"""
         try:
-            json_match = re.search(r'\{[\s\S]*\}', response)
+            json_match = re.search(r"\{[\s\S]*\}", response)
             if json_match:
                 data = json.loads(json_match.group())
             else:
@@ -379,7 +378,7 @@ class PlannerAgent:
         strategy: DecompositionStrategy
     ) -> list[SubTask]:
         """简单分解策略（不使用LLM）"""
-        sentences = re.split(r'[。！？\n]', task.prompt)
+        sentences = re.split(r"[。！？\n]", task.prompt)
         sentences = [s.strip() for s in sentences if s.strip()]
 
         subtasks = []
@@ -469,7 +468,7 @@ class PlannerAgent:
         if agent_scores[best_agent] > 0:
             return best_agent
 
-        min_tasks = float('inf')
+        min_tasks = float("inf")
         selected_agent = available_agents[0]
 
         for agent_name in available_agents:

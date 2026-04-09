@@ -6,7 +6,7 @@ PyAgent 交互模块 - 意图类型定义
 
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Optional
+from typing import Any
 
 
 class IntentType(Enum):
@@ -41,47 +41,47 @@ class Intent:
     entities: dict[str, Any] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
     raw_input: str = ""
-    
+
     def is_chat(self) -> bool:
         """检查是否为聊天意图"""
         return self.type == IntentType.CHAT
-    
+
     def is_task(self) -> bool:
         """检查是否为任务意图"""
         return self.type == IntentType.TASK
-    
+
     def is_query(self) -> bool:
         """检查是否为查询意图"""
         return self.type == IntentType.QUERY
-    
+
     def is_command(self) -> bool:
         """检查是否为命令意图"""
         return self.type == IntentType.COMMAND
-    
+
     def is_unknown(self) -> bool:
         """检查是否为未知意图"""
         return self.type == IntentType.UNKNOWN
-    
+
     def is_open_file(self) -> bool:
         """检查是否为打开文件意图"""
         return self.type == IntentType.OPEN_FILE
-    
+
     def is_open_app(self) -> bool:
         """检查是否为打开应用意图"""
         return self.type == IntentType.OPEN_APP
-    
+
     def is_create_event(self) -> bool:
         """检查是否为创建日程意图"""
         return self.type == IntentType.CREATE_EVENT
-    
+
     def is_create_todo(self) -> bool:
         """检查是否为创建待办意图"""
         return self.type == IntentType.CREATE_TODO
-    
+
     def is_modify_settings(self) -> bool:
         """检查是否为修改设置意图"""
         return self.type == IntentType.MODIFY_SETTINGS
-    
+
     def needs_redirect(self) -> bool:
         """检查是否需要重定向到其他模块（不发送到聊天模块）"""
         return self.type in (
@@ -91,11 +91,11 @@ class Intent:
             IntentType.CREATE_TODO,
             IntentType.MODIFY_SETTINGS
         )
-    
+
     def get_entity(self, key: str, default: Any = None) -> Any:
         """获取实体值"""
         return self.entities.get(key, default)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {
@@ -106,7 +106,7 @@ class Intent:
             "metadata": self.metadata,
             "raw_input": self.raw_input
         }
-    
+
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Intent":
         """从字典创建意图"""
@@ -133,7 +133,7 @@ class EntityInfo:
     entity_type: str = "generic"
     confidence: float = 1.0
     position: tuple[int, int] = (0, 0)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {
@@ -159,7 +159,7 @@ class IntentContext:
     user_preferences: dict[str, Any] = field(default_factory=dict)
     session_data: dict[str, Any] = field(default_factory=dict)
     timestamp: float = 0.0
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {

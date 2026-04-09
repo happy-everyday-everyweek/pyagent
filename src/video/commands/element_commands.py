@@ -2,9 +2,9 @@ import copy
 import uuid
 from typing import Any
 
-from .base import Command
 from ..manager import video_manager
-from ..types import TimelineElement, Track, TrackType, MediaType
+from ..types import MediaType, TimelineElement, Track, TrackType
+from .base import Command
 
 
 class InsertElementCommand(Command):

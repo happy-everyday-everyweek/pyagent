@@ -2,10 +2,11 @@
 
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -191,9 +192,7 @@ class SkillManager:
         results = []
 
         for skill in self._skills.values():
-            if query_lower in skill.name.lower() or query_lower in skill.description.lower():
-                results.append(skill)
-            elif any(query_lower in tag.lower() for tag in skill.tags):
+            if query_lower in skill.name.lower() or query_lower in skill.description.lower() or any(query_lower in tag.lower() for tag in skill.tags):
                 results.append(skill)
 
         return results
@@ -254,23 +253,22 @@ class SkillManager:
 
         if step.action == "navigate":
             return await browser.navigate(value)
-        elif step.action == "click":
+        if step.action == "click":
             return await browser.click(selector)
-        elif step.action == "input":
+        if step.action == "input":
             return await browser.input_text(selector, value)
-        elif step.action == "select":
+        if step.action == "select":
             return await browser.select_option(selector, value)
-        elif step.action == "wait":
+        if step.action == "wait":
             import asyncio
 
             await asyncio.sleep(float(value or 1))
             return {"waited": value}
-        elif step.action == "screenshot":
+        if step.action == "screenshot":
             return await browser.screenshot()
-        elif step.action in self._custom_handlers:
+        if step.action in self._custom_handlers:
             return await self._custom_handlers[step.action](browser, selector, value, params)
-        else:
-            raise ValueError(f"Unknown action: {step.action}")
+        raise ValueError(f"Unknown action: {step.action}")
 
     def _substitute_params(self, template: str | None, params: dict[str, Any]) -> str | None:
         if not template:

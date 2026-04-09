@@ -5,14 +5,14 @@ PyAgent 语音模块
 """
 
 from .asr import ASRModule
-from .tts import TTSModule, VoiceInfo
 from .processor import VoiceProcessor
+from .tts import TTSModule, VoiceInfo
 from .video_narration import VideoNarration
 
 __all__ = [
     "ASRModule",
     "TTSModule",
+    "VideoNarration",
     "VoiceInfo",
     "VoiceProcessor",
-    "VideoNarration",
 ]

@@ -11,9 +11,8 @@ PyAgent LLM客户端
 
 import asyncio
 import logging
-import random
 from collections.abc import AsyncIterator
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -32,14 +31,11 @@ from .adapters.base import (
 from .adapters.openai_adapter import OpenAIAdapter
 from .config import get_model_config_loader
 from .types import (
-    TASK_TO_TIER,
-    TASK_TO_VERTICAL,
     ModelConfig,
     ModelTier,
     TaskType,
     VerticalModelConfig,
     VerticalType,
-    is_vertical_task,
 )
 
 logger = logging.getLogger(__name__)
@@ -340,8 +336,7 @@ class LLMClient:
                 )
 
                 return multimodal_response
-            else:
-                logger.warning("当前模型不支持多模态，且未配置垂类多模态模型")
+            logger.warning("当前模型不支持多模态，且未配置垂类多模态模型")
 
         return await self.generate(
             messages=messages,

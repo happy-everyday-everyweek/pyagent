@@ -34,20 +34,20 @@ class BrowserSubAgent(BaseSubAgent):
         """初始化浏览器代理"""
         if self._browser_agent is not None:
             return True
-        
+
         try:
             from browser import (
                 BrowserAgent,
+                EventBus,
                 LoopDetector,
                 LoopDetectorConfig,
                 StateManager,
             )
-            from browser import EventBus
-            
+
             event_bus = EventBus()
             state_manager = StateManager()
             loop_detector = LoopDetector(LoopDetectorConfig())
-            
+
             self._browser_agent = BrowserAgent(
                 task="",
                 event_bus=event_bus,
@@ -55,10 +55,10 @@ class BrowserSubAgent(BaseSubAgent):
                 loop_detector=loop_detector,
                 max_steps=self._max_steps,
             )
-            
+
             if self.llm_client:
                 self._browser_agent.set_llm_client(self.llm_client)
-            
+
             return True
         except ImportError as e:
             logger.warning(f"浏览器代理模块导入失败: {e}")
@@ -79,21 +79,21 @@ class BrowserSubAgent(BaseSubAgent):
             try:
                 self._browser_agent.task = task
                 self._browser_agent.reset()
-                
+
                 if self.llm_client:
                     self._browser_agent.set_llm_client(self.llm_client)
-                
+
                 if context and context.get("browser_session"):
                     self._browser_agent.set_browser_session(context["browser_session"])
-                
+
                 result = await self._browser_agent.run()
-                
+
                 steps.append({
                     "step": "ai_agent_execute",
                     "success": result.success,
                     "is_done": result.is_done,
                 })
-                
+
                 return SubAgentResult(
                     success=result.success,
                     result=result.extracted_content or "任务完成",
@@ -138,7 +138,7 @@ class BrowserSubAgent(BaseSubAgent):
 
         if "打开" in task or "访问" in task or "navigate" in task_lower:
             import re
-            url_match = re.search(r'https?://[^\s]+', task)
+            url_match = re.search(r"https?://[^\s]+", task)
             if url_match:
                 action["url"] = url_match.group(0)
                 action["type"] = "navigate"
@@ -189,9 +189,9 @@ class BrowserSubAgent(BaseSubAgent):
         """
         try:
             from browser import StructuredOutputProcessor
-            
+
             processor = StructuredOutputProcessor()
-            
+
             if schema:
                 from pydantic import create_model
                 fields = {}
@@ -199,24 +199,24 @@ class BrowserSubAgent(BaseSubAgent):
                     fields[key] = (value_type, None)
                 output_model = create_model("ExtractedData", **fields)
                 processor.set_output_model(output_model)
-            
+
             result = await self.execute(task)
-            
+
             if result.success and result.result:
                 extraction = processor.extract_single(
                     {"data": result.result},
                     validate=True,
                 )
-                
+
                 return SubAgentResult(
                     success=extraction.success,
                     result=extraction.items if extraction.success else None,
                     error=extraction.error,
                     steps=result.steps,
                 )
-            
+
             return result
-            
+
         except ImportError:
             logger.warning("结构化输出模块不可用")
             return await self.execute(task)

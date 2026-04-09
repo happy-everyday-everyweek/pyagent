@@ -8,10 +8,11 @@ PyAgent 浏览器自动化模块 - 动作注册中心
 import asyncio
 import inspect
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional, TypeVar, Union
+from typing import Any, TypeVar
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel, create_model
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +40,11 @@ class ActionModel(BaseModel):
     所有动作参数模型应继承此类。
     支持动态字段定义和 JSON Schema 生成。
     """
-    
+
     def get_index(self) -> int | None:
         """获取元素索引（如果存在）"""
         return getattr(self, "index", None)
-    
+
     def get_text(self) -> str | None:
         """获取文本内容（如果存在）"""
         return getattr(self, "text", None)
@@ -51,7 +52,7 @@ class ActionModel(BaseModel):
 
 class ActionResult(BaseModel):
     """动作执行结果"""
-    
+
     is_done: bool = False
     success: bool | None = None
     error: str | None = None
@@ -61,7 +62,7 @@ class ActionResult(BaseModel):
     attachments: list[str] | None = None
     images: list[dict[str, Any]] | None = None
     metadata: dict[str, Any] | None = None
-    
+
     def model_dump(self, **kwargs) -> dict[str, Any]:
         """自定义序列化"""
         return super().model_dump(exclude_none=True, **kwargs)
@@ -69,7 +70,7 @@ class ActionResult(BaseModel):
 
 class Registry:
     """动作注册中心"""
-    
+
     def __init__(self, exclude_actions: list[str] | None = None):
         """
         初始化注册中心
@@ -79,7 +80,7 @@ class Registry:
         """
         self._actions: dict[str, RegisteredAction] = {}
         self._exclude_actions: set[str] = set(exclude_actions or [])
-    
+
     def action(
         self,
         description: str,
@@ -107,11 +108,11 @@ class Registry:
         """
         def decorator(func: Callable) -> Callable:
             action_name = func.__name__
-            
+
             if action_name in self._exclude_actions:
                 logger.debug(f"Action '{action_name}' is excluded, skipping registration")
                 return func
-            
+
             if param_model is None:
                 NoParamsModel = create_model(
                     "NoParamsAction",
@@ -120,7 +121,7 @@ class Registry:
                 actual_param_model = NoParamsModel
             else:
                 actual_param_model = param_model
-            
+
             registered = RegisteredAction(
                 name=action_name,
                 description=description,
@@ -132,14 +133,14 @@ class Registry:
                 retry_delay=retry_delay,
                 metadata=metadata,
             )
-            
+
             self._actions[action_name] = registered
             logger.debug(f"Registered action: {action_name}")
-            
+
             return func
-        
+
         return decorator
-    
+
     def get_action(self, name: str) -> RegisteredAction | None:
         """
         获取注册的动作
@@ -151,18 +152,18 @@ class Registry:
             RegisteredAction 或 None
         """
         return self._actions.get(name)
-    
+
     def list_actions(self) -> list[str]:
         """获取所有注册的动作名称"""
         return list(self._actions.keys())
-    
+
     def get_action_descriptions(self) -> dict[str, str]:
         """获取所有动作的描述"""
         return {
             name: action.description
             for name, action in self._actions.items()
         }
-    
+
     def get_action_schemas(self) -> dict[str, dict]:
         """获取所有动作的 JSON Schema"""
         schemas = {}
@@ -172,7 +173,7 @@ class Registry:
             else:
                 schemas[name] = {"type": "object", "properties": {}}
         return schemas
-    
+
     def exclude_action(self, name: str) -> None:
         """
         排除动作
@@ -183,11 +184,11 @@ class Registry:
         if name in self._actions:
             del self._actions[name]
             logger.debug(f"Excluded action: {name}")
-    
+
     def has_action(self, name: str) -> bool:
         """检查动作是否已注册"""
         return name in self._actions
-    
+
     async def execute_action(
         self,
         action_name: str,
@@ -211,15 +212,15 @@ class Registry:
                 success=False,
                 error=f"Unknown action: {action_name}",
             )
-        
+
         if params is None:
             params = {}
-        
+
         if isinstance(params, BaseModel):
             params_dict = params.model_dump()
         else:
             params_dict = params
-        
+
         if action.param_model:
             try:
                 validated_params = action.param_model(**params_dict)
@@ -230,12 +231,12 @@ class Registry:
                 )
         else:
             validated_params = None
-        
+
         handler = action.handler
         sig = inspect.signature(handler)
-        
+
         kwargs = {}
-        
+
         for param_name, param in sig.parameters.items():
             if param_name == "params":
                 if validated_params:
@@ -249,10 +250,10 @@ class Registry:
                 kwargs[param_name] = dependencies[param_name]
             elif param_name in params_dict:
                 kwargs[param_name] = params_dict[param_name]
-        
+
         retry_count = action.retry_count
         last_error = None
-        
+
         for attempt in range(retry_count + 1):
             try:
                 if asyncio.iscoroutinefunction(handler):
@@ -265,26 +266,25 @@ class Registry:
                         result = await handler(**kwargs)
                 else:
                     result = handler(**kwargs)
-                
+
                 if isinstance(result, ActionResult):
                     return result
-                elif isinstance(result, str):
+                if isinstance(result, str):
                     return ActionResult(extracted_content=result)
-                elif result is None:
+                if result is None:
                     return ActionResult()
-                else:
-                    return ActionResult(extracted_content=str(result))
-                    
+                return ActionResult(extracted_content=str(result))
+
             except asyncio.TimeoutError:
                 last_error = f"Action '{action_name}' timed out after {action.timeout}s"
                 logger.warning(last_error)
             except Exception as e:
                 last_error = str(e)
                 logger.error(f"Action '{action_name}' failed: {e}")
-            
+
             if attempt < retry_count:
                 await asyncio.sleep(action.retry_delay)
-        
+
         return ActionResult(
             success=False,
             error=last_error or f"Action '{action_name}' failed",
@@ -293,7 +293,7 @@ class Registry:
 
 class Tools:
     """工具类 - 提供统一的动作注册接口"""
-    
+
     def __init__(
         self,
         exclude_actions: list[str] | None = None,
@@ -309,10 +309,10 @@ class Tools:
         self.registry = Registry(exclude_actions)
         self._output_model = output_model
         self._register_default_actions()
-    
+
     def _register_default_actions(self) -> None:
         """注册默认动作"""
-        
+
         @self.registry.action("Wait for a specified number of seconds")
         async def wait(seconds: int = 3) -> ActionResult:
             actual_seconds = min(max(seconds, 0), 30)
@@ -321,7 +321,7 @@ class Tools:
                 extracted_content=f"Waited for {seconds} seconds",
                 long_term_memory=f"Waited for {seconds} seconds",
             )
-        
+
         @self.registry.action("Complete the task with a message")
         async def done(text: str = "", success: bool = True) -> ActionResult:
             return ActionResult(
@@ -330,15 +330,15 @@ class Tools:
                 extracted_content=text,
                 long_term_memory=f"Task completed: {success} - {text[:100]}",
             )
-    
+
     def action(self, description: str, **kwargs) -> Callable:
         """装饰器：注册自定义动作"""
         return self.registry.action(description, **kwargs)
-    
+
     def exclude_action(self, name: str) -> None:
         """排除动作"""
         self.registry.exclude_action(name)
-    
+
     async def act(
         self,
         action: ActionModel,
@@ -355,7 +355,7 @@ class Tools:
             ActionResult: 执行结果
         """
         action_dict = action.model_dump(exclude_none=True)
-        
+
         for action_name, params in action_dict.items():
             if params is not None:
                 return await self.registry.execute_action(
@@ -363,16 +363,16 @@ class Tools:
                     params=params,
                     **dependencies,
                 )
-        
+
         return ActionResult(
             success=False,
             error="No valid action found",
         )
-    
+
     def get_action_schemas(self) -> dict[str, dict]:
         """获取所有动作的 Schema"""
         return self.registry.get_action_schemas()
-    
+
     def get_action_descriptions(self) -> dict[str, str]:
         """获取所有动作的描述"""
         return self.registry.get_action_descriptions()

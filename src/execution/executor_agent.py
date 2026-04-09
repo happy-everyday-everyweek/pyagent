@@ -10,12 +10,13 @@ import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from .react_engine import ReActEngine
-from .task import Task, TaskStatus, TaskResult
+from .task import Task, TaskResult, TaskStatus
 from .task_context import TaskContext
-from .task_queue import TaskQueue, TaskStatus as QueueTaskStatus
+from .task_queue import TaskQueue
+from .task_queue import TaskStatus as QueueTaskStatus
 
 
 class ExecutionMode(Enum):
@@ -67,8 +68,8 @@ class ExecutorAgent:
 
         self._sub_agents: dict[str, Any] = {}
         self._running_tasks: dict[str, asyncio.Task] = {}
-        self._current_task: Optional[Task] = None
-        self._context: Optional[TaskContext] = None
+        self._current_task: Task | None = None
+        self._context: TaskContext | None = None
 
         self.max_concurrent_tasks = self.config.get("max_concurrent_tasks", 5)
         self.default_timeout = self.config.get("default_timeout", 300)
@@ -101,29 +102,29 @@ class ExecutorAgent:
             task_id=task.id,
             data=task.context.copy()
         )
-        
+
         start_time = time.time()
         steps: list[dict[str, Any]] = []
-        
+
         try:
             task.status = TaskStatus.RUNNING
-            
+
             result = await self._do_execute(task)
-            
+
             task.status = TaskStatus.COMPLETED
             task.result = result
-            
+
             return TaskResult(
                 success=True,
                 data=result,
                 duration=time.time() - start_time,
                 steps=steps
             )
-            
+
         except Exception as e:
             task.status = TaskStatus.FAILED
             task.error = str(e)
-            
+
             return TaskResult(
                 success=False,
                 error=str(e),
@@ -142,18 +143,17 @@ class ExecutorAgent:
             执行结果
         """
         context_data = self._context.to_dict() if self._context else {}
-        
+
         result = await self.react_engine.run(
             task=task.prompt,
             context=context_data
         )
-        
+
         if result.get("success"):
             return result.get("result")
-        else:
-            raise Exception(result.get("result", "执行失败"))
+        raise Exception(result.get("result", "执行失败"))
 
-    def get_context(self) -> Optional[TaskContext]:
+    def get_context(self) -> TaskContext | None:
         """获取当前任务上下文"""
         return self._context
 
@@ -168,7 +168,7 @@ class ExecutorAgent:
         if self._context:
             self._context.set(key, value)
 
-    def get_current_task(self) -> Optional[Task]:
+    def get_current_task(self) -> Task | None:
         """获取当前正在执行的任务"""
         return self._current_task
 
@@ -192,7 +192,7 @@ class ExecutorAgent:
         except asyncio.TimeoutError:
             return f"任务执行超时（{timeout}秒）"
         except Exception as e:
-            return f"任务执行失败: {str(e)}"
+            return f"任务执行失败: {e!s}"
 
     async def submit_async_task(
         self,

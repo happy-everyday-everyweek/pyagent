@@ -4,7 +4,7 @@ import os
 import platform
 import sqlite3
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -329,7 +329,7 @@ class PerformanceOptimizer:
             if platform.system().lower() == "linux":
                 meminfo_path = "/proc/meminfo"
                 if os.path.exists(meminfo_path):
-                    with open(meminfo_path, "r") as f:
+                    with open(meminfo_path) as f:
                         for line in f:
                             if line.startswith("MemTotal:"):
                                 kb = int(line.split()[1])
@@ -353,10 +353,10 @@ class PerformanceOptimizer:
 
         try:
             if os.path.exists("/sys/class/kgsl/kgsl-3d0/gpu_model"):
-                with open("/sys/class/kgsl/kgsl-3d0/gpu_model", "r") as f:
+                with open("/sys/class/kgsl/kgsl-3d0/gpu_model") as f:
                     self._gpu_info["renderer"] = f.read().strip()
             elif os.path.exists("/sys/class/misc/mali0/device/gpuinfo"):
-                with open("/sys/class/misc/mali0/device/gpuinfo", "r") as f:
+                with open("/sys/class/misc/mali0/device/gpuinfo") as f:
                     self._gpu_info["renderer"] = f.read().strip()
         except Exception:
             pass

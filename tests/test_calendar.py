@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime, timedelta
 
-from src.calendar import (
+from src.calendar_module import (
     Event,
     Reminder,
     EventStatus,

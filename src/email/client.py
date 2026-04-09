@@ -9,10 +9,10 @@ import imaplib
 import smtplib
 from dataclasses import dataclass, field
 from datetime import datetime
+from email import policy
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email import policy
 from email.utils import parseaddr
 from typing import Any
 

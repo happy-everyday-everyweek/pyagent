@@ -19,7 +19,7 @@ class SlideTransition(Transition):
         progress = self.clamp_progress(progress)
         height, width = frame1.shape[:2]
         result = np.zeros_like(frame1)
-        
+
         if self.direction == "right":
             offset = int(width * progress)
             if offset > 0:
@@ -44,7 +44,7 @@ class SlideTransition(Transition):
                 result[offset:, :] = frame1[:height - offset, :]
             if offset < height:
                 result[:offset, :] = frame2[height - offset:, :]
-        
+
         return result
 
     def get_type(self) -> str:

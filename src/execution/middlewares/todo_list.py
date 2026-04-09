@@ -50,7 +50,7 @@ class TodoListMiddleware(BaseMiddleware):
     ) -> MiddlewareResult:
         if phase == MiddlewarePhase.BEFORE_AGENT:
             return self._before_agent(state, context)
-        elif phase == MiddlewarePhase.AFTER_AGENT:
+        if phase == MiddlewarePhase.AFTER_AGENT:
             return self._after_agent(state, context)
         return MiddlewareResult()
 

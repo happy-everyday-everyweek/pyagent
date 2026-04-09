@@ -143,9 +143,8 @@ class GestureExecutor:
                 self._initialized = True
                 self._logger.info("GestureExecutor initialized successfully")
                 return True
-            else:
-                self._logger.error("Failed to initialize GestureExecutor")
-                return False
+            self._logger.error("Failed to initialize GestureExecutor")
+            return False
         except Exception as e:
             self._logger.error(f"Error initializing GestureExecutor: {e}")
             return False
@@ -236,36 +235,35 @@ class GestureExecutor:
             result = await self._screen_tools.tap(spec.x, spec.y)
             return result.success
 
-        elif spec.gesture_type == GestureType.DOUBLE_TAP:
+        if spec.gesture_type == GestureType.DOUBLE_TAP:
             result1 = await self._screen_tools.tap(spec.x, spec.y)
             await asyncio.sleep(0.1)
             result2 = await self._screen_tools.tap(spec.x, spec.y)
             return result1.success and result2.success
 
-        elif spec.gesture_type == GestureType.LONG_PRESS:
+        if spec.gesture_type == GestureType.LONG_PRESS:
             result = await self._screen_tools.long_press(spec.x, spec.y, spec.duration_ms)
             return result.success
 
-        elif spec.gesture_type == GestureType.SWIPE:
+        if spec.gesture_type == GestureType.SWIPE:
             result = await self._screen_tools.swipe(
                 spec.x, spec.y, spec.x2, spec.y2, spec.duration_ms
             )
             return result.success
 
-        elif spec.gesture_type == GestureType.PINCH:
+        if spec.gesture_type == GestureType.PINCH:
             return await self._pinch(spec.x, spec.y, spec.x2)
 
-        elif spec.gesture_type == GestureType.ZOOM:
+        if spec.gesture_type == GestureType.ZOOM:
             return await self._zoom(spec.x, spec.y, spec.x2)
 
-        elif spec.gesture_type == GestureType.SCROLL:
+        if spec.gesture_type == GestureType.SCROLL:
             result = await self._screen_tools.swipe(
                 spec.x, spec.y, spec.x2, spec.y2, spec.duration_ms
             )
             return result.success
 
-        else:
-            raise ValueError(f"Unknown gesture type: {spec.gesture_type}")
+        raise ValueError(f"Unknown gesture type: {spec.gesture_type}")
 
     async def _pinch(self, cx: int, cy: int, distance: int = 100) -> bool:
         """捏合（缩小）"""

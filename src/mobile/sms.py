@@ -7,7 +7,7 @@ v0.8.0: 新增移动端支持
 
 import logging
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Any
@@ -366,7 +366,7 @@ class SMSTools(UnifiedTool):
             self._logger.error(f"Failed to send message: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to send message: {str(e)}"
+                error=f"Failed to send message: {e!s}"
             )
 
     async def _simulate_send_click(self) -> bool:
@@ -436,7 +436,7 @@ class SMSTools(UnifiedTool):
             self._logger.error(f"Failed to mark as read: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to mark as read: {str(e)}"
+                error=f"Failed to mark as read: {e!s}"
             )
 
     async def delete_message(self, message_id: str) -> ToolResult:
@@ -480,7 +480,7 @@ class SMSTools(UnifiedTool):
             self._logger.error(f"Failed to delete message: {e}")
             return ToolResult(
                 success=False,
-                error=f"Failed to delete message: {str(e)}"
+                error=f"Failed to delete message: {e!s}"
             )
 
     async def get_conversation(self, thread_id: str) -> list[dict[str, Any]]:
@@ -498,7 +498,7 @@ class SMSTools(UnifiedTool):
                     self._adb_path, "shell",
                     f"content query --uri content://sms/ "
                     f"--projection _id:thread_id:address:body:date:type:read:status "
-                    f"--where \"thread_id={thread_id}\""
+                    f'--where "thread_id={thread_id}"'
                 ],
                 capture_output=True,
                 text=True,

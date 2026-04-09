@@ -9,8 +9,8 @@ PyAgent 聊天Agent核心 - 拟人化系统
 """
 
 from .behavior_planner import (
-    ActionType,
     ActionDecision,
+    ActionType,
     BehaviorPlanner,
     ConversationContext,
 )
@@ -22,8 +22,8 @@ from .humanized_prompt import (
 )
 
 __all__ = [
-    "ActionType",
     "ActionDecision",
+    "ActionType",
     "BehaviorPlanner",
     "ConversationContext",
     "ConversationGoal",

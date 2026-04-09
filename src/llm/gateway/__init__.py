@@ -11,11 +11,11 @@ from src.llm.gateway.mcp_gateway import (
 )
 
 __all__ = [
+    "MCPAuthType",
     "MCPGateway",
     "MCPServerConfig",
     "MCPTool",
     "MCPToolResult",
     "MCPTransportType",
-    "MCPAuthType",
     "get_mcp_gateway",
 ]

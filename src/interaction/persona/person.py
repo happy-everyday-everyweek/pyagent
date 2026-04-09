@@ -22,7 +22,7 @@ class MemoryPoint:
     created_at: float = field(default_factory=lambda: datetime.now().timestamp())
     last_accessed: float = field(default_factory=lambda: datetime.now().timestamp())
     access_count: int = 0
-    
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "category": self.category,
@@ -32,7 +32,7 @@ class MemoryPoint:
             "last_accessed": self.last_accessed,
             "access_count": self.access_count
         }
-    
+
     @classmethod
     def from_string(cls, point_str: str) -> Optional["MemoryPoint"]:
         """
@@ -53,7 +53,7 @@ class MemoryPoint:
             weight = float(parts[2]) if len(parts) > 2 else 1.0
             return cls(category=category, content=content, weight=weight)
         return None
-    
+
     def to_string(self) -> str:
         """转换为字符串格式"""
         return f"{self.category}:{self.content}:{self.weight}"
@@ -61,9 +61,9 @@ class MemoryPoint:
 
 class Person:
     """用户信息管理"""
-    
+
     MEMORY_SIMILARITY_THRESHOLD = 0.8
-    
+
     def __init__(
         self,
         user_id: str,
@@ -78,7 +78,7 @@ class Person:
         self.memory_points: list[MemoryPoint] = []
         self._created_at = datetime.now().timestamp()
         self._last_interaction = datetime.now().timestamp()
-    
+
     def add_memory(
         self,
         category: str,
@@ -98,20 +98,20 @@ class Person:
         """
         if not content:
             return False
-        
+
         if self._is_similar_memory(category, content):
             return False
-        
+
         self.memory_points.append(MemoryPoint(
             category=category,
             content=content,
             weight=weight
         ))
-        
+
         self._last_interaction = datetime.now().timestamp()
         logger.debug(f"Added memory for {self.user_id}: {category}:{content}")
         return True
-    
+
     def add_memory_from_string(self, point_str: str) -> bool:
         """
         从字符串添加记忆点
@@ -126,7 +126,7 @@ class Person:
         if point:
             return self.add_memory(point.category, point.content, point.weight)
         return False
-    
+
     def _is_similar_memory(self, category: str, content: str) -> bool:
         """检查是否存在相似的记忆"""
         for point in self.memory_points:
@@ -139,7 +139,7 @@ class Person:
                 if similarity >= self.MEMORY_SIMILARITY_THRESHOLD:
                     return True
         return False
-    
+
     def get_memories_by_category(self, category: str) -> list[MemoryPoint]:
         """
         按分类获取记忆
@@ -154,7 +154,7 @@ class Person:
             point for point in self.memory_points
             if point.category == category
         ]
-    
+
     def get_memories_by_keyword(self, keyword: str) -> list[MemoryPoint]:
         """
         按关键词搜索记忆
@@ -170,7 +170,7 @@ class Person:
             point for point in self.memory_points
             if keyword_lower in point.content.lower()
         ]
-    
+
     def get_recent_memories(self, limit: int = 10) -> list[MemoryPoint]:
         """
         获取最近的记忆
@@ -187,7 +187,7 @@ class Person:
             reverse=True
         )
         return sorted_points[:limit]
-    
+
     def get_important_memories(self, limit: int = 10) -> list[MemoryPoint]:
         """
         获取重要的记忆（按权重和访问次数）
@@ -204,8 +204,8 @@ class Person:
             reverse=True
         )
         return sorted_points[:limit]
-    
-    def access_memory(self, index: int) -> Optional[MemoryPoint]:
+
+    def access_memory(self, index: int) -> MemoryPoint | None:
         """
         访问记忆（更新访问时间和次数）
         
@@ -221,7 +221,7 @@ class Person:
             point.access_count += 1
             return point
         return None
-    
+
     def forget_memory(self, index: int) -> bool:
         """
         遗忘记忆
@@ -236,7 +236,7 @@ class Person:
             del self.memory_points[index]
             return True
         return False
-    
+
     def decay_memories(self, threshold: float = 0.1) -> int:
         """
         记忆衰减（降低权重）
@@ -249,20 +249,20 @@ class Person:
         """
         now = datetime.now().timestamp()
         day_seconds = 86400
-        
+
         to_remove = []
         for i, point in enumerate(self.memory_points):
             days_since_access = (now - point.last_accessed) / day_seconds
             point.weight *= (0.99 ** days_since_access)
-            
+
             if point.weight < threshold:
                 to_remove.append(i)
-        
+
         for i in reversed(to_remove):
             del self.memory_points[i]
-        
+
         return len(to_remove)
-    
+
     def get_memory_summary(self) -> str:
         """
         获取记忆摘要
@@ -272,20 +272,20 @@ class Person:
         """
         if not self.memory_points:
             return ""
-        
+
         categories: dict[str, list[MemoryPoint]] = {}
         for point in self.memory_points:
             if point.category not in categories:
                 categories[point.category] = []
             categories[point.category].append(point)
-        
+
         lines = []
         for category, points in categories.items():
             contents = [p.content for p in points[:5]]
             lines.append(f"【{category}】{', '.join(contents)}")
-        
+
         return "\n".join(lines)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
         return {
@@ -301,10 +301,10 @@ class Person:
 
 class PersonManager:
     """用户管理器"""
-    
+
     def __init__(self):
         self._persons: dict[str, Person] = {}
-    
+
     def get_person(
         self,
         user_id: str,
@@ -332,7 +332,7 @@ class PersonManager:
                 platform=platform
             )
         return self._persons[user_id]
-    
+
     def add_memory(
         self,
         user_id: str,
@@ -356,7 +356,7 @@ class PersonManager:
         if person:
             return person.add_memory(category, content, weight)
         return False
-    
+
     def get_memory_summary(self, user_id: str) -> str:
         """
         获取用户记忆摘要
@@ -371,7 +371,7 @@ class PersonManager:
         if person:
             return person.get_memory_summary()
         return ""
-    
+
     def get_all_persons(self) -> dict[str, Person]:
         """获取所有用户"""
         return self._persons.copy()

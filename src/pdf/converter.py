@@ -3,7 +3,8 @@ PyAgent PDF模块 - 格式转换器
 """
 
 from typing import Any
-from .parser import PDFDocument, PDFPage, Table, Image
+
+from .parser import PDFDocument
 
 
 class FormatConverter:

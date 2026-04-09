@@ -1,15 +1,15 @@
 from .base import Command
-from .manager import CommandManager
 from .batch_command import BatchCommand
 from .element_commands import (
-    InsertElementCommand,
     DeleteElementsCommand,
+    DetachAudioCommand,
+    DuplicateElementsCommand,
+    InsertElementCommand,
     MoveElementCommand,
     SplitElementsCommand,
     UpdateElementCommand,
-    DuplicateElementsCommand,
-    DetachAudioCommand,
 )
+from .manager import CommandManager
 from .track_commands import (
     AddTrackCommand,
     RemoveTrackCommand,
@@ -24,22 +24,22 @@ from .transition_commands import (
 )
 
 __all__ = [
+    "AddTrackCommand",
+    "AddTransitionCommand",
+    "BatchCommand",
     "Command",
     "CommandManager",
-    "BatchCommand",
-    "InsertElementCommand",
     "DeleteElementsCommand",
-    "MoveElementCommand",
-    "SplitElementsCommand",
-    "UpdateElementCommand",
-    "DuplicateElementsCommand",
     "DetachAudioCommand",
-    "AddTrackCommand",
+    "DuplicateElementsCommand",
+    "InsertElementCommand",
+    "MoveElementCommand",
     "RemoveTrackCommand",
+    "RemoveTransitionCommand",
     "ReorderTracksCommand",
+    "SplitElementsCommand",
     "ToggleTrackMuteCommand",
     "ToggleTrackVisibilityCommand",
-    "AddTransitionCommand",
-    "RemoveTransitionCommand",
+    "UpdateElementCommand",
     "UpdateTransitionCommand",
 ]

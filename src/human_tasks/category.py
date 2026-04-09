@@ -9,7 +9,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 @dataclass
@@ -73,7 +73,7 @@ class CategoryManager:
     
     管理任务分类的创建、更新、删除和查询。
     """
-    
+
     DEFAULT_CATEGORIES = [
         {
             "name": "工作",
@@ -110,10 +110,10 @@ class CategoryManager:
     def __init__(self, data_dir: str = "data/human_tasks"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        
+
         self.categories: dict[str, Category] = {}
         self._load_data()
-        
+
         if not self.categories:
             self._init_default_categories()
 
@@ -158,7 +158,7 @@ class CategoryManager:
                 description=cat_data["description"]
             )
             self.categories[category.id] = category
-        
+
         self._save_data()
 
     def create_category(
@@ -186,20 +186,20 @@ class CategoryManager:
             icon=icon,
             description=description
         )
-        
+
         self.categories[category.id] = category
         self._save_data()
-        
+
         return category
 
     def update_category(
         self,
         category_id: str,
-        name: Optional[str] = None,
-        color: Optional[str] = None,
-        icon: Optional[str] = None,
-        description: Optional[str] = None
-    ) -> Optional[Category]:
+        name: str | None = None,
+        color: str | None = None,
+        icon: str | None = None,
+        description: str | None = None
+    ) -> Category | None:
         """
         更新分类
         
@@ -216,7 +216,7 @@ class CategoryManager:
         category = self.categories.get(category_id)
         if not category:
             return None
-        
+
         update_data = {}
         if name is not None:
             update_data["name"] = name
@@ -226,10 +226,10 @@ class CategoryManager:
             update_data["icon"] = icon
         if description is not None:
             update_data["description"] = description
-        
+
         category.update(**update_data)
         self._save_data()
-        
+
         return category
 
     def delete_category(self, category_id: str) -> bool:
@@ -248,7 +248,7 @@ class CategoryManager:
             return True
         return False
 
-    def get_category(self, category_id: str) -> Optional[Category]:
+    def get_category(self, category_id: str) -> Category | None:
         """
         获取分类
         
@@ -260,7 +260,7 @@ class CategoryManager:
         """
         return self.categories.get(category_id)
 
-    def get_category_by_name(self, name: str) -> Optional[Category]:
+    def get_category_by_name(self, name: str) -> Category | None:
         """
         通过名称获取分类
         

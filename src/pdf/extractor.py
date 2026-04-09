@@ -3,10 +3,8 @@ PyAgent PDF模块 - 内容提取器
 """
 
 from typing import Any
-from .parser import PDFDocument, PDFPage, Table, Image, TextBlock
 
-
-from .parser import pdf_parser
+from .parser import Image, PDFDocument, Table
 
 
 class ContentExtractor:

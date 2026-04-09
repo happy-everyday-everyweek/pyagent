@@ -81,7 +81,7 @@ class FileReadTool(BaseTool):
             )
 
         except Exception as e:
-            return ToolResult(success=False, error=f"读取文件时出错: {str(e)}")
+            return ToolResult(success=False, error=f"读取文件时出错: {e!s}")
 
 
 class FileWriteTool(BaseTool):
@@ -155,7 +155,7 @@ class FileWriteTool(BaseTool):
             )
 
         except Exception as e:
-            return ToolResult(success=False, error=f"写入文件时出错: {str(e)}")
+            return ToolResult(success=False, error=f"写入文件时出错: {e!s}")
 
 
 class FileListTool(BaseTool):
@@ -220,4 +220,4 @@ class FileListTool(BaseTool):
             )
 
         except Exception as e:
-            return ToolResult(success=False, error=f"列出目录时出错: {str(e)}")
+            return ToolResult(success=False, error=f"列出目录时出错: {e!s}")

@@ -6,9 +6,10 @@ state at various stages of execution.
 """
 
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from src.execution.context import ExecutionContext
 
@@ -66,7 +67,6 @@ class BaseMiddleware(ABC):
         Returns:
             MiddlewareResult with state updates and control flags.
         """
-        pass
 
     def should_run(self, phase: MiddlewarePhase, state: dict[str, Any]) -> bool:
         """Check if this middleware should run for the given phase.
@@ -230,14 +230,14 @@ def create_default_middleware_chain() -> MiddlewareChain:
     Returns:
         Configured MiddlewareChain instance.
     """
-    from src.execution.middlewares.thread_data import ThreadDataMiddleware
-    from src.execution.middlewares.uploads import UploadsMiddleware
-    from src.execution.middlewares.summarization import SummarizationMiddleware
-    from src.execution.middlewares.todo_list import TodoListMiddleware
-    from src.execution.middlewares.title import TitleMiddleware
-    from src.execution.middlewares.memory import MemoryMiddleware
-    from src.execution.middlewares.view_image import ViewImageMiddleware
     from src.execution.middlewares.clarification import ClarificationMiddleware
+    from src.execution.middlewares.memory import MemoryMiddleware
+    from src.execution.middlewares.summarization import SummarizationMiddleware
+    from src.execution.middlewares.thread_data import ThreadDataMiddleware
+    from src.execution.middlewares.title import TitleMiddleware
+    from src.execution.middlewares.todo_list import TodoListMiddleware
+    from src.execution.middlewares.uploads import UploadsMiddleware
+    from src.execution.middlewares.view_image import ViewImageMiddleware
 
     chain = MiddlewareChain()
     chain.add(ThreadDataMiddleware()).priority = 10

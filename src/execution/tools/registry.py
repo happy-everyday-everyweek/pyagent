@@ -120,7 +120,7 @@ def _register_default_tools():
     """注册默认工具"""
     from .knowledge import KnowledgeTool
     from .map import OfflineMapTool
-    
+
     tool_registry.register(KnowledgeTool())
     tool_registry.register(OfflineMapTool())
 
